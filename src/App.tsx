@@ -36,16 +36,11 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/goals" element={<Goals />} />
-                  
-                  {/* Manager routes */}
-                  <Route 
-                    path="/manager" 
-                    element={
-                      <ProtectedRoute allowedRoles={['manager']}>
-                        <ManagerDashboard />
-                      </ProtectedRoute>
-                    } 
-                  />
+                </Route>
+                
+                {/* Manager routes */}
+                <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+                  <Route path="/manager" element={<ManagerDashboard />} />
                 </Route>
               </Route>
               
