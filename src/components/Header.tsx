@@ -26,14 +26,14 @@ const Header = () => {
           
           {user && (
             <nav className="hidden md:flex space-x-1">
-              <Link to="/dashboard">
+              <Link to="/">
                 <Button 
-                  variant={isActive('/dashboard') ? "default" : "ghost"} 
+                  variant={isActive('/') ? "default" : "ghost"} 
                   size="sm"
                   className="flex items-center space-x-1"
                 >
                   <Home className="h-4 w-4" />
-                  <span>Dashboard</span>
+                  <span>Home</span>
                 </Button>
               </Link>
               <Link to="/goals">
