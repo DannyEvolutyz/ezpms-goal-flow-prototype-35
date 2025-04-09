@@ -1,16 +1,21 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LogOut, User, Home, Target } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -18,6 +23,31 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-blue-600">EzPMS</h1>
+          
+          {user && (
+            <nav className="hidden md:flex space-x-1">
+              <Link to="/dashboard">
+                <Button 
+                  variant={isActive('/dashboard') ? "default" : "ghost"} 
+                  size="sm"
+                  className="flex items-center space-x-1"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Button>
+              </Link>
+              <Link to="/goals">
+                <Button 
+                  variant={isActive('/goals') ? "default" : "ghost"} 
+                  size="sm"
+                  className="flex items-center space-x-1"
+                >
+                  <Target className="h-4 w-4" />
+                  <span>Goals</span>
+                </Button>
+              </Link>
+            </nav>
+          )}
         </div>
         
         {user && (
