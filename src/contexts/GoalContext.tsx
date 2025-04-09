@@ -38,8 +38,29 @@ const initialGoalBank: GoalBank[] = [
   },
 ];
 
-// Initial mock goals data
-const initialGoals: Goal[] = [];
+// Initial mock goals data - extended with some example goals for the manager dashboard
+const initialGoals: Goal[] = [
+  {
+    id: 'goal-1',
+    userId: 'emp-1',
+    title: 'Learn Advanced TypeScript',
+    description: 'Complete TypeScript certification and apply knowledge in current project',
+    category: 'Technical Skills',
+    priority: 'high',
+    targetDate: '2025-06-30',
+    status: 'submitted'
+  },
+  {
+    id: 'goal-2',
+    userId: 'emp-2',
+    title: 'Improve Team Communication',
+    description: 'Implement bi-weekly team sync meetings and create documentation standards',
+    category: 'Leadership',
+    priority: 'medium',
+    targetDate: '2025-05-15',
+    status: 'submitted'
+  }
+];
 
 interface GoalContextType {
   goals: Goal[];
@@ -47,7 +68,11 @@ interface GoalContextType {
   addGoal: (goal: Omit<Goal, 'id' | 'userId' | 'status' | 'feedback'>) => void;
   updateGoal: (goal: Goal) => void;
   submitGoal: (goalId: string) => void;
+  approveGoal: (goalId: string) => void;
+  rejectGoal: (goalId: string, feedback: string) => void;
+  returnGoalForRevision: (goalId: string, feedback: string) => void;
   getGoalsByStatus: (status: Goal['status']) => Goal[];
+  getTeamGoals: () => Goal[];
 }
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
@@ -94,10 +119,54 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     toast.success('Goal submitted for approval');
   };
 
+  // Manager: Approve a goal
+  const approveGoal = (goalId: string) => {
+    setGoals(prevGoals => 
+      prevGoals.map(goal => 
+        goal.id === goalId 
+          ? { ...goal, status: 'approved' } 
+          : goal
+      )
+    );
+    toast.success('Goal approved');
+  };
+
+  // Manager: Reject a goal with feedback
+  const rejectGoal = (goalId: string, feedback: string) => {
+    setGoals(prevGoals => 
+      prevGoals.map(goal => 
+        goal.id === goalId 
+          ? { ...goal, status: 'rejected', feedback } 
+          : goal
+      )
+    );
+    toast.success('Goal rejected with feedback');
+  };
+
+  // Manager: Return a goal for revision with feedback
+  const returnGoalForRevision = (goalId: string, feedback: string) => {
+    setGoals(prevGoals => 
+      prevGoals.map(goal => 
+        goal.id === goalId 
+          ? { ...goal, status: 'under_review', feedback } 
+          : goal
+      )
+    );
+    toast.success('Goal returned for revision');
+  };
+
   // Get goals filtered by status
   const getGoalsByStatus = (status: Goal['status']) => {
     if (!user) return [];
     return goals.filter(goal => goal.userId === user.id && goal.status === status);
+  };
+
+  // Get team goals (for managers)
+  const getTeamGoals = () => {
+    if (!user || user.role !== 'manager') return [];
+    // In a real app, this would filter goals by employeeIds who report to this manager
+    // For now, we'll return all goals except those belonging to the current user
+    return goals.filter(goal => goal.userId !== user.id);
   };
 
   const value = {
@@ -106,7 +175,11 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     addGoal,
     updateGoal,
     submitGoal,
+    approveGoal,
+    rejectGoal,
+    returnGoalForRevision,
     getGoalsByStatus,
+    getTeamGoals,
   };
 
   return <GoalContext.Provider value={value}>{children}</GoalContext.Provider>;

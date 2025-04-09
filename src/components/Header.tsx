@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, Target } from 'lucide-react';
+import { LogOut, User, Home, Target, BarChart2 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Header = () => {
@@ -46,6 +46,20 @@ const Header = () => {
                   <span>Goals</span>
                 </Button>
               </Link>
+              
+              {/* Manager-specific navigation */}
+              {user.role === 'manager' && (
+                <Link to="/manager">
+                  <Button 
+                    variant={isActive('/manager') ? "default" : "ghost"} 
+                    size="sm"
+                    className="flex items-center space-x-1"
+                  >
+                    <BarChart2 className="h-4 w-4" />
+                    <span>Manage Goals</span>
+                  </Button>
+                </Link>
+              )}
             </nav>
           )}
         </div>

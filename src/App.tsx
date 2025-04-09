@@ -9,6 +9,7 @@ import { GoalProvider } from '@/contexts/GoalContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Unauthorized from './pages/Unauthorized';
 import NotFound from "./pages/NotFound";
 import Layout from './components/Layout';
@@ -36,7 +37,15 @@ const App = () => (
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/goals" element={<Goals />} />
                   
-                  {/* Add more role-specific routes here later */}
+                  {/* Manager routes */}
+                  <Route 
+                    path="/manager" 
+                    element={
+                      <ProtectedRoute allowedRoles={['manager']}>
+                        <ManagerDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
                 </Route>
               </Route>
               
