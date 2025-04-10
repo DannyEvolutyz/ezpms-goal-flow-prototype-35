@@ -2,9 +2,13 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, CheckSquare, BarChart } from 'lucide-react';
+import { Plus, Eye, CheckSquare, BarChart, AlertTriangle } from 'lucide-react';
 
-const WelcomeBanner = () => {
+interface WelcomeBannerProps {
+  needsAttentionCount?: number;
+}
+
+const WelcomeBanner = ({ needsAttentionCount = 0 }: WelcomeBannerProps) => {
   const { user } = useAuth();
   const isManager = user?.role === 'manager';
   
@@ -21,6 +25,13 @@ const WelcomeBanner = () => {
               : "Track your performance goals and career development."
             }
           </p>
+          
+          {!isManager && needsAttentionCount > 0 && (
+            <div className="mt-2 flex items-center text-amber-600">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span className="text-sm">You have {needsAttentionCount} {needsAttentionCount === 1 ? 'goal' : 'goals'} that need{needsAttentionCount === 1 ? 's' : ''} attention</span>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-wrap gap-2">

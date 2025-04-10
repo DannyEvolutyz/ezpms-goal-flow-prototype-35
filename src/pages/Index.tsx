@@ -5,9 +5,12 @@ import StatsOverview from '@/components/dashboard/StatsOverview';
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 import GoalProgressChart from '@/components/dashboard/GoalProgressChart';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
+import { useGoals } from '@/contexts/GoalContext';
 
 const Index = () => {
   const { user, isAuthenticated } = useAuth();
+  const { getGoalsByStatus } = useGoals();
   
   // Show loading state while auth is being checked
   if (!isAuthenticated || !user) {
@@ -26,12 +29,19 @@ const Index = () => {
     );
   }
   
+  // Filter goals by status to check what needs attention
+  const underReviewGoals = getGoalsByStatus('under_review');
+  const rejectedGoals = getGoalsByStatus('rejected');
+  const needsAttentionCount = underReviewGoals.length + rejectedGoals.length;
+  
   return (
     <div className="container mx-auto px-4 py-8">
-      <WelcomeBanner />
+      <WelcomeBanner needsAttentionCount={needsAttentionCount} />
       <StatsOverview />
-      <GoalProgressChart />
-      <ActivityTimeline />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GoalProgressChart />
+        <ActivityTimeline />
+      </div>
     </div>
   );
 };

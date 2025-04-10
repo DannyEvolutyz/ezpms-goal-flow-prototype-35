@@ -35,6 +35,8 @@ const App = () => (
                 <Route element={<ProtectedRoute />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  
+                  {/* Employee-only routes */}
                   <Route path="/goals" element={<Goals />} />
                 </Route>
                 

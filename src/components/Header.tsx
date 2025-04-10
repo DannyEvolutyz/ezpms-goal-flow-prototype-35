@@ -1,91 +1,159 @@
 
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home, Target, BarChart2 } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, LogOut, User, Settings, BarChart, Target } from 'lucide-react';
+import { useMobile } from '@/hooks/use-mobile';
+import NotificationTray from './NotificationTray';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
+  const { isMobile } = useMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  if (!user) {
+    return (
+      <header className="bg-white border-b py-4">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <Link to="/" className="text-xl font-bold text-blue-600">
+            PerformTrack
+          </Link>
+        </div>
+      </header>
+    );
+  }
+  
+  const isManager = user.role === 'manager';
+  
+  const menuItems = [
+    { label: 'Dashboard', path: '/' },
+    { label: 'Goals', path: '/goals' },
+    ...(isManager ? [{ label: 'Manager Dashboard', path: '/manager' }] : []),
+  ];
+  
   const handleLogout = () => {
     logout();
-    navigate('/login', { replace: true });
+    navigate('/login');
   };
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
+  
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-blue-600">EzPMS</h1>
+    <header className="bg-white border-b py-3">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <div className="flex items-center space-x-8">
+          <Link to="/" className="text-xl font-bold text-blue-600">
+            PerformTrack
+          </Link>
           
-          {user && (
-            <nav className="hidden md:flex space-x-1">
-              <Link to="/">
-                <Button 
-                  variant={isActive('/') ? "default" : "ghost"} 
-                  size="sm"
-                  className="flex items-center space-x-1"
+          {!isMobile && (
+            <nav className="hidden md:flex items-center space-x-6">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
-                  <Home className="h-4 w-4" />
-                  <span>Home</span>
-                </Button>
-              </Link>
-              <Link to="/goals">
-                <Button 
-                  variant={isActive('/goals') ? "default" : "ghost"} 
-                  size="sm"
-                  className="flex items-center space-x-1"
-                >
-                  <Target className="h-4 w-4" />
-                  <span>Goals</span>
-                </Button>
-              </Link>
-              
-              {/* Manager-specific navigation */}
-              {user.role === 'manager' && (
-                <Link to="/manager">
-                  <Button 
-                    variant={isActive('/manager') ? "default" : "ghost"} 
-                    size="sm"
-                    className="flex items-center space-x-1"
-                  >
-                    <BarChart2 className="h-4 w-4" />
-                    <span>Manage Goals</span>
-                  </Button>
+                  {item.label}
                 </Link>
-              )}
+              ))}
             </nav>
           )}
         </div>
         
-        {user && (
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <User className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLogout}
-              className="flex items-center space-x-1"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Logout</span>
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <NotificationTray />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={user.photoUrl} alt={user.name} />
+                  <AvatarFallback className="bg-blue-600 text-white">
+                    {user.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-gray-500">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="cursor-pointer flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/goals" className="cursor-pointer flex items-center">
+                  <Target className="mr-2 h-4 w-4" />
+                  <span>Goals</span>
+                </Link>
+              </DropdownMenuItem>
+              {isManager && (
+                <DropdownMenuItem asChild>
+                  <Link to="/manager" className="cursor-pointer flex items-center">
+                    <BarChart className="mr-2 h-4 w-4" />
+                    <span>Manager Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="cursor-pointer flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {isMobile && (
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64">
+                <div className="py-4">
+                  <h2 className="text-lg font-bold text-blue-600 mb-4">PerformTrack</h2>
+                  <nav className="flex flex-col space-y-4">
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className="text-gray-600 hover:text-blue-600 transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
       </div>
     </header>
   );

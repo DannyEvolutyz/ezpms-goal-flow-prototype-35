@@ -1,12 +1,10 @@
 
-export type UserRole = 'employee' | 'manager';
-
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  managerId?: string; // Only for employees
+  role: 'employee' | 'manager' | 'admin';
+  photoUrl?: string;
 }
 
 export interface Goal {
@@ -15,9 +13,9 @@ export interface Goal {
   title: string;
   description: string;
   category: string;
-  priority: 'low' | 'medium' | 'high';
+  priority: 'high' | 'medium' | 'low';
   targetDate: string;
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected';
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
   feedback?: string;
 }
 
@@ -26,4 +24,16 @@ export interface GoalBank {
   title: string;
   description: string;
   category: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  timestamp: string;
+  targetId?: string;
+  targetType?: string;
 }
