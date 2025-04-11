@@ -36,7 +36,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   
-                  {/* Employee-only routes */}
+                  {/* Both employee and manager can access goals, but with different permissions */}
                   <Route path="/goals" element={<Goals />} />
                 </Route>
                 

@@ -4,9 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import { Plus, List } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Goals = () => {
   const [activeTab, setActiveTab] = useState('list');
+  const { user } = useAuth();
+  const isManager = user?.role === 'manager';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -18,7 +21,7 @@ const Goals = () => {
             <List className="h-4 w-4" />
             <span>My Goals</span>
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2">
+          <TabsTrigger value="create" className="flex items-center gap-2" disabled={isManager}>
             <Plus className="h-4 w-4" />
             <span>Create Goal</span>
           </TabsTrigger>
@@ -29,7 +32,16 @@ const Goals = () => {
         </TabsContent>
         
         <TabsContent value="create" className="mt-0">
-          <GoalFormComponent />
+          {!isManager ? (
+            <GoalFormComponent />
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-6 text-center">
+              <h3 className="text-lg font-medium text-amber-800 mb-2">Managers Cannot Create Goals</h3>
+              <p className="text-amber-700">
+                As a manager, you are responsible for reviewing and providing feedback on your team members' goals.
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
