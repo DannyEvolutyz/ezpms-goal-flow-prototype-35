@@ -5,9 +5,13 @@ import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import { Plus, List } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const Goals = () => {
-  const [activeTab, setActiveTab] = useState('list');
+  const location = useLocation();
+  // Check if we need to show the create tab based on URL search params
+  const showCreateTab = location.search === '?create=true';
+  const [activeTab, setActiveTab] = useState(showCreateTab ? 'create' : 'list');
   const { user } = useAuth();
   const isManager = user?.role === 'manager';
 
@@ -28,7 +32,7 @@ const Goals = () => {
         </TabsList>
         
         <TabsContent value="list" className="mt-0">
-          <GoalsListComponent />
+          <GoalsListComponent onCreateNew={() => setActiveTab('create')} />
         </TabsContent>
         
         <TabsContent value="create" className="mt-0">
