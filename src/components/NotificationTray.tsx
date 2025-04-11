@@ -101,7 +101,7 @@ const NotificationTray = () => {
                 )}
               </Button>
             </PopoverTrigger>
-          </TooltipContent>
+          </TooltipTrigger>
           <TooltipContent>
             <p>Notifications</p>
           </TooltipContent>
