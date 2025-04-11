@@ -5,6 +5,7 @@ export interface User {
   email: string;
   role: 'employee' | 'manager' | 'admin';
   photoUrl?: string;
+  managerId?: string;
 }
 
 export interface Goal {
@@ -37,3 +38,6 @@ export interface Notification {
   targetId?: string;
   targetType?: string;
 }
+
+// Add the UserRole type alias
+export type UserRole = 'employee' | 'manager' | 'admin';
