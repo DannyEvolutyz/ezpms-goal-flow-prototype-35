@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Goal, GoalBank, Notification } from '@/types';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
@@ -111,10 +110,48 @@ interface GoalContextType {
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
 export const GoalProvider = ({ children }: { children: ReactNode }) => {
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const [goalBank] = useState<GoalBank[]>(initialGoalBank);
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const { user } = useAuth();
+
+  // Load goals and notifications from localStorage on component mount
+  useEffect(() => {
+    const storedGoals = localStorage.getItem('ezpms_goals');
+    const storedNotifications = localStorage.getItem('ezpms_notifications');
+    
+    if (storedGoals) {
+      try {
+        setGoals(JSON.parse(storedGoals));
+      } catch (error) {
+        console.error("Failed to parse stored goals:", error);
+        setGoals(initialGoals);
+      }
+    } else {
+      setGoals(initialGoals);
+    }
+    
+    if (storedNotifications) {
+      try {
+        setNotifications(JSON.parse(storedNotifications));
+      } catch (error) {
+        console.error("Failed to parse stored notifications:", error);
+        setNotifications(initialNotifications);
+      }
+    } else {
+      setNotifications(initialNotifications);
+    }
+  }, []);
+
+  // Save goals to localStorage whenever goals change
+  useEffect(() => {
+    localStorage.setItem('ezpms_goals', JSON.stringify(goals));
+  }, [goals]);
+
+  // Save notifications to localStorage whenever notifications change
+  useEffect(() => {
+    localStorage.setItem('ezpms_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // Create a new notification
   const createNotification = (
