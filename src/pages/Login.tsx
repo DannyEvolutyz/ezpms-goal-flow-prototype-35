@@ -66,7 +66,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
+                  placeholder="email@ezdanny.com"
                   required
                 />
               </div>
@@ -82,10 +82,11 @@ const Login = () => {
                 />
               </div>
               
-              <div className="text-sm text-gray-500 pt-2">
-                <p>Demo Accounts:</p>
-                <p>Employee: employee@example.com / employee123</p>
-                <p>Manager: manager@example.com / manager123</p>
+              <div className="text-sm text-gray-500 pt-2 space-y-1">
+                <p className="font-medium">Demo Accounts:</p>
+                <p><span className="font-medium">Admin:</span> admin@ezdanny.com / password123</p>
+                <p><span className="font-medium">Managers:</span> darahas@ezdanny.com or ashok@ezdanny.com / password123</p>
+                <p><span className="font-medium">Team Members:</span> hema@ezdanny.com, babloo@ezdanny.com, etc. / password123</p>
               </div>
             </CardContent>
             <CardFooter>

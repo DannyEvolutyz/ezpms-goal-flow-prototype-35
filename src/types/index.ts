@@ -3,9 +3,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'employee' | 'manager' | 'admin';
+  role: 'admin' | 'manager' | 'member';
   photoUrl?: string;
   managerId?: string;
+  teamMembers?: string[]; // IDs of users reporting to this user
 }
 
 export interface Goal {
@@ -18,6 +19,7 @@ export interface Goal {
   targetDate: string;
   status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
   feedback?: string;
+  reviewerId?: string; // ID of the user who reviewed the goal
 }
 
 export interface GoalBank {
@@ -39,5 +41,6 @@ export interface Notification {
   targetType?: string;
 }
 
-// Add the UserRole type alias
-export type UserRole = 'employee' | 'manager' | 'admin';
+// User role type alias
+export type UserRole = 'admin' | 'manager' | 'member';
+

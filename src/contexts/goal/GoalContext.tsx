@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Goal, GoalBank, Notification } from '@/types';
+import { Goal, GoalBank, Notification, User } from '@/types';
 import { useAuth } from '../AuthContext';
 import { GoalContextType } from './types';
 import { initialGoalBank, initialGoals, initialNotifications } from './initialData';
@@ -20,7 +20,8 @@ import {
   returnGoalForRevision as returnGoalForRevisionService,
   deleteGoal as deleteGoalService,
   getGoalsByStatus as getGoalsByStatusService,
-  getTeamGoals as getTeamGoalsService
+  getTeamGoals as getTeamGoalsService,
+  getGoalsForReview
 } from './goalService';
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
@@ -29,7 +30,7 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
   const [goalBank] = useState<GoalBank[]>(initialGoalBank);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const { user } = useAuth();
+  const { user, getAllUsers } = useAuth();
 
   // Load goals and notifications from localStorage on component mount
   useEffect(() => {
@@ -84,25 +85,27 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
   // Submit a goal for review (change status from draft to submitted)
   const submitGoal = (goalId: string) => {
     if (!user) return;
-    submitGoalService(goalId, user.id, user.name, goals, setGoals, setNotifications);
+    const allUsers = getAllUsers();
+    submitGoalService(goalId, user.id, user.name, goals, user, allUsers, setGoals, setNotifications);
   };
 
-  // Manager: Approve a goal
+  // Approve a goal
   const approveGoal = (goalId: string) => {
-    if (!user || user.role !== 'manager') return;
-    approveGoalService(goalId, user.id, goals, setGoals, setNotifications);
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+    const allUsers = getAllUsers();
+    approveGoalService(goalId, user.id, user.name, goals, allUsers, setGoals, setNotifications);
   };
 
-  // Manager: Reject a goal with feedback
+  // Reject a goal with feedback
   const rejectGoal = (goalId: string, feedback: string) => {
-    if (!user || user.role !== 'manager') return;
-    rejectGoalService(goalId, feedback, user.id, goals, setGoals, setNotifications);
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+    rejectGoalService(goalId, feedback, user.id, user.name, goals, setGoals, setNotifications);
   };
 
-  // Manager: Return a goal for revision with feedback
+  // Return a goal for revision with feedback
   const returnGoalForRevision = (goalId: string, feedback: string) => {
-    if (!user || user.role !== 'manager') return;
-    returnGoalForRevisionService(goalId, feedback, user.id, goals, setGoals, setNotifications);
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+    returnGoalForRevisionService(goalId, feedback, user.id, user.name, goals, setGoals, setNotifications);
   };
 
   // Delete a goal
@@ -117,10 +120,32 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     return getGoalsByStatusService(status, user.id, goals);
   };
 
-  // Get team goals (for managers)
+  // Get goals that need review
+  const getPendingReviewGoals = () => {
+    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return [];
+    const allUsers = getAllUsers();
+    return getGoalsForReview(user.id, goals, allUsers);
+  };
+
+  // Get team goals (for managers/admins)
   const getTeamGoals = () => {
-    if (!user || user.role !== 'manager') return [];
-    return getTeamGoalsService(user.id, goals);
+    if (!user) return [];
+    const allUsers = getAllUsers();
+    return getTeamGoalsService(user.id, goals, allUsers);
+  };
+
+  // Get all users that report to the current user
+  const getTeamMembers = () => {
+    if (!user) return [];
+    const allUsers = getAllUsers();
+    
+    if (user.role === 'admin') {
+      return allUsers.filter(u => u.id !== user.id);
+    } else if (user.role === 'manager') {
+      return allUsers.filter(u => u.managerId === user.id);
+    }
+    
+    return [];
   };
 
   // Notification related methods
@@ -155,7 +180,9 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     returnGoalForRevision,
     deleteGoal,
     getGoalsByStatus,
+    getPendingReviewGoals,
     getTeamGoals,
+    getTeamMembers,
     markNotificationAsRead,
     clearNotifications,
     getUnreadNotificationsCount,

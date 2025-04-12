@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
 import ManagerDashboard from './pages/ManagerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Unauthorized from './pages/Unauthorized';
 import NotFound from "./pages/NotFound";
 import Layout from './components/Layout';
@@ -36,13 +37,23 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   
-                  {/* Both employee and manager can access goals, but with different permissions */}
+                  {/* Both employees, managers and admins can access goals, but with different permissions */}
                   <Route path="/goals" element={<Goals />} />
+                  
+                  {/* Organization route accessible to managers and admins */}
+                  <Route path="/organization" element={<ProtectedRoute allowedRoles={['manager', 'admin']} />}>
+                    <Route index element={<OrgChart />} />
+                  </Route>
                 </Route>
                 
                 {/* Manager routes */}
                 <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
                   <Route path="/manager" element={<ManagerDashboard />} />
+                </Route>
+                
+                {/* Admin routes */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                  <Route path="/admin" element={<AdminDashboard />} />
                 </Route>
               </Route>
               

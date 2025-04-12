@@ -1,5 +1,5 @@
 
-import { Goal, GoalBank, Notification } from '@/types';
+import { Goal, GoalBank, Notification, User } from '@/types';
 
 export interface GoalContextType {
   goals: Goal[];
@@ -13,7 +13,9 @@ export interface GoalContextType {
   returnGoalForRevision: (goalId: string, feedback: string) => void;
   deleteGoal: (goalId: string) => void;
   getGoalsByStatus: (status: Goal['status']) => Goal[];
+  getPendingReviewGoals: () => Goal[];
   getTeamGoals: () => Goal[];
+  getTeamMembers: () => User[];
   markNotificationAsRead: (notificationId: string) => void;
   clearNotifications: () => void;
   getUnreadNotificationsCount: () => number;

@@ -13,7 +13,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, User, Settings, BarChart, Target } from 'lucide-react';
+import { 
+  Menu, 
+  LogOut, 
+  User, 
+  Settings, 
+  BarChart, 
+  Target, 
+  Users,
+  Shield
+} from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import NotificationTray from './NotificationTray';
 
@@ -36,11 +45,14 @@ const Header = () => {
   }
   
   const isManager = user.role === 'manager';
+  const isAdmin = user.role === 'admin';
   
   const menuItems = [
     { label: 'Dashboard', path: '/' },
     { label: 'Goals', path: '/goals' },
     ...(isManager ? [{ label: 'Manager Dashboard', path: '/manager' }] : []),
+    ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
+    ...((isManager || isAdmin) ? [{ label: 'Organization', path: '/organization' }] : []),
   ];
   
   const handleLogout = () => {
@@ -110,6 +122,22 @@ const Header = () => {
                   <Link to="/manager" className="cursor-pointer flex items-center">
                     <BarChart className="mr-2 h-4 w-4" />
                     <span>Manager Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin" className="cursor-pointer flex items-center">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {(isManager || isAdmin) && (
+                <DropdownMenuItem asChild>
+                  <Link to="/organization" className="cursor-pointer flex items-center">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Organization</span>
                   </Link>
                 </DropdownMenuItem>
               )}
