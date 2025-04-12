@@ -1,5 +1,5 @@
 
-import { Goal } from '@/types';
+import { Goal, Notification } from '@/types';
 import { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { createNotification } from './notificationService';
