@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Index from './pages/Index';
+import OrgChart from './components/organization/OrgChart';
 
 const queryClient = new QueryClient();
 
