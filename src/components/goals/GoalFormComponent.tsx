@@ -32,8 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-// Removed import { GoalBank } from '@/types';
-// Removed import GoalBankComponent
+import GoalBankComponent from './GoalBankComponent';
 
 // Goal form schema with validation
 const goalFormSchema = z.object({
@@ -70,6 +69,13 @@ const GoalFormComponent = () => {
     },
   });
 
+  // When a template is selected, set form values
+  const applyTemplate = (template: { title: string; description: string; category: string }) => {
+    form.setValue('title', template.title);
+    form.setValue('description', template.description);
+    form.setValue('category', template.category as any);
+  };
+
   // Handle form submission
   const onSubmit = (data: GoalFormValues) => {
     addGoal({
@@ -85,11 +91,9 @@ const GoalFormComponent = () => {
     setFormKey(prev => prev + 1);
   };
 
-  // Removed template application handler and GoalBankComponent
-
   return (
-    <div className="space-y-6">
-      {/* Removed Goal Templates heading and helper text */}
+    <div className="space-y-8">
+      <GoalBankComponent onSelectTemplate={applyTemplate} />
       <Card key={formKey}>
         <CardHeader>
           <CardTitle className="text-lg">Goal Details</CardTitle>
@@ -219,7 +223,6 @@ const GoalFormComponent = () => {
           </Form>
         </CardContent>
       </Card>
-      {/* Removed GoalBankComponent */}
     </div>
   );
 };
