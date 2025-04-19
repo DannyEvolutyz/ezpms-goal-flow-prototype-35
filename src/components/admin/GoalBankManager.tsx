@@ -10,19 +10,21 @@ import { Plus, Pencil, X, ListCheck } from "lucide-react";
 
 const blankMilestone: () => Omit<Milestone, "id"> = () => ({
   title: "",
+  description: "",
 });
 
 const blankTemplate: () => Omit<GoalBank, "id"> = () => ({
   title: "",
   description: "",
   category: "",
-  milestones: []
+  milestones: [],
 });
 
 const GoalBankManager = () => {
   const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
-  const [form, setForm] = useState<Omit<GoalBank, "id">>(blankTemplate());
+  // milestones in form have no 'id' yet
+  const [form, setForm] = useState<Omit<GoalBank, "id"> & { milestones: Omit<Milestone, 'id'>[] }>(blankTemplate());
 
   // ---- Milestone management for the form ----
   const addMilestone = () => {
@@ -31,7 +33,7 @@ const GoalBankManager = () => {
       milestones: [...(f.milestones || []), { ...blankMilestone() }],
     }));
   };
-  const updateMilestone = (idx: number, val: Partial<Milestone>) => {
+  const updateMilestone = (idx: number, val: Partial<Omit<Milestone, 'id'>>) => {
     setForm(f => ({
       ...f,
       milestones: (f.milestones || []).map((m, i) => i === idx ? { ...m, ...val } : m),
@@ -40,7 +42,7 @@ const GoalBankManager = () => {
   const removeMilestone = (idx: number) => {
     setForm(f => ({
       ...f,
-      milestones: (f.milestones || []).filter((_, i) => i !== idx)
+      milestones: (f.milestones || []).filter((_, i) => i !== idx),
     }));
   };
 
@@ -51,7 +53,11 @@ const GoalBankManager = () => {
       title: tpl.title,
       description: tpl.description,
       category: tpl.category,
-      milestones: tpl.milestones ? [...tpl.milestones] : [],
+      // Remove milestone id for local editing (safer in UI, avoids accidental use)
+      milestones: (tpl.milestones || []).map((m) => ({
+        title: m.title,
+        description: m.description || "",
+      })),
     });
   };
 
@@ -63,10 +69,26 @@ const GoalBankManager = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.category.trim()) return;
+    // Assign a unique id to each milestone *on save*
+    const milestones: Milestone[] = (form.milestones || []).map((m, i) => ({
+      id: editing && (editing.milestones && editing.milestones[i]?.id)
+        ? editing.milestones[i].id
+        : `milestone-${Date.now()}-${i}`,
+      title: m.title,
+      description: m.description,
+    }));
+
     if (editing) {
-      updateGoalTemplate({ ...editing, ...form });
+      updateGoalTemplate({
+        ...editing,
+        ...form,
+        milestones,
+      });
     } else {
-      addGoalTemplate(form);
+      addGoalTemplate({
+        ...form,
+        milestones,
+      });
     }
     cancelEdit();
   };
@@ -101,13 +123,19 @@ const GoalBankManager = () => {
           <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} required placeholder="E.g., Software Engineering, QA" />
         </div>
         <div className="mb-2">
-          <label className="block text-sm font-semibold flex items-center">Milestones <Plus onClick={addMilestone} className="w-5 h-5 ml-2 cursor-pointer text-green-700" /></label>
-          {(form.milestones || []).length === 0 && (<div className="ml-3 text-gray-500 text-sm">Add at least one milestone</div>)}
+          <label className="block text-sm font-semibold flex items-center">
+            Milestones <Plus onClick={addMilestone} className="w-5 h-5 ml-2 cursor-pointer text-green-700" />
+          </label>
+          {(form.milestones || []).length === 0 && (
+            <div className="ml-3 text-gray-500 text-sm">Add at least one milestone</div>
+          )}
           {(form.milestones || []).map((milestone, idx) => (
             <div className="flex items-center gap-2 mb-2 ml-4" key={idx}>
               <Input
                 value={milestone.title}
-                onChange={e => updateMilestone(idx, { title: e.target.value })}
+                onChange={e =>
+                  updateMilestone(idx, { title: e.target.value })
+                }
                 placeholder={`Milestone #${idx + 1}`}
                 className="flex-auto"
                 required
@@ -142,7 +170,7 @@ const GoalBankManager = () => {
                   <span className="font-medium">Milestones:</span>
                   <ul className="list-decimal ml-6">
                     {(tpl.milestones || []).map((m, i) => (
-                      <li key={i}>{m.title}</li>
+                      <li key={m.id || i}>{m.title}</li>
                     ))}
                   </ul>
                 </div>
