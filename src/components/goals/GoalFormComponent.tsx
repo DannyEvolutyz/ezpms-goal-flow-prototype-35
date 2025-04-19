@@ -1,10 +1,10 @@
+
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useGoals } from '@/contexts/GoalContext';
-import { GoalBank } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -32,7 +32,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import GoalBankComponent from './GoalBankComponent';
+// Removed import { GoalBank } from '@/types';
+// Removed import GoalBankComponent
 
 // Goal form schema with validation
 const goalFormSchema = z.object({
@@ -78,23 +79,17 @@ const GoalFormComponent = () => {
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
     });
-    
+
     // Reset form after submission
     form.reset();
     setFormKey(prev => prev + 1);
   };
 
-  // Apply a template to the form
-  const applyTemplate = (template: GoalBank) => {
-    form.setValue('title', template.title);
-    form.setValue('description', template.description);
-    form.setValue('category', template.category as any);
-  };
+  // Removed template application handler and GoalBankComponent
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-blue-600">Create New Goal</h2>
-      
+      {/* Removed Goal Templates heading and helper text */}
       <Card key={formKey}>
         <CardHeader>
           <CardTitle className="text-lg">Goal Details</CardTitle>
@@ -115,7 +110,6 @@ const GoalFormComponent = () => {
                   </FormItem>
                 )}
               />
-              
               <FormField
                 control={form.control}
                 name="description"
@@ -133,7 +127,6 @@ const GoalFormComponent = () => {
                   </FormItem>
                 )}
               />
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -158,7 +151,6 @@ const GoalFormComponent = () => {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="priority"
@@ -182,7 +174,6 @@ const GoalFormComponent = () => {
                   )}
                 />
               </div>
-              
               <FormField
                 control={form.control}
                 name="targetDate"
@@ -223,15 +214,12 @@ const GoalFormComponent = () => {
                   </FormItem>
                 )}
               />
-              
               <Button type="submit" className="w-full">Create Goal</Button>
             </form>
           </Form>
         </CardContent>
       </Card>
-      
-      {/* Goal Bank Component */}
-      <GoalBankComponent onSelectTemplate={applyTemplate} />
+      {/* Removed GoalBankComponent */}
     </div>
   );
 };
