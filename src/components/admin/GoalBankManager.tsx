@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, X, ListCheck } from "lucide-react";
 
+// Always returns {title, description} (no id)
 const blankMilestone: () => Omit<Milestone, "id"> = () => ({
   title: "",
   description: "",
 });
 
-const blankTemplate: () => Omit<GoalBank, "id"> = () => ({
+// Always returns all fields, milestones never undefined
+const blankTemplate: () => (Omit<GoalBank, "id"> & { milestones: Omit<Milestone, "id">[] }) = () => ({
   title: "",
   description: "",
   category: "",
@@ -23,26 +25,26 @@ const blankTemplate: () => Omit<GoalBank, "id"> = () => ({
 const GoalBankManager = () => {
   const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
-  // milestones in form have no 'id' yet
-  const [form, setForm] = useState<Omit<GoalBank, "id"> & { milestones: Omit<Milestone, 'id'>[] }>(blankTemplate());
+  // FORM state always expects "milestones" to be present and to contain Omit<Milestone, 'id'>[]
+  const [form, setForm] = useState<Omit<GoalBank, "id"> & { milestones: Omit<Milestone, "id">[] }>(blankTemplate());
 
   // ---- Milestone management for the form ----
   const addMilestone = () => {
     setForm(f => ({
       ...f,
-      milestones: [...(f.milestones || []), { ...blankMilestone() }],
+      milestones: [...f.milestones, blankMilestone()],
     }));
   };
   const updateMilestone = (idx: number, val: Partial<Omit<Milestone, 'id'>>) => {
     setForm(f => ({
       ...f,
-      milestones: (f.milestones || []).map((m, i) => i === idx ? { ...m, ...val } : m),
+      milestones: f.milestones.map((m, i) => i === idx ? { ...m, ...val } : m),
     }));
   };
   const removeMilestone = (idx: number) => {
     setForm(f => ({
       ...f,
-      milestones: (f.milestones || []).filter((_, i) => i !== idx),
+      milestones: f.milestones.filter((_, i) => i !== idx),
     }));
   };
 
@@ -53,7 +55,7 @@ const GoalBankManager = () => {
       title: tpl.title,
       description: tpl.description,
       category: tpl.category,
-      // Remove milestone id for local editing (safer in UI, avoids accidental use)
+      // Convert to Omit<Milestone, "id"> for editing, always make milestones present
       milestones: (tpl.milestones || []).map((m) => ({
         title: m.title,
         description: m.description || "",
@@ -69,9 +71,9 @@ const GoalBankManager = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.category.trim()) return;
-    // Assign a unique id to each milestone *on save*
-    const milestones: Milestone[] = (form.milestones || []).map((m, i) => ({
-      id: editing && (editing.milestones && editing.milestones[i]?.id)
+    // Always assign ID on submit
+    const milestones: Milestone[] = form.milestones.map((m, i) => ({
+      id: (editing && editing.milestones && editing.milestones[i]?.id) 
         ? editing.milestones[i].id
         : `milestone-${Date.now()}-${i}`,
       title: m.title,
@@ -126,10 +128,10 @@ const GoalBankManager = () => {
           <label className="block text-sm font-semibold flex items-center">
             Milestones <Plus onClick={addMilestone} className="w-5 h-5 ml-2 cursor-pointer text-green-700" />
           </label>
-          {(form.milestones || []).length === 0 && (
+          {form.milestones.length === 0 && (
             <div className="ml-3 text-gray-500 text-sm">Add at least one milestone</div>
           )}
-          {(form.milestones || []).map((milestone, idx) => (
+          {form.milestones.map((milestone, idx) => (
             <div className="flex items-center gap-2 mb-2 ml-4" key={idx}>
               <Input
                 value={milestone.title}
