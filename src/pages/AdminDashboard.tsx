@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGoals } from '@/contexts/GoalContext';
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import OrgChart from '@/components/organization/OrgChart';
+import GoalBankManager from "@/components/admin/GoalBankManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Target, Settings } from 'lucide-react';
+import { Users, Target, Settings, ListCheck } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -40,6 +40,10 @@ const AdminDashboard = () => {
             <Target className="h-4 w-4" />
             <span>Team Goals</span>
           </TabsTrigger>
+          <TabsTrigger value="goalbank" className="flex items-center gap-2">
+            <ListCheck className="h-4 w-4" />
+            <span>Goal Bank</span>
+          </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             <span>Settings</span>
@@ -56,12 +60,15 @@ const AdminDashboard = () => {
             As an administrator, you can view and manage all goals across the organization.
           </p>
           
-          {/* This would be expanded with actual goal management components */}
           <div className="bg-blue-50 rounded-lg p-6 text-center">
             <p className="text-blue-800">
               Goal management features for admins will be implemented here.
             </p>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="goalbank">
+          <GoalBankManager />
         </TabsContent>
         
         <TabsContent value="settings">
