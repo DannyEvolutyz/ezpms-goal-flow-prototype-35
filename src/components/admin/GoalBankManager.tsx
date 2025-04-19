@@ -8,14 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, X, ListCheck } from "lucide-react";
 
+// LOCAL TYPE for the form state: like GoalBank, but milestones omits 'id'
+type GoalBankForm = Omit<GoalBank, "id" | "milestones"> & {
+  milestones: Omit<Milestone, "id">[]
+};
+
 // Always returns {title, description} (no id)
-const blankMilestone: () => Omit<Milestone, "id"> = () => ({
+const blankMilestone = (): Omit<Milestone, "id"> => ({
   title: "",
   description: "",
 });
 
 // Always returns all fields, milestones never undefined
-const blankTemplate: () => (Omit<GoalBank, "id"> & { milestones: Omit<Milestone, "id">[] }) = () => ({
+const blankTemplate = (): GoalBankForm => ({
   title: "",
   description: "",
   category: "",
@@ -25,8 +30,9 @@ const blankTemplate: () => (Omit<GoalBank, "id"> & { milestones: Omit<Milestone,
 const GoalBankManager = () => {
   const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
-  // FORM state always expects "milestones" to be present and to contain Omit<Milestone, 'id'>[]
-  const [form, setForm] = useState<Omit<GoalBank, "id"> & { milestones: Omit<Milestone, "id">[] }>(blankTemplate());
+
+  // use local GoalBankForm type for strict type-safety
+  const [form, setForm] = useState<GoalBankForm>(blankTemplate());
 
   // ---- Milestone management for the form ----
   const addMilestone = () => {
@@ -55,7 +61,7 @@ const GoalBankManager = () => {
       title: tpl.title,
       description: tpl.description,
       category: tpl.category,
-      // Convert to Omit<Milestone, "id"> for editing, always make milestones present
+      // Drop milestone id for local editing
       milestones: (tpl.milestones || []).map((m) => ({
         title: m.title,
         description: m.description || "",
@@ -71,6 +77,7 @@ const GoalBankManager = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.category.trim()) return;
+
     // Always assign ID on submit
     const milestones: Milestone[] = form.milestones.map((m, i) => ({
       id: (editing && editing.milestones && editing.milestones[i]?.id) 
@@ -83,12 +90,16 @@ const GoalBankManager = () => {
     if (editing) {
       updateGoalTemplate({
         ...editing,
-        ...form,
+        title: form.title,
+        description: form.description,
+        category: form.category,
         milestones,
       });
     } else {
       addGoalTemplate({
-        ...form,
+        title: form.title,
+        description: form.description,
+        category: form.category,
         milestones,
       });
     }
