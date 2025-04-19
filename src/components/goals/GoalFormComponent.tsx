@@ -1,14 +1,13 @@
-
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useGoals } from '@/contexts/GoalContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Milestone, Trash2, Plus } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -34,7 +33,10 @@ import {
 import { cn } from '@/lib/utils';
 import GoalBankComponent from './GoalBankComponent';
 
-// Goal form schema with validation
+const milestoneSchema = z.object({
+  title: z.string().min(2, { message: 'Milestone title must be at least 2 characters' }),
+  description: z.string().optional(),
+});
 const goalFormSchema = z.object({
   title: z.string().min(5, { message: 'Title must be at least 5 characters' }).max(100),
   description: z.string().min(20, { message: 'Description must be at least 20 characters' }),
@@ -49,6 +51,7 @@ const goalFormSchema = z.object({
   }).refine((date) => date > new Date(), {
     message: 'Target date must be in the future',
   }),
+  milestones: z.array(milestoneSchema).max(10, { message: 'No more than 10 milestones' }).optional(),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
@@ -57,7 +60,6 @@ const GoalFormComponent = () => {
   const { addGoal } = useGoals();
   const [formKey, setFormKey] = useState(0);
 
-  // Initialize the form
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
     defaultValues: {
@@ -66,17 +68,21 @@ const GoalFormComponent = () => {
       category: undefined,
       priority: undefined,
       targetDate: undefined,
+      milestones: [],
     },
   });
 
-  // When a template is selected, set form values
+  const { fields: milestoneFields, append, remove, update } = useFieldArray({
+    control: form.control,
+    name: 'milestones',
+  });
+
   const applyTemplate = (template: { title: string; description: string; category: string }) => {
     form.setValue('title', template.title);
     form.setValue('description', template.description);
     form.setValue('category', template.category as any);
   };
 
-  // Handle form submission
   const onSubmit = (data: GoalFormValues) => {
     addGoal({
       title: data.title,
@@ -84,9 +90,15 @@ const GoalFormComponent = () => {
       category: data.category,
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
+      milestones: data.milestones && data.milestones.length > 0 
+        ? data.milestones.map((m, i) => ({
+            id: `ms-${Date.now()}-${i}`,
+            title: m.title,
+            description: m.description,
+          }))
+        : undefined,
     });
 
-    // Reset form after submission
     form.reset();
     setFormKey(prev => prev + 1);
   };
@@ -218,6 +230,60 @@ const GoalFormComponent = () => {
                   </FormItem>
                 )}
               />
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Milestone className="h-4 w-4 text-blue-400" />
+                  <span className="font-medium text-blue-700">Milestones <span className="text-gray-500 font-normal">(optional)</span></span>
+                </div>
+                {milestoneFields.length === 0 ? (
+                  <p className="text-xs text-muted-foreground mb-2 ml-[30px]">Break down your goal into steps for better tracking.</p>
+                ) : null}
+                <div className="space-y-2">
+                  {milestoneFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2 items-start">
+                      <Input
+                        className="flex-1"
+                        placeholder={`Milestone ${index + 1} title`}
+                        {...form.register(`milestones.${index}.title` as const)}
+                      />
+                      <Textarea
+                        className="w-48 text-xs"
+                        placeholder="Milestone description (optional)"
+                        {...form.register(`milestones.${index}.description` as const)}
+                        rows={2}
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="mt-1 text-red-500"
+                        aria-label="Remove"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2"
+                    disabled={milestoneFields.length >= 10}
+                    onClick={() => append({ title: '', description: '' })}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Milestone
+                  </Button>
+                </div>
+                {form.formState.errors.milestones && (
+                  <FormMessage>
+                    {form.formState.errors.milestones.message as string}
+                  </FormMessage>
+                )}
+              </div>
               <Button type="submit" className="w-full">Create Goal</Button>
             </form>
           </Form>
