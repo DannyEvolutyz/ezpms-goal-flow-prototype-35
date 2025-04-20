@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import GoalBankComponent from './GoalBankComponent';
+import MilestonesArrayField from './MilestonesArrayField';
 
 const milestoneSchema = z.object({
   title: z.string().min(2, { message: 'Milestone title must be at least 2 characters' }),
@@ -72,7 +73,7 @@ const GoalFormComponent = () => {
     },
   });
 
-  const { fields: milestoneFields, append, remove, update } = useFieldArray({
+  const milestoneFieldArray = useFieldArray({
     control: form.control,
     name: 'milestones',
   });
@@ -84,13 +85,19 @@ const GoalFormComponent = () => {
   };
 
   const onSubmit = (data: GoalFormValues) => {
+    const withMilestones =
+      data.milestones &&
+      Array.isArray(data.milestones) &&
+      data.milestones.length > 0 &&
+      data.milestones.some(m => m.title && m.title.trim().length > 0);
+
     addGoal({
       title: data.title,
       description: data.description,
       category: data.category,
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
-      milestones: data.milestones && data.milestones.length > 0 
+      milestones: withMilestones
         ? data.milestones.map((m, i) => ({
             id: `ms-${Date.now()}-${i}`,
             title: m.title,
@@ -133,10 +140,10 @@ const GoalFormComponent = () => {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe your goal in detail" 
-                        className="min-h-[100px]" 
-                        {...field} 
+                      <Textarea
+                        placeholder="Describe your goal in detail"
+                        className="min-h-[100px]"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -157,8 +164,12 @@ const GoalFormComponent = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Professional Development">Professional Development</SelectItem>
-                          <SelectItem value="Technical Skills">Technical Skills</SelectItem>
+                          <SelectItem value="Professional Development">
+                            Professional Development
+                          </SelectItem>
+                          <SelectItem value="Technical Skills">
+                            Technical Skills
+                          </SelectItem>
                           <SelectItem value="Leadership">Leadership</SelectItem>
                           <SelectItem value="Innovation">Innovation</SelectItem>
                         </SelectContent>
@@ -202,15 +213,11 @@ const GoalFormComponent = () => {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground'
                             )}
                           >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
+                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -220,9 +227,9 @@ const GoalFormComponent = () => {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
+                          disabled={date => date < new Date()}
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
+                          className={cn('p-3 pointer-events-auto')}
                         />
                       </PopoverContent>
                     </Popover>
@@ -230,61 +237,10 @@ const GoalFormComponent = () => {
                   </FormItem>
                 )}
               />
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Milestone className="h-4 w-4 text-blue-400" />
-                  <span className="font-medium text-blue-700">Milestones <span className="text-gray-500 font-normal">(optional)</span></span>
-                </div>
-                {milestoneFields.length === 0 ? (
-                  <p className="text-xs text-muted-foreground mb-2 ml-[30px]">Break down your goal into steps for better tracking.</p>
-                ) : null}
-                <div className="space-y-2">
-                  {milestoneFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start">
-                      <Input
-                        className="flex-1"
-                        placeholder={`Milestone ${index + 1} title`}
-                        {...form.register(`milestones.${index}.title` as const)}
-                      />
-                      <Textarea
-                        className="w-48 text-xs"
-                        placeholder="Milestone description (optional)"
-                        {...form.register(`milestones.${index}.description` as const)}
-                        rows={2}
-                      />
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="mt-1 text-red-500"
-                        aria-label="Remove"
-                        onClick={() => remove(index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-end mt-3">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="gap-2"
-                    disabled={milestoneFields.length >= 10}
-                    onClick={() => append({ title: '', description: '' })}
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Milestone
-                  </Button>
-                </div>
-                {form.formState.errors.milestones && (
-                  <FormMessage>
-                    {form.formState.errors.milestones.message as string}
-                  </FormMessage>
-                )}
-              </div>
-              <Button type="submit" className="w-full">Create Goal</Button>
+              <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
+              <Button type="submit" className="w-full">
+                Create Goal
+              </Button>
             </form>
           </Form>
         </CardContent>
