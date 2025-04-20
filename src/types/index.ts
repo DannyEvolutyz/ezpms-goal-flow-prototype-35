@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -19,6 +20,7 @@ export interface Goal {
   status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
   feedback?: string;
   reviewerId?: string; // ID of the user who reviewed the goal
+  milestones?: Milestone[]; // <-- add this line
 }
 
 export interface Milestone {
@@ -50,3 +52,4 @@ export interface Notification {
 
 // User role type alias
 export type UserRole = 'admin' | 'manager' | 'member';
+
