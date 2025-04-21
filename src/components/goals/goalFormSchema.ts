@@ -5,6 +5,7 @@ export const milestoneSchema = z.object({
   title: z.string().min(2, { message: 'Milestone title must be at least 2 characters' }),
   description: z.string().optional(),
   completed: z.boolean().optional().default(false),
+  completionComment: z.string().optional(),
   targetDate: z.date({ required_error: "Please select a target date for each milestone" }).optional(),
 });
 
@@ -17,6 +18,7 @@ export const goalFormSchema = z.object({
   priority: z.enum(['high', 'medium', 'low'], {
     required_error: 'Please select a priority',
   }),
+  weightage: z.number().min(1).max(100),
   targetDate: z.date({
     required_error: 'Please select a target date',
   }).refine((date) => date > new Date(), {

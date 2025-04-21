@@ -15,14 +15,12 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
   const { user } = useAuth();
   const isManager = user?.role === 'manager';
 
-  // Get goals from different statuses
   const draftGoals = getGoalsByStatus('draft');
   const submittedGoals = getGoalsByStatus('submitted');
   const approvedGoals = getGoalsByStatus('approved');
   const rejectedGoals = getGoalsByStatus('rejected');
   const underReviewGoals = getGoalsByStatus('under_review');
 
-  // Group goals by status
   const goalsByStatus = [
     { status: 'Draft', goals: draftGoals, variant: 'outline' },
     { status: 'Submitted', goals: submittedGoals, variant: 'secondary' },
@@ -31,17 +29,14 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
     { status: 'Under Review', goals: underReviewGoals, variant: 'warning' },
   ];
 
-  // Check if there are any goals
   const hasGoals = goalsByStatus.some(group => group.goals.length > 0);
 
-  // Completion calculation helper
   const getCompletion = (goal) => {
     if (!goal.milestones || !goal.milestones.length) return 0;
     const completed = goal.milestones.filter(m => m.completed).length;
     return Math.round(100 * (completed / goal.milestones.length));
   };
 
-  // New: mark all milestones as complete when marking goal complete
   const handleMarkGoalComplete = (goal) => {
     const updatedGoal = {
       ...goal,
@@ -75,7 +70,12 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
                 const allComplete = percent === 100 && goal.milestones?.length > 0;
                 return (
                   <div key={goal.id} className="border rounded-lg p-4">
-                    <h4 className="font-medium">{goal.title}</h4>
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium">{goal.title}</h4>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Weightage: {goal.weightage}%
+                      </span>
+                    </div>
                     <div className="mt-2 text-sm text-gray-500">{goal.description}</div>
                     {goal.milestones && goal.milestones.length > 0 && (
                       <div className="my-2">
@@ -83,47 +83,27 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
                         <div className="text-xs text-gray-500 mt-1">Goal Completion: {percent}%</div>
                         <ul className="mt-2 space-y-1 pl-2">
                           {goal.milestones.map(milestone => (
-                            <li key={milestone.id} className="flex items-center gap-2">
-                              <span className={milestone.completed ? "text-green-600" : ""}>
-                                {milestone.completed ? <CheckIcon className="inline-block h-4 w-4" /> : <span className="w-4 inline-block" />}
-                              </span>
-                              <span>{milestone.title}</span>
-                              <span className="ml-2 text-xs text-gray-400">
-                                {milestone.targetDate ? `Due ${new Date(milestone.targetDate).toLocaleDateString()}` : ""}
-                              </span>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant={milestone.completed ? "secondary" : "outline"}
-                                onClick={() => {
-                                  const updatedGoal = {
-                                    ...goal,
-                                    milestones: goal.milestones.map(m =>
-                                      m.id === milestone.id ? { ...m, completed: !m.completed } : m
-                                    ),
-                                  };
-                                  updateGoal(updatedGoal);
-                                }}
-                                className="ml-auto"
-                              >
-                                {milestone.completed ? "Mark Incomplete" : "Mark Complete"}
-                              </Button>
+                            <li key={milestone.id} className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <span className={milestone.completed ? "text-green-600" : ""}>
+                                  {milestone.completed ? <CheckIcon className="inline-block h-4 w-4" /> : <span className="w-4 inline-block" />}
+                                </span>
+                                <span>{milestone.title}</span>
+                                {milestone.completionComment && (
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    Comment: {milestone.completionComment}
+                                  </span>
+                                )}
+                              </div>
                             </li>
                           ))}
                         </ul>
-                        {allComplete && (
-                          <Button
-                            type="button"
-                            className="mt-3"
-                            onClick={() => handleMarkGoalComplete(goal)}
-                          >
-                            Mark Goal Complete
-                          </Button>
-                        )}
                       </div>
                     )}
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{goal.category}</span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {goal.category}
+                      </span>
                       <span className="text-xs text-gray-500">
                         Due: {new Date(goal.targetDate).toLocaleDateString()}
                       </span>
