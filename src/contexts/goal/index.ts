@@ -1,3 +1,3 @@
 
-export * from './GoalContext';
+export * from './GoalContextProvider';
 export * from './types';
