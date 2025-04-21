@@ -1,11 +1,21 @@
-
 import React, { createContext, useContext } from 'react';
 import { Goal, GoalBank, Notification } from '@/types';
 import { useAuth } from '../AuthContext';
 import { GoalContextType } from './types';
 import { useGoalStorage } from './hooks/useGoalStorage';
 import { useGoalTemplates } from './hooks/useGoalTemplates';
-import * as goalService from './goalService';
+import {
+  getGoalsByStatus,
+  getTeamGoals,
+  getGoalsForReview,
+  addGoal,
+  updateGoal,
+  submitGoal,
+  approveGoal,
+  rejectGoal,
+  returnGoalForRevision,
+  deleteGoal
+} from './services';
 import {
   markNotificationAsRead,
   clearNotifications,
@@ -24,7 +34,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
   const contextValue: GoalContextType = {
     goals,
     goalBank,
-    addGoal: (goalData) => goalService.addGoal({
+    addGoal: (goalData) => addGoal({
       goals,
       goalData,
       user,
@@ -32,12 +42,12 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       setNotifications,
       createNotification
     }),
-    updateGoal: (updatedGoal) => goalService.updateGoal({
+    updateGoal: (updatedGoal) => updateGoal({
       goals,
       updatedGoal,
       setGoals
     }),
-    submitGoal: (goalId) => goalService.submitGoal({
+    submitGoal: (goalId) => submitGoal({
       goals,
       goalId,
       user,
@@ -46,17 +56,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       createNotification,
       getAllUsers
     }),
-    approveGoal: (goalId, feedback) => goalService.approveGoal({
-      goals,
-      goalId,
-      feedback,
-      user,
-      setGoals,
-      setNotifications,
-      createNotification,
-      getAllUsers
-    }),
-    rejectGoal: (goalId, feedback) => goalService.rejectGoal({
+    approveGoal: (goalId, feedback) => approveGoal({
       goals,
       goalId,
       feedback,
@@ -66,7 +66,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       createNotification,
       getAllUsers
     }),
-    returnGoalForRevision: (goalId, feedback) => goalService.returnGoalForRevision({
+    rejectGoal: (goalId, feedback) => rejectGoal({
       goals,
       goalId,
       feedback,
@@ -76,7 +76,17 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       createNotification,
       getAllUsers
     }),
-    deleteGoal: (goalId) => goalService.deleteGoal({
+    returnGoalForRevision: (goalId, feedback) => returnGoalForRevision({
+      goals,
+      goalId,
+      feedback,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification,
+      getAllUsers
+    }),
+    deleteGoal: (goalId) => deleteGoal({
       goals,
       goalId,
       user,
@@ -84,17 +94,17 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       setNotifications,
       createNotification
     }),
-    getGoalsByStatus: (status) => goalService.getGoalsByStatus({
+    getGoalsByStatus: (status) => getGoalsByStatus({
       goals,
       status,
       user
     }),
-    getTeamGoals: () => goalService.getTeamGoals({
+    getTeamGoals: () => getTeamGoals({
       goals,
       user,
       getAllUsers
     }),
-    getGoalsForReview: goalService.getGoalsForReview,
+    getGoalsForReview: getGoalsForReview,
     addGoalTemplate,
     updateGoalTemplate,
     deleteGoalTemplate,

@@ -2,123 +2,6 @@
 import { Goal } from '@/types';
 import { Dispatch, SetStateAction } from 'react';
 
-interface GetGoalsByStatusParams {
-  goals: Goal[];
-  status: string;
-  user: any;
-}
-
-export const getGoalsByStatus = ({
-  goals,
-  status,
-  user
-}: GetGoalsByStatusParams) => {
-  if (!user) return [];
-  
-  return goals.filter(goal => 
-    goal.userId === user.id && goal.status === status
-  );
-};
-
-interface GetTeamGoalsParams {
-  goals: Goal[];
-  user: any;
-  getAllUsers: () => any[];
-}
-
-export const getTeamGoals = ({
-  goals,
-  user,
-  getAllUsers
-}: GetTeamGoalsParams) => {
-  if (!user || (user.role !== 'manager' && user.role !== 'admin')) return [];
-  
-  const allUsers = getAllUsers();
-  
-  // If user is admin, get all goals
-  if (user.role === 'admin') {
-    return goals;
-  }
-  
-  // If user is manager, get goals of team members
-  const teamMemberIds = allUsers
-    .filter(u => u.managerId === user.id)
-    .map(u => u.id);
-  
-  return goals.filter(goal => teamMemberIds.includes(goal.userId));
-};
-
-export const getGoalsForReview = () => {
-  // Implementation for getting goals that need review
-  return [];
-};
-
-interface AddGoalParams {
-  goals: Goal[];
-  goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>;
-  user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
-}
-
-export const addGoal = ({
-  goals,
-  goalData,
-  user,
-  setGoals,
-  setNotifications,
-  createNotification
-}: AddGoalParams) => {
-  if (!user) return null;
-  
-  const newGoal: Goal = {
-    ...goalData,
-    id: `goal-${Date.now()}`,
-    userId: user.id,
-    status: 'draft',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    feedback: '',
-    milestones: goalData.milestones || []
-  };
-  
-  setGoals(prev => [...prev, newGoal]);
-  
-  createNotification({
-    userId: user.id,
-    title: 'Goal Created',
-    message: `You created a new goal: ${newGoal.title}`,
-    type: 'success',
-    setNotifications,
-  });
-  
-  return newGoal;
-};
-
-interface UpdateGoalParams {
-  goals: Goal[];
-  updatedGoal: Goal;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-}
-
-export const updateGoal = ({
-  goals,
-  updatedGoal,
-  setGoals
-}: UpdateGoalParams) => {
-  setGoals(prev => 
-    prev.map(goal => 
-      goal.id === updatedGoal.id ? {
-        ...updatedGoal,
-        updatedAt: new Date().toISOString()
-      } : goal
-    )
-  );
-  
-  return updatedGoal;
-};
-
 interface SubmitGoalParams {
   goals: Goal[];
   goalId: string;
@@ -144,7 +27,6 @@ export const submitGoal = ({
   
   if (!goalToSubmit || goalToSubmit.userId !== user.id) return;
   
-  // Update goal status
   setGoals(prev => 
     prev.map(goal => 
       goal.id === goalId 
@@ -157,7 +39,6 @@ export const submitGoal = ({
     )
   );
   
-  // Create notification for the user
   createNotification({
     userId: user.id,
     title: 'Goal Submitted',
@@ -168,7 +49,6 @@ export const submitGoal = ({
     setNotifications
   });
   
-  // Create notification for the manager
   const allUsers = getAllUsers();
   const manager = allUsers.find(u => u.id === user.managerId);
   
@@ -193,7 +73,6 @@ interface ApproveGoalParams {
   setGoals: Dispatch<SetStateAction<Goal[]>>;
   setNotifications: Dispatch<SetStateAction<any[]>>;
   createNotification: (params: any) => void;
-  getAllUsers: () => any[];
 }
 
 export const approveGoal = ({
@@ -203,8 +82,7 @@ export const approveGoal = ({
   user,
   setGoals,
   setNotifications,
-  createNotification,
-  getAllUsers
+  createNotification
 }: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
@@ -212,7 +90,6 @@ export const approveGoal = ({
   
   if (!goalToApprove) return;
   
-  // Update goal status
   setGoals(prev => 
     prev.map(goal => 
       goal.id === goalId 
@@ -226,7 +103,6 @@ export const approveGoal = ({
     )
   );
   
-  // Create notification for the employee
   createNotification({
     userId: goalToApprove.userId,
     title: 'Goal Approved',
@@ -237,7 +113,6 @@ export const approveGoal = ({
     setNotifications
   });
   
-  // Create notification for the manager
   createNotification({
     userId: user.id,
     title: 'Goal Approved',
@@ -249,17 +124,6 @@ export const approveGoal = ({
   });
 };
 
-interface RejectGoalParams {
-  goals: Goal[];
-  goalId: string;
-  feedback: string;
-  user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
-  getAllUsers: () => any[];
-}
-
 export const rejectGoal = ({
   goals,
   goalId,
@@ -267,16 +131,14 @@ export const rejectGoal = ({
   user,
   setGoals,
   setNotifications,
-  createNotification,
-  getAllUsers
-}: RejectGoalParams) => {
+  createNotification
+}: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReject = goals.find(g => g.id === goalId);
   
   if (!goalToReject) return;
   
-  // Update goal status
   setGoals(prev => 
     prev.map(goal => 
       goal.id === goalId 
@@ -290,7 +152,6 @@ export const rejectGoal = ({
     )
   );
   
-  // Create notification for the employee
   createNotification({
     userId: goalToReject.userId,
     title: 'Goal Rejected',
@@ -301,7 +162,6 @@ export const rejectGoal = ({
     setNotifications
   });
   
-  // Create notification for the manager
   createNotification({
     userId: user.id,
     title: 'Goal Rejected',
@@ -313,17 +173,6 @@ export const rejectGoal = ({
   });
 };
 
-interface ReturnGoalForRevisionParams {
-  goals: Goal[];
-  goalId: string;
-  feedback: string;
-  user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
-  getAllUsers: () => any[];
-}
-
 export const returnGoalForRevision = ({
   goals,
   goalId,
@@ -331,16 +180,14 @@ export const returnGoalForRevision = ({
   user,
   setGoals,
   setNotifications,
-  createNotification,
-  getAllUsers
-}: ReturnGoalForRevisionParams) => {
+  createNotification
+}: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReturn = goals.find(g => g.id === goalId);
   
   if (!goalToReturn) return;
   
-  // Update goal status
   setGoals(prev => 
     prev.map(goal => 
       goal.id === goalId 
@@ -354,7 +201,6 @@ export const returnGoalForRevision = ({
     )
   );
   
-  // Create notification for the employee
   createNotification({
     userId: goalToReturn.userId,
     title: 'Goal Needs Revision',
@@ -365,7 +211,6 @@ export const returnGoalForRevision = ({
     setNotifications
   });
   
-  // Create notification for the manager
   createNotification({
     userId: user.id,
     title: 'Goal Returned for Revision',
@@ -373,42 +218,6 @@ export const returnGoalForRevision = ({
     type: 'info',
     targetType: 'goal',
     targetId: goalId,
-    setNotifications
-  });
-};
-
-interface DeleteGoalParams {
-  goals: Goal[];
-  goalId: string;
-  user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
-}
-
-export const deleteGoal = ({
-  goals,
-  goalId,
-  user,
-  setGoals,
-  setNotifications,
-  createNotification
-}: DeleteGoalParams) => {
-  if (!user) return;
-  
-  const goalToDelete = goals.find(g => g.id === goalId);
-  
-  if (!goalToDelete || (goalToDelete.userId !== user.id && user.role !== 'admin')) return;
-  
-  // Delete the goal
-  setGoals(prev => prev.filter(goal => goal.id !== goalId));
-  
-  // Create notification
-  createNotification({
-    userId: user.id,
-    title: 'Goal Deleted',
-    message: `Goal "${goalToDelete.title}" has been deleted`,
-    type: 'info',
     setNotifications
   });
 };
