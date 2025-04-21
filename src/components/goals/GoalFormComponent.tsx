@@ -103,7 +103,7 @@ const GoalFormComponent = () => {
             title: m.title,
             description: m.description,
           }))
-        : undefined,
+        : [],
     });
 
     form.reset();
