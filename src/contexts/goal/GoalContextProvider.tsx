@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from 'react';
 import { Goal, GoalBank, Notification } from '@/types';
 import { useAuth } from '../AuthContext';
@@ -22,7 +23,7 @@ import {
   getUnreadNotificationsCount,
   getUserNotifications,
   createNotification
-} from '../notifications';
+} from './services/notifications';
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
@@ -63,8 +64,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification,
-      getAllUsers
+      createNotification
     }),
     rejectGoal: (goalId, feedback) => rejectGoal({
       goals,
@@ -73,8 +73,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification,
-      getAllUsers
+      createNotification
     }),
     returnGoalForRevision: (goalId, feedback) => returnGoalForRevision({
       goals,
@@ -83,8 +82,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification,
-      getAllUsers
+      createNotification
     }),
     deleteGoal: (goalId) => deleteGoal({
       goals,
@@ -104,7 +102,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       getAllUsers
     }),
-    getGoalsForReview: getGoalsForReview,
+    getGoalsForReview,
     addGoalTemplate,
     updateGoalTemplate,
     deleteGoalTemplate,

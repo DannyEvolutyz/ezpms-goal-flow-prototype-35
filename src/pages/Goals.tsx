@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useGoals } from '@/contexts/goal/GoalContext';
+import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';

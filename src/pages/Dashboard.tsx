@@ -1,5 +1,4 @@
-
-import { useGoals } from '@/contexts/goal/GoalContext';
+import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
 import StatsOverview from '@/components/dashboard/StatsOverview';
