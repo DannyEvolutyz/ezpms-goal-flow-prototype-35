@@ -1,63 +1,20 @@
+
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useGoals } from '@/contexts/GoalContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Milestone, Trash2, Plus } from 'lucide-react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import GoalBankComponent from './GoalBankComponent';
 import MilestonesArrayField from './MilestonesArrayField';
-
-const milestoneSchema = z.object({
-  title: z.string().min(2, { message: 'Milestone title must be at least 2 characters' }),
-  description: z.string().optional(),
-  completed: z.boolean().optional().default(false),
-  targetDate: z.date({ required_error: "Please select a target date for each milestone" }).optional(),
-});
-const goalFormSchema = z.object({
-  title: z.string().min(5, { message: 'Title must be at least 5 characters' }).max(100),
-  description: z.string().min(20, { message: 'Description must be at least 20 characters' }),
-  category: z.enum(['Professional Development', 'Technical Skills', 'Leadership', 'Innovation'], {
-    required_error: 'Please select a category',
-  }),
-  priority: z.enum(['high', 'medium', 'low'], {
-    required_error: 'Please select a priority',
-  }),
-  targetDate: z.date({
-    required_error: 'Please select a target date',
-  }).refine((date) => date > new Date(), {
-    message: 'Target date must be in the future',
-  }),
-  milestones: z.array(milestoneSchema).max(10, { message: 'No more than 10 milestones' }).optional(),
-});
-
-type GoalFormValues = z.infer<typeof goalFormSchema>;
+// Extracted fields and helpers
+import GoalTitleField from './GoalTitleField';
+import GoalDescriptionField from './GoalDescriptionField';
+import GoalCategorySelector from './GoalCategorySelector';
+import GoalPrioritySelector from './GoalPrioritySelector';
+import GoalTargetDatePicker from './GoalTargetDatePicker';
+import { goalFormSchema, GoalFormValues } from './goalFormSchema';
+import { format } from 'date-fns';
 
 const GoalFormComponent = () => {
   const { addGoal } = useGoals();
@@ -127,131 +84,19 @@ const GoalFormComponent = () => {
           <CardTitle className="text-lg">Goal Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Goal Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter goal title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe your goal in detail"
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Professional Development">
-                            Professional Development
-                          </SelectItem>
-                          <SelectItem value="Technical Skills">
-                            Technical Skills
-                          </SelectItem>
-                          <SelectItem value="Leadership">Leadership</SelectItem>
-                          <SelectItem value="Innovation">Innovation</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="low">Low</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="targetDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Target Completion Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={date => date < new Date()}
-                          initialFocus
-                          className={cn('p-3 pointer-events-auto')}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
-              <Button type="submit" className="w-full">
-                Create Goal
-              </Button>
-            </form>
-          </Form>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <GoalTitleField form={form} />
+            <GoalDescriptionField form={form} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <GoalCategorySelector form={form} />
+              <GoalPrioritySelector form={form} />
+            </div>
+            <GoalTargetDatePicker form={form} />
+            <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
+            <Button type="submit" className="w-full">
+              Create Goal
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
