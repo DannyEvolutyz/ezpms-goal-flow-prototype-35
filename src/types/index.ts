@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'manager' | 'member';
 
 export interface User {
@@ -11,36 +10,7 @@ export interface User {
   photoUrl?: string;
 }
 
-export interface Goal {
-  id: string;
-  userId: string;
-  title: string;
-  description: string;
-  category: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
-  targetDate: string;
-  createdAt: string;
-  updatedAt: string;
-  feedback: string;
-  milestones?: Milestone[];
-}
-
-export interface Milestone {
-  id: string;
-  title: string;
-  description?: string;
-  completed?: boolean;
-  targetDate?: string;
-}
-
-export interface GoalBank {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  milestones?: Milestone[];
-}
+export * from './goal';
 
 export interface Notification {
   id: string;

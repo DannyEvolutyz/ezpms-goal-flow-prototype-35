@@ -21,8 +21,8 @@ export interface Goal {
   reviewerId?: string;
   milestones?: Milestone[];
   weightage: number;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GoalBank {
