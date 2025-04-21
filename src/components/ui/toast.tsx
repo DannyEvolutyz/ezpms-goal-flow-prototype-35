@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -124,4 +125,51 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+}
+
+type ToastContext = {
+  toasts: ToastProps[]
+  toast: (props: ToastProps) => void
+  dismiss: (id: string) => void
+};
+
+const ToastContext = React.createContext<ToastContext | undefined>(undefined);
+
+export function useToast() {
+  const context = React.useContext(ToastContext);
+  if (!context) {
+    const toast = (props: ToastProps) => {
+      console.warn("Toast provider is missing, toast won't be displayed", props);
+    };
+    return { toast, dismiss: () => {} };
+  }
+  return context;
+}
+
+export function ToastContextProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = React.useState<ToastProps[]>([]);
+  
+  const toast = React.useCallback((props: ToastProps) => {
+    const id = Math.random().toString(36).slice(2);
+    const newToast = { ...props, id };
+    setToasts((prev) => [...prev, newToast]);
+    
+    setTimeout(() => {
+      dismiss(id);
+    }, props.duration || 3000);
+    
+    return id;
+  }, []);
+  
+  const dismiss = React.useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+  
+  const contextValue = React.useMemo(() => ({ toasts, toast, dismiss }), [toasts, toast, dismiss]);
+  
+  return (
+    <ToastContext.Provider value={contextValue}>
+      {children}
+    </ToastContext.Provider>
+  );
 }

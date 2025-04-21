@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Goal, GoalBank, Notification, User, Milestone } from '@/types';
 import { useAuth } from '../AuthContext';
@@ -27,14 +28,15 @@ const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
 export const GoalProvider = ({ children }: { children: ReactNode }) => {
   const [goalBank, setGoalBank] = useState<GoalBank[]>(initialGoalBank);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [goals, setGoals] = useState<Goal[]>(initialGoals);
 
   const { user, getAllUsers } = useAuth();
 
   useEffect(() => {
     const storedGoals = localStorage.getItem('ezpms_goals');
     const storedNotifications = localStorage.getItem('ezpms_notifications');
+    const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
     
     if (storedGoals) {
       try {
@@ -57,148 +59,234 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setNotifications(initialNotifications);
     }
+    
+    if (storedGoalBank) {
+      try {
+        setGoalBank(JSON.parse(storedGoalBank));
+      } catch (error) {
+        console.error("Failed to parse stored goal bank:", error);
+        setGoalBank(initialGoalBank);
+      }
+    } else {
+      setGoalBank(initialGoalBank);
+    }
   }, []);
 
+  // Persist data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('ezpms_goals', JSON.stringify(goals));
   }, [goals]);
-
+  
   useEffect(() => {
     localStorage.setItem('ezpms_notifications', JSON.stringify(notifications));
   }, [notifications]);
+  
+  useEffect(() => {
+    localStorage.setItem('ezpms_goal_bank', JSON.stringify(goalBank));
+  }, [goalBank]);
 
-  const addGoal = (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'feedback'>) => {
-    if (!user) return;
-    addGoalService(goalData, user.id, setGoals, setNotifications);
-  };
-
-  const updateGoal = (updatedGoal: Goal) => {
-    if (!user) return;
-    updateGoalService(updatedGoal, user.id, setGoals, setNotifications);
-  };
-
-  const submitGoal = (goalId: string) => {
-    if (!user) return;
-    const allUsers = getAllUsers();
-    submitGoalService(goalId, user.id, user.name, goals, user, allUsers, setGoals, setNotifications);
-  };
-
-  const approveGoal = (goalId: string) => {
-    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
-    const allUsers = getAllUsers();
-    approveGoalService(goalId, user.id, user.name, goals, allUsers, setGoals, setNotifications);
-  };
-
-  const rejectGoal = (goalId: string, feedback: string) => {
-    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
-    rejectGoalService(goalId, feedback, user.id, user.name, goals, setGoals, setNotifications);
-  };
-
-  const returnGoalForRevision = (goalId: string, feedback: string) => {
-    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
-    returnGoalForRevisionService(goalId, feedback, user.id, user.name, goals, setGoals, setNotifications);
-  };
-
-  const deleteGoal = (goalId: string) => {
-    if (!user) return;
-    deleteGoalService(goalId, user.id, goals, setGoals, setNotifications);
-  };
-
-  const getGoalsByStatus = (status: Goal['status']) => {
-    if (!user) return [];
-    return getGoalsByStatusService(status, user.id, goals);
-  };
-
-  const getPendingReviewGoals = () => {
-    if (!user || (user.role !== 'manager' && user.role !== 'admin')) return [];
-    const allUsers = getAllUsers();
-    return getGoalsForReview(user.id, goals, allUsers);
-  };
-
-  const getTeamGoals = () => {
-    if (!user) return [];
-    const allUsers = getAllUsers();
-    return getTeamGoalsService(user.id, goals, allUsers);
-  };
-
-  const getTeamMembers = () => {
-    if (!user) return [];
-    const allUsers = getAllUsers();
-    
-    if (user.role === 'admin') {
-      return allUsers.filter(u => u.id !== user.id);
-    } else if (user.role === 'manager') {
-      return allUsers.filter(u => u.managerId === user.id);
-    }
-    
-    return [];
-  };
-
-  const addGoalTemplate = (goalTemplate: Omit<GoalBank, 'id'>) => {
-    if (!user || user.role !== "admin") return;
-    const newGoal: GoalBank = {
-      ...goalTemplate,
-      id: `goalbank-${Date.now()}`
+  // Goal Bank CRUD operations
+  const addGoalTemplate = (template: Omit<GoalBank, 'id'>) => {
+    const newTemplate: GoalBank = {
+      ...template,
+      id: `template-${Date.now()}`,
+      milestones: template.milestones || []
     };
-    setGoalBank(prev => [...prev, newGoal]);
+    
+    setGoalBank(prev => [...prev, newTemplate]);
+  };
+  
+  const updateGoalTemplate = (updatedTemplate: GoalBank) => {
+    setGoalBank(prev => 
+      prev.map(template => 
+        template.id === updatedTemplate.id ? updatedTemplate : template
+      )
+    );
+  };
+  
+  const deleteGoalTemplate = (templateId: string) => {
+    setGoalBank(prev => prev.filter(template => template.id !== templateId));
   };
 
-  const updateGoalTemplate = (updated: GoalBank) => {
-    if (!user || user.role !== "admin") return;
-    setGoalBank(prev => prev.map(tpl => tpl.id === updated.id ? updated : tpl));
-  };
-
-  const deleteGoalTemplate = (id: string) => {
-    if (!user || user.role !== "admin") return;
-    setGoalBank(prev => prev.filter(tpl => tpl.id !== id));
-  };
-
-  const markNotificationAsRead = (notificationId: string) => {
-    markNotificationAsReadService(notificationId, setNotifications);
-  };
-
-  const clearNotifications = () => {
+  // Goal CRUD operations
+  const addGoal = (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>) => {
     if (!user) return;
-    clearNotificationsService(user.id, setNotifications);
+    
+    const newGoal: Goal = {
+      ...goalData,
+      id: `goal-${Date.now()}`,
+      userId: user.id,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      feedback: '',
+      milestones: goalData.milestones || []
+    };
+    
+    setGoals(prev => [...prev, newGoal]);
+    
+    createNotification({
+      userId: user.id,
+      title: 'Goal Created',
+      message: `You created a new goal: ${newGoal.title}`,
+      type: 'success',
+      setNotifications,
+    });
+    
+    return newGoal;
   };
-
-  const getUnreadNotificationsCount = () => {
-    if (!user) return 0;
-    return getUnreadNotificationsCountService(user.id, notifications);
+  
+  const updateGoal = (updatedGoal: Goal) => {
+    setGoals(prev => 
+      prev.map(goal => 
+        goal.id === updatedGoal.id ? {
+          ...updatedGoal,
+          updatedAt: new Date().toISOString()
+        } : goal
+      )
+    );
   };
-
+  
+  const submitGoal = (goalId: string) => {
+    return submitGoalService({
+      goals,
+      goalId,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification,
+      getAllUsers
+    });
+  };
+  
+  const approveGoal = (goalId: string, feedback: string = '') => {
+    return approveGoalService({
+      goals,
+      goalId,
+      feedback,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification,
+      getAllUsers
+    });
+  };
+  
+  const rejectGoal = (goalId: string, feedback: string) => {
+    return rejectGoalService({
+      goals,
+      goalId,
+      feedback,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification,
+      getAllUsers
+    });
+  };
+  
+  const returnGoalForRevision = (goalId: string, feedback: string) => {
+    return returnGoalForRevisionService({
+      goals,
+      goalId,
+      feedback,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification,
+      getAllUsers
+    });
+  };
+  
+  const deleteGoal = (goalId: string) => {
+    return deleteGoalService({
+      goals,
+      goalId,
+      user,
+      setGoals,
+      setNotifications,
+      createNotification
+    });
+  };
+  
+  // Goal queries
+  const getGoalsByStatus = (status: string) => {
+    return getGoalsByStatusService({
+      goals,
+      status,
+      user
+    });
+  };
+  
+  const getTeamGoals = () => {
+    return getTeamGoalsService({
+      goals,
+      user,
+      getAllUsers
+    });
+  };
+  
+  // Notification operations
   const getUserNotifications = () => {
-    if (!user) return [];
-    return getUserNotificationsService(user.id, notifications);
+    return getUserNotificationsService({
+      notifications,
+      user
+    });
+  };
+  
+  const markNotificationAsRead = (notificationId: string) => {
+    return markNotificationAsReadService({
+      notifications,
+      notificationId,
+      setNotifications
+    });
+  };
+  
+  const clearNotifications = () => {
+    return clearNotificationsService({
+      notifications,
+      user,
+      setNotifications
+    });
+  };
+  
+  const getUnreadNotificationsCount = () => {
+    return getUnreadNotificationsCountService({
+      notifications,
+      user
+    });
   };
 
-  const value = {
-    goals,
-    goalBank,
-    notifications,
-    addGoalTemplate,
-    updateGoalTemplate,
-    deleteGoalTemplate,
-    addGoal,
-    updateGoal,
-    submitGoal,
-    approveGoal,
-    rejectGoal,
-    returnGoalForRevision,
-    deleteGoal,
-    getGoalsByStatus,
-    getPendingReviewGoals,
-    getTeamGoals,
-    getTeamMembers,
-    markNotificationAsRead,
-    clearNotifications,
-    getUnreadNotificationsCount,
-    getUserNotifications,
-  };
-
-  return <GoalContext.Provider value={value}>{children}</GoalContext.Provider>;
+  return (
+    <GoalContext.Provider 
+      value={{
+        goals,
+        goalBank,
+        addGoal,
+        updateGoal,
+        submitGoal,
+        approveGoal,
+        rejectGoal,
+        returnGoalForRevision,
+        deleteGoal,
+        getGoalsByStatus,
+        getTeamGoals,
+        getGoalsForReview,
+        addGoalTemplate,
+        updateGoalTemplate,
+        deleteGoalTemplate,
+        getUserNotifications,
+        markNotificationAsRead,
+        clearNotifications,
+        getUnreadNotificationsCount
+      }}
+    >
+      {children}
+    </GoalContext.Provider>
+  );
 };
 
+// Custom hook to use goal context
 export const useGoals = () => {
   const context = useContext(GoalContext);
   if (context === undefined) {

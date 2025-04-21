@@ -1,28 +1,32 @@
-import { Goal, GoalBank, Notification, User } from '@/types';
-import { Milestone } from '@/types';
+
+import { Goal, GoalBank, Notification } from '@/types';
 
 export interface GoalContextType {
   goals: Goal[];
   goalBank: GoalBank[];
-  notifications: Notification[];
-  addGoalTemplate: (
-    goalBank: Omit<GoalBank, 'id'> // Admin creates, no ID yet
-  ) => void;
-  updateGoalTemplate: (goalBank: GoalBank) => void;
-  deleteGoalTemplate: (id: string) => void;
-  addGoal: (goal: Omit<Goal, 'id' | 'userId' | 'status' | 'feedback'>) => void;
-  updateGoal: (goal: Goal) => void;
+  
+  // Goal CRUD operations
+  addGoal: (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>) => Goal | undefined;
+  updateGoal: (updatedGoal: Goal) => void;
   submitGoal: (goalId: string) => void;
-  approveGoal: (goalId: string) => void;
+  approveGoal: (goalId: string, feedback?: string) => void;
   rejectGoal: (goalId: string, feedback: string) => void;
   returnGoalForRevision: (goalId: string, feedback: string) => void;
   deleteGoal: (goalId: string) => void;
-  getGoalsByStatus: (status: Goal['status']) => Goal[];
-  getPendingReviewGoals: () => Goal[];
+  
+  // Goal queries
+  getGoalsByStatus: (status: string) => Goal[];
   getTeamGoals: () => Goal[];
-  getTeamMembers: () => User[];
+  getGoalsForReview: () => Goal[];
+  
+  // Goal Bank operations
+  addGoalTemplate: (template: Omit<GoalBank, 'id'>) => void;
+  updateGoalTemplate: (updatedTemplate: GoalBank) => void;
+  deleteGoalTemplate: (templateId: string) => void;
+  
+  // Notification operations
+  getUserNotifications: () => Notification[];
   markNotificationAsRead: (notificationId: string) => void;
   clearNotifications: () => void;
   getUnreadNotificationsCount: () => number;
-  getUserNotifications: () => Notification[];
 }

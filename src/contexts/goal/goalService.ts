@@ -1,338 +1,348 @@
 
-import { Goal, Notification, User } from '@/types';
+import { Goal } from '@/types';
 import { Dispatch, SetStateAction } from 'react';
-import { toast } from 'sonner';
-import { createNotification } from './notificationService';
 
-export const addGoal = (
-  goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'feedback'>,
-  userId: string,
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const newGoal: Goal = {
-    id: `goal-${Date.now()}`,
-    userId,
-    status: 'draft',
-    ...goalData,
-  };
+interface GetGoalsByStatusParams {
+  goals: Goal[];
+  status: string;
+  user: any;
+}
 
-  setGoals(prevGoals => [...prevGoals, newGoal]);
-  createNotification(
-    setNotifications,
-    userId,
-    'Goal Created',
-    `You've created a new goal: "${newGoal.title}"`,
-    'info',
-    newGoal.id,
-    'goal'
-  );
-  
-  toast.success('Goal created successfully');
-  return newGoal;
-};
-
-export const updateGoal = (
-  updatedGoal: Goal,
-  userId: string,
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  setGoals(prevGoals => 
-    prevGoals.map(goal => 
-      goal.id === updatedGoal.id ? updatedGoal : goal
-    )
-  );
-  
-  createNotification(
-    setNotifications,
-    userId,
-    'Goal Updated',
-    `Your goal "${updatedGoal.title}" has been updated`,
-    'info',
-    updatedGoal.id,
-    'goal'
-  );
-  
-  toast.success('Goal updated successfully');
-};
-
-export const submitGoal = (
-  goalId: string,
-  userId: string,
-  userName: string,
-  goals: Goal[],
-  currentUser: User,
-  allUsers: User[],
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const goal = goals.find(g => g.id === goalId);
-  if (!goal) return;
-  
-  // Determine if this is a resubmission
-  const isResubmission = goal.status === 'rejected' || goal.status === 'under_review';
-  
-  setGoals(prevGoals => 
-    prevGoals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, status: 'submitted', feedback: undefined } // Clear feedback on resubmission
-        : goal
-    )
-  );
-  
-  // Create notification for the submitter
-  createNotification(
-    setNotifications,
-    userId,
-    isResubmission ? 'Goal Resubmitted' : 'Goal Submitted',
-    isResubmission 
-      ? `Your goal "${goal.title}" has been resubmitted for approval`
-      : `Your goal "${goal.title}" has been submitted for approval`,
-    'info',
-    goalId,
-    'goal'
-  );
-  
-  // Get the user's manager or an admin if the user is a manager
-  let reviewerIds: string[] = [];
-  
-  if (currentUser.role === 'manager') {
-    // If user is a manager, send to admins
-    reviewerIds = allUsers.filter(u => u.role === 'admin').map(u => u.id);
-  } else if (currentUser.managerId) {
-    // If user has a manager, send to their manager
-    reviewerIds = [currentUser.managerId];
-  }
-  
-  // Create notification for the reviewers
-  reviewerIds.forEach(reviewerId => {
-    const reviewer = allUsers.find(u => u.id === reviewerId);
-    if (!reviewer) return;
-    
-    createNotification(
-      setNotifications,
-      reviewerId,
-      isResubmission ? 'Goal Resubmitted' : 'New Goal Submission',
-      isResubmission
-        ? `${userName} has resubmitted a goal for your review`
-        : `${userName} has submitted a new goal for your review`,
-      'info',
-      goalId,
-      'goal'
-    );
-  });
-  
-  toast.success(isResubmission ? 'Goal resubmitted successfully' : 'Goal submitted for approval');
-};
-
-export const approveGoal = (
-  goalId: string,
-  reviewerId: string,
-  reviewerName: string,
-  goals: Goal[],
-  allUsers: User[],
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const goal = goals.find(g => g.id === goalId);
-  if (!goal) return;
-  
-  setGoals(prevGoals => 
-    prevGoals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, status: 'approved', reviewerId } 
-        : goal
-    )
-  );
-  
-  // Create notification for the reviewer
-  createNotification(
-    setNotifications,
-    reviewerId,
-    'Goal Approved',
-    `You've approved the goal: "${goal.title}"`,
-    'success',
-    goalId,
-    'goal'
-  );
-  
-  // Create notification for the owner
-  createNotification(
-    setNotifications,
-    goal.userId,
-    'Goal Approved',
-    `Your goal "${goal.title}" has been approved by ${reviewerName}`,
-    'success',
-    goalId,
-    'goal'
-  );
-  
-  toast.success('Goal approved');
-};
-
-export const rejectGoal = (
-  goalId: string,
-  feedback: string,
-  reviewerId: string,
-  reviewerName: string,
-  goals: Goal[],
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const goal = goals.find(g => g.id === goalId);
-  if (!goal) return;
-  
-  setGoals(prevGoals => 
-    prevGoals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, status: 'rejected', feedback, reviewerId } 
-        : goal
-    )
-  );
-  
-  // Create notification for the reviewer
-  createNotification(
-    setNotifications,
-    reviewerId,
-    'Goal Rejected',
-    `You've rejected the goal: "${goal.title}"`,
-    'warning',
-    goalId,
-    'goal'
-  );
-  
-  // Create notification for the owner
-  createNotification(
-    setNotifications,
-    goal.userId,
-    'Goal Rejected',
-    `Your goal "${goal.title}" has been rejected by ${reviewerName}. Please review the feedback.`,
-    'error',
-    goalId,
-    'goal'
-  );
-  
-  toast.success('Goal rejected with feedback');
-};
-
-export const returnGoalForRevision = (
-  goalId: string,
-  feedback: string,
-  reviewerId: string,
-  reviewerName: string,
-  goals: Goal[],
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const goal = goals.find(g => g.id === goalId);
-  if (!goal) return;
-  
-  setGoals(prevGoals => 
-    prevGoals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, status: 'under_review', feedback, reviewerId } 
-        : goal
-    )
-  );
-  
-  // Create notification for the reviewer
-  createNotification(
-    setNotifications,
-    reviewerId,
-    'Goal Returned',
-    `You've returned the goal: "${goal.title}" for revisions`,
-    'info',
-    goalId,
-    'goal'
-  );
-  
-  // Create notification for the owner
-  createNotification(
-    setNotifications,
-    goal.userId,
-    'Goal Needs Revision',
-    `Your goal "${goal.title}" needs revisions from ${reviewerName}. Please review the feedback.`,
-    'warning',
-    goalId,
-    'goal'
-  );
-  
-  toast.success('Goal returned for revision');
-};
-
-export const deleteGoal = (
-  goalId: string,
-  userId: string,
-  goals: Goal[],
-  setGoals: Dispatch<SetStateAction<Goal[]>>,
-  setNotifications: Dispatch<SetStateAction<Notification[]>>
-) => {
-  const goal = goals.find(g => g.id === goalId);
-  if (!goal) return;
-  
-  // Only allow deletion if user owns the goal and it's in draft state
-  if (goal.userId !== userId || goal.status !== 'draft') return;
-  
-  setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
-  
-  createNotification(
-    setNotifications,
-    userId,
-    'Goal Deleted',
-    `You've deleted the goal: "${goal.title}"`,
-    'info'
-  );
-  
-  toast.success('Goal deleted successfully');
-};
-
-export const getGoalsByStatus = (status: Goal['status'], userId: string, goals: Goal[]) => {
-  return goals.filter(goal => goal.userId === userId && goal.status === status);
-};
-
-export const getGoalsForReview = (reviewerId: string, goals: Goal[], allUsers: User[]) => {
-  const userRole = allUsers.find(u => u.id === reviewerId)?.role;
-  
-  if (userRole === 'admin') {
-    // Admins can review goals from managers
-    const managerIds = allUsers.filter(u => u.role === 'manager').map(u => u.id);
-    return goals.filter(goal => 
-      goal.status === 'submitted' && 
-      managerIds.includes(goal.userId)
-    );
-  } else if (userRole === 'manager') {
-    // Managers can review goals from their team members
-    const teamMemberIds = allUsers
-      .filter(u => u.managerId === reviewerId)
-      .map(u => u.id);
-    
-    return goals.filter(goal => 
-      goal.status === 'submitted' && 
-      teamMemberIds.includes(goal.userId)
-    );
-  }
-  
-  return [];
-};
-
-export const getTeamGoals = (userId: string, goals: Goal[], allUsers: User[]) => {
-  const user = allUsers.find(u => u.id === userId);
-  
+export const getGoalsByStatus = ({
+  goals,
+  status,
+  user
+}: GetGoalsByStatusParams) => {
   if (!user) return [];
   
+  return goals.filter(goal => 
+    goal.userId === user.id && goal.status === status
+  );
+};
+
+interface GetTeamGoalsParams {
+  goals: Goal[];
+  user: any;
+  getAllUsers: () => any[];
+}
+
+export const getTeamGoals = ({
+  goals,
+  user,
+  getAllUsers
+}: GetTeamGoalsParams) => {
+  if (!user || (user.role !== 'manager' && user.role !== 'admin')) return [];
+  
+  const allUsers = getAllUsers();
+  
+  // If user is admin, get all goals
   if (user.role === 'admin') {
-    // Admins can see all goals
     return goals;
-  } else if (user.role === 'manager') {
-    // Managers can see goals from their team members
-    const teamMemberIds = allUsers
-      .filter(u => u.managerId === userId)
-      .map(u => u.id);
-    
-    return goals.filter(goal => teamMemberIds.includes(goal.userId));
   }
   
-  // Regular members can only see their own goals (handled elsewhere)
+  // If user is manager, get goals of team members
+  const teamMemberIds = allUsers
+    .filter(u => u.managerId === user.id)
+    .map(u => u.id);
+  
+  return goals.filter(goal => teamMemberIds.includes(goal.userId));
+};
+
+export const getGoalsForReview = () => {
+  // Implementation for getting goals that need review
   return [];
+};
+
+interface SubmitGoalParams {
+  goals: Goal[];
+  goalId: string;
+  user: any;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
+  getAllUsers: () => any[];
+}
+
+export const submitGoal = ({
+  goals,
+  goalId,
+  user,
+  setGoals,
+  setNotifications,
+  createNotification,
+  getAllUsers
+}: SubmitGoalParams) => {
+  if (!user) return;
+  
+  const goalToSubmit = goals.find(g => g.id === goalId);
+  
+  if (!goalToSubmit || goalToSubmit.userId !== user.id) return;
+  
+  // Update goal status
+  setGoals(prev => 
+    prev.map(goal => 
+      goal.id === goalId 
+        ? {
+            ...goal,
+            status: 'submitted',
+            updatedAt: new Date().toISOString()
+          }
+        : goal
+    )
+  );
+  
+  // Create notification for the user
+  createNotification({
+    userId: user.id,
+    title: 'Goal Submitted',
+    message: `You've submitted your goal: ${goalToSubmit.title}`,
+    type: 'success',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+  
+  // Create notification for the manager
+  const allUsers = getAllUsers();
+  const manager = allUsers.find(u => u.id === user.managerId);
+  
+  if (manager) {
+    createNotification({
+      userId: manager.id,
+      title: 'Goal Submitted for Review',
+      message: `${user.name} has submitted a goal for your review: ${goalToSubmit.title}`,
+      type: 'info',
+      targetType: 'goal',
+      targetId: goalId,
+      setNotifications
+    });
+  }
+};
+
+interface ApproveGoalParams {
+  goals: Goal[];
+  goalId: string;
+  feedback: string;
+  user: any;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
+  getAllUsers: () => any[];
+}
+
+export const approveGoal = ({
+  goals,
+  goalId,
+  feedback,
+  user,
+  setGoals,
+  setNotifications,
+  createNotification,
+  getAllUsers
+}: ApproveGoalParams) => {
+  if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+  
+  const goalToApprove = goals.find(g => g.id === goalId);
+  
+  if (!goalToApprove) return;
+  
+  // Update goal status
+  setGoals(prev => 
+    prev.map(goal => 
+      goal.id === goalId 
+        ? {
+            ...goal,
+            status: 'approved',
+            feedback,
+            updatedAt: new Date().toISOString()
+          }
+        : goal
+    )
+  );
+  
+  // Create notification for the employee
+  createNotification({
+    userId: goalToApprove.userId,
+    title: 'Goal Approved',
+    message: `Your goal "${goalToApprove.title}" has been approved${feedback ? '. See feedback for details.' : ''}`,
+    type: 'success',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+  
+  // Create notification for the manager
+  createNotification({
+    userId: user.id,
+    title: 'Goal Approved',
+    message: `You've approved the goal: ${goalToApprove.title}`,
+    type: 'success',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+};
+
+interface RejectGoalParams {
+  goals: Goal[];
+  goalId: string;
+  feedback: string;
+  user: any;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
+  getAllUsers: () => any[];
+}
+
+export const rejectGoal = ({
+  goals,
+  goalId,
+  feedback,
+  user,
+  setGoals,
+  setNotifications,
+  createNotification,
+  getAllUsers
+}: RejectGoalParams) => {
+  if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+  
+  const goalToReject = goals.find(g => g.id === goalId);
+  
+  if (!goalToReject) return;
+  
+  // Update goal status
+  setGoals(prev => 
+    prev.map(goal => 
+      goal.id === goalId 
+        ? {
+            ...goal,
+            status: 'rejected',
+            feedback,
+            updatedAt: new Date().toISOString()
+          }
+        : goal
+    )
+  );
+  
+  // Create notification for the employee
+  createNotification({
+    userId: goalToReject.userId,
+    title: 'Goal Rejected',
+    message: `Your goal "${goalToReject.title}" has been rejected. Please check the feedback.`,
+    type: 'error',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+  
+  // Create notification for the manager
+  createNotification({
+    userId: user.id,
+    title: 'Goal Rejected',
+    message: `You've rejected the goal: ${goalToReject.title}`,
+    type: 'info',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+};
+
+interface ReturnGoalForRevisionParams {
+  goals: Goal[];
+  goalId: string;
+  feedback: string;
+  user: any;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
+  getAllUsers: () => any[];
+}
+
+export const returnGoalForRevision = ({
+  goals,
+  goalId,
+  feedback,
+  user,
+  setGoals,
+  setNotifications,
+  createNotification,
+  getAllUsers
+}: ReturnGoalForRevisionParams) => {
+  if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
+  
+  const goalToReturn = goals.find(g => g.id === goalId);
+  
+  if (!goalToReturn) return;
+  
+  // Update goal status
+  setGoals(prev => 
+    prev.map(goal => 
+      goal.id === goalId 
+        ? {
+            ...goal,
+            status: 'under_review',
+            feedback,
+            updatedAt: new Date().toISOString()
+          }
+        : goal
+    )
+  );
+  
+  // Create notification for the employee
+  createNotification({
+    userId: goalToReturn.userId,
+    title: 'Goal Needs Revision',
+    message: `Your goal "${goalToReturn.title}" requires revision. Please check the feedback.`,
+    type: 'warning',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+  
+  // Create notification for the manager
+  createNotification({
+    userId: user.id,
+    title: 'Goal Returned for Revision',
+    message: `You've returned the goal for revision: ${goalToReturn.title}`,
+    type: 'info',
+    targetType: 'goal',
+    targetId: goalId,
+    setNotifications
+  });
+};
+
+interface DeleteGoalParams {
+  goals: Goal[];
+  goalId: string;
+  user: any;
+  setGoals: Dispatch<SetStateAction<Goal[]>>;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
+}
+
+export const deleteGoal = ({
+  goals,
+  goalId,
+  user,
+  setGoals,
+  setNotifications,
+  createNotification
+}: DeleteGoalParams) => {
+  if (!user) return;
+  
+  const goalToDelete = goals.find(g => g.id === goalId);
+  
+  if (!goalToDelete || (goalToDelete.userId !== user.id && user.role !== 'admin')) return;
+  
+  // Delete the goal
+  setGoals(prev => prev.filter(goal => goal.id !== goalId));
+  
+  // Create notification
+  createNotification({
+    userId: user.id,
+    title: 'Goal Deleted',
+    message: `Goal "${goalToDelete.title}" has been deleted`,
+    type: 'info',
+    setNotifications
+  });
 };

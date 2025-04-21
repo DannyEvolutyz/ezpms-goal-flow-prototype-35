@@ -1,87 +1,62 @@
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useGoals } from '@/contexts/GoalContext';
-import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
-import StatsOverview from '@/components/dashboard/StatsOverview';
-import OrgChart from '@/components/organization/OrgChart';
-import GoalBankManager from "@/components/admin/GoalBankManager";
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Target, Settings, ListCheck } from 'lucide-react';
+import { Settings, User, UserCog, ListCheck } from 'lucide-react';
+import GoalBankManager from '@/components/admin/GoalBankManager';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
-  const { getTeamGoals, getPendingReviewGoals } = useGoals();
-  
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold">Unauthorized</h1>
-        <p className="mt-2">You don't have permission to access this page.</p>
-      </div>
-    );
-  }
-  
-  const teamGoals = getTeamGoals();
-  const pendingGoals = getPendingReviewGoals();
-  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <WelcomeBanner needsAttentionCount={pendingGoals.length} />
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
-      <StatsOverview />
-      
-      <Tabs defaultValue="org" className="mt-8">
-        <TabsList className="mb-6">
-          <TabsTrigger value="org" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>Organization</span>
-          </TabsTrigger>
-          <TabsTrigger value="goals" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            <span>Team Goals</span>
-          </TabsTrigger>
+      <Tabs defaultValue="goalbank" className="space-y-6">
+        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-3">
           <TabsTrigger value="goalbank" className="flex items-center gap-2">
             <ListCheck className="h-4 w-4" />
             <span>Goal Bank</span>
           </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>User Management</span>
+          </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            <span>Settings</span>
+            <span>System Settings</span>
           </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="org">
-          <OrgChart />
-        </TabsContent>
-        
-        <TabsContent value="goals">
-          <h2 className="text-xl font-semibold mb-4">Team Goals Overview</h2>
-          <p className="text-gray-600 mb-4">
-            As an administrator, you can view and manage all goals across the organization.
-          </p>
-          
-          <div className="bg-blue-50 rounded-lg p-6 text-center">
-            <p className="text-blue-800">
-              Goal management features for admins will be implemented here.
-            </p>
-          </div>
-        </TabsContent>
         
         <TabsContent value="goalbank">
           <GoalBankManager />
         </TabsContent>
         
+        <TabsContent value="users">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <UserCog className="mr-2 h-5 w-5" />
+                User Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500 py-8 text-center">
+                User management features are coming soon.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="settings">
-          <h2 className="text-xl font-semibold mb-4">System Settings</h2>
-          <p className="text-gray-600 mb-4">
-            Configure system-wide settings and preferences.
-          </p>
-          
-          <div className="bg-blue-50 rounded-lg p-6 text-center">
-            <p className="text-blue-800">
-              System settings will be implemented here.
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">System Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500 py-8 text-center">
+                System settings dashboard is coming soon.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
