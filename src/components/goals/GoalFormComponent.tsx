@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +15,7 @@ import GoalPrioritySelector from './GoalPrioritySelector';
 import GoalTargetDatePicker from './GoalTargetDatePicker';
 import { goalFormSchema, GoalFormValues } from './goalFormSchema';
 import { format } from 'date-fns';
+import { toast } from "@/hooks/use-toast";
 
 const GoalFormComponent = () => {
   const { addGoal, goals } = useGoals();

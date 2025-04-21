@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -89,12 +90,12 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
                                   {milestone.completed ? <CheckIcon className="inline-block h-4 w-4" /> : <span className="w-4 inline-block" />}
                                 </span>
                                 <span>{milestone.title}</span>
-                                {milestone.completionComment && (
-                                  <span className="ml-2 text-xs text-gray-500">
-                                    Comment: {milestone.completionComment}
-                                  </span>
-                                )}
                               </div>
+                              {milestone.completionComment && (
+                                <span className="ml-6 text-xs text-gray-500">
+                                  Comment: {milestone.completionComment}
+                                </span>
+                              )}
                             </li>
                           ))}
                         </ul>
