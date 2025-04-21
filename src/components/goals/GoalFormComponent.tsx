@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,6 +68,7 @@ const GoalFormComponent = () => {
           title: m.title,
           description: m.description,
           completed: !!m.completed,
+          completionComment: m.completionComment,
           targetDate: m.targetDate ? (m.targetDate instanceof Date
             ? m.targetDate.toISOString().split('T')[0]
             : m.targetDate // already string

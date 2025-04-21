@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Goal, GoalBank, Notification } from '@/types';
 import { useAuth } from '../AuthContext';
@@ -157,4 +156,3 @@ export const useGoals = () => {
   }
   return context;
 };
-
