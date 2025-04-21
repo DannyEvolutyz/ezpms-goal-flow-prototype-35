@@ -22,7 +22,7 @@ import {
   getUnreadNotificationsCount,
   getUserNotifications,
   createNotification
-} from './notificationService';
+} from '../notifications';
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
