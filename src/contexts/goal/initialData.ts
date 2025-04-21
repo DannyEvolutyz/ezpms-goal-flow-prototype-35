@@ -1,4 +1,3 @@
-
 import { Goal, GoalBank, Notification } from '@/types';
 
 // Predefined goal templates
@@ -88,6 +87,7 @@ export const initialGoals: Goal[] = [
     createdAt: '2025-01-10T08:30:00Z',
     updatedAt: '2025-01-15T10:20:00Z',
     feedback: 'Great goal! Focus on practical projects.',
+    weightage: 30,
     milestones: [
       {
         id: 'ms-goal1-1',
@@ -124,6 +124,7 @@ export const initialGoals: Goal[] = [
     createdAt: '2025-01-20T14:45:00Z',
     updatedAt: '2025-01-20T14:45:00Z',
     feedback: '',
+    weightage: 20,
     milestones: [
       {
         id: 'ms-goal2-1',
@@ -153,6 +154,7 @@ export const initialGoals: Goal[] = [
     createdAt: '2025-01-05T09:15:00Z',
     updatedAt: '2025-01-10T11:30:00Z',
     feedback: 'Approved. This aligns well with our cloud migration strategy.',
+    weightage: 25,
     milestones: [
       {
         id: 'ms-goal3-1',
@@ -182,6 +184,7 @@ export const initialGoals: Goal[] = [
     createdAt: '2025-01-25T16:20:00Z',
     updatedAt: '2025-01-25T16:20:00Z',
     feedback: '',
+    weightage: 15,
     milestones: [
       {
         id: 'ms-goal4-1',
@@ -218,6 +221,7 @@ export const initialGoals: Goal[] = [
     createdAt: '2025-01-15T10:45:00Z',
     updatedAt: '2025-01-18T09:30:00Z',
     feedback: 'Please be more specific about which testing frameworks you plan to focus on.',
+    weightage: 10,
     milestones: [
       {
         id: 'ms-goal5-1',
