@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Goal, GoalBank, Notification, User, Milestone } from '@/types';
 import { useAuth } from '../AuthContext';
@@ -72,7 +71,6 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Persist data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('ezpms_goals', JSON.stringify(goals));
   }, [goals]);
@@ -85,7 +83,6 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('ezpms_goal_bank', JSON.stringify(goalBank));
   }, [goalBank]);
 
-  // Goal Bank CRUD operations
   const addGoalTemplate = (template: Omit<GoalBank, 'id'>) => {
     const newTemplate: GoalBank = {
       ...template,
@@ -108,43 +105,25 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     setGoalBank(prev => prev.filter(template => template.id !== templateId));
   };
 
-  // Goal CRUD operations
   const addGoal = (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>) => {
     if (!user) return;
     
-    const newGoal: Goal = {
-      ...goalData,
-      id: `goal-${Date.now()}`,
-      userId: user.id,
-      status: 'draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      feedback: '',
-      milestones: goalData.milestones || []
-    };
-    
-    setGoals(prev => [...prev, newGoal]);
-    
-    createNotification({
-      userId: user.id,
-      title: 'Goal Created',
-      message: `You created a new goal: ${newGoal.title}`,
-      type: 'success',
+    return addGoalService({
+      goals,
+      goalData,
+      user,
+      setGoals,
       setNotifications,
+      createNotification
     });
-    
-    return newGoal;
   };
   
   const updateGoal = (updatedGoal: Goal) => {
-    setGoals(prev => 
-      prev.map(goal => 
-        goal.id === updatedGoal.id ? {
-          ...updatedGoal,
-          updatedAt: new Date().toISOString()
-        } : goal
-      )
-    );
+    return updateGoalService({
+      goals,
+      updatedGoal,
+      setGoals
+    });
   };
   
   const submitGoal = (goalId: string) => {
@@ -209,7 +188,6 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Goal queries
   const getGoalsByStatus = (status: string) => {
     return getGoalsByStatusService({
       goals,
@@ -226,7 +204,6 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Notification operations
   const getUserNotifications = () => {
     return getUserNotificationsService({
       notifications,
@@ -286,7 +263,6 @@ export const GoalProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom hook to use goal context
 export const useGoals = () => {
   const context = useContext(GoalContext);
   if (context === undefined) {

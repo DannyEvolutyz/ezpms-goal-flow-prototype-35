@@ -2,7 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Popover, PopoverContent, PopoverTrigger } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon, Trash2, Check as CheckIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { parseMilestoneTargetDate } from './milestoneDateHelpers';
