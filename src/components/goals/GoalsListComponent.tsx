@@ -6,6 +6,7 @@ import { useGoals } from '@/contexts/GoalContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { Check as CheckIcon } from 'lucide-react';
+import { Goal, Milestone } from '@/types/goal';
 
 interface GoalsListComponentProps {
   onCreateNew?: () => void;
@@ -32,16 +33,16 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ onCreateNew }) 
 
   const hasGoals = goalsByStatus.some(group => group.goals.length > 0);
 
-  const getCompletion = (goal) => {
+  const getCompletion = (goal: Goal) => {
     if (!goal.milestones || !goal.milestones.length) return 0;
     const completed = goal.milestones.filter(m => m.completed).length;
     return Math.round(100 * (completed / goal.milestones.length));
   };
 
-  const handleMarkGoalComplete = (goal) => {
+  const handleMarkGoalComplete = (goal: Goal) => {
     const updatedGoal = {
       ...goal,
-      milestones: goal.milestones.map(m => ({ ...m, completed: true })),
+      milestones: goal.milestones?.map(m => ({ ...m, completed: true })) || [],
     };
     updateGoal(updatedGoal);
   };

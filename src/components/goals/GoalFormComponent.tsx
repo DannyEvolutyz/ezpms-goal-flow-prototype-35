@@ -45,12 +45,12 @@ const GoalFormComponent = () => {
   };
 
   const onSubmit = (data: GoalFormValues) => {
-    const totalWeightage = goals.reduce((sum, goal) => sum + (goal.weightage || 0), 0) + data.weightage;
+    const totalWeightage = goals.reduce((sum, goal) => sum + goal.weightage, 0) + data.weightage;
 
     if (totalWeightage > 100) {
       toast({
         title: "Invalid Weightage",
-        description: `Total weightage cannot exceed 100. Available: ${100 - goals.reduce((sum, goal) => sum + (goal.weightage || 0), 0)}`,
+        description: `Total weightage cannot exceed 100. Available: ${100 - goals.reduce((sum, goal) => sum + goal.weightage, 0)}`,
         variant: "destructive"
       });
       return;
@@ -90,7 +90,7 @@ const GoalFormComponent = () => {
     setFormKey(prev => prev + 1);
   };
 
-  const availableWeightage = 100 - goals.reduce((sum, goal) => sum + (goal.weightage || 0), 0);
+  const availableWeightage = 100 - goals.reduce((sum, goal) => sum + goal.weightage, 0);
 
   return (
     <div className="space-y-8">
