@@ -27,6 +27,8 @@ export interface Milestone {
   id: string;
   title: string;
   description?: string;
+  completed?: boolean; // <-- now optional, to default false for old data
+  targetDate?: string; // <-- for milestone-specific deadlines
   // future: status, due date, etc
 }
 

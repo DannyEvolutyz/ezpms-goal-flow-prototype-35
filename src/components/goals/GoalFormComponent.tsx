@@ -37,6 +37,8 @@ import MilestonesArrayField from './MilestonesArrayField';
 const milestoneSchema = z.object({
   title: z.string().min(2, { message: 'Milestone title must be at least 2 characters' }),
   description: z.string().optional(),
+  completed: z.boolean().optional().default(false),
+  targetDate: z.date({ required_error: "Please select a target date for each milestone" }).optional(),
 });
 const goalFormSchema = z.object({
   title: z.string().min(5, { message: 'Title must be at least 5 characters' }).max(100),
@@ -91,19 +93,26 @@ const GoalFormComponent = () => {
       data.milestones.length > 0 &&
       data.milestones.some(m => m.title && m.title.trim().length > 0);
 
+    const milestones = withMilestones
+      ? data.milestones.map((m, i) => ({
+          id: `ms-${Date.now()}-${i}`,
+          title: m.title,
+          description: m.description,
+          completed: !!m.completed,
+          targetDate: m.targetDate ? (m.targetDate instanceof Date
+            ? m.targetDate.toISOString().split('T')[0]
+            : m.targetDate // already string
+            ) : undefined,
+        }))
+      : [];
+
     addGoal({
       title: data.title,
       description: data.description,
       category: data.category,
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
-      milestones: withMilestones
-        ? data.milestones.map((m, i) => ({
-            id: `ms-${Date.now()}-${i}`,
-            title: m.title,
-            description: m.description,
-          }))
-        : [],
+      milestones,
     });
 
     form.reset();
