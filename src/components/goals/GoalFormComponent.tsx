@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useGoals } from '@/contexts/GoalContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import GoalBankComponent from './GoalBankComponent';
 import MilestonesArrayField from './MilestonesArrayField';
 // Extracted fields and helpers
@@ -84,19 +85,21 @@ const GoalFormComponent = () => {
           <CardTitle className="text-lg">Goal Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <GoalTitleField form={form} />
-            <GoalDescriptionField form={form} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <GoalCategorySelector form={form} />
-              <GoalPrioritySelector form={form} />
-            </div>
-            <GoalTargetDatePicker form={form} />
-            <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
-            <Button type="submit" className="w-full">
-              Create Goal
-            </Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <GoalTitleField form={form} />
+              <GoalDescriptionField form={form} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <GoalCategorySelector form={form} />
+                <GoalPrioritySelector form={form} />
+              </div>
+              <GoalTargetDatePicker form={form} />
+              <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
+              <Button type="submit" className="w-full">
+                Create Goal
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
