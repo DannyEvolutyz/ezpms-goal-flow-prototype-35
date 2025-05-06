@@ -3,6 +3,7 @@ import React from 'react';
 import { render as rtlRender } from '@testing-library/react';
 import { GoalProvider } from '../contexts/goal/GoalProviderImpl';
 import { AuthProvider } from '../contexts/AuthContext';
+import { vi } from 'vitest';
 
 // Mock AuthContext values
 export const mockAuthContextValues = {
@@ -44,7 +45,7 @@ export const mockAuthContextValues = {
 // Custom render function that includes providers
 function render(ui, options = {}) {
   const Wrapper = ({ children }) => (
-    <AuthProvider value={mockAuthContextValues}>
+    <AuthProvider>
       <GoalProvider>{children}</GoalProvider>
     </AuthProvider>
   );
