@@ -1,12 +1,13 @@
 
 import React, { createContext, useContext } from 'react';
-import { Goal, GoalBank, Notification } from '@/types';
+import { Goal, GoalBank, GoalSpace, Notification } from '@/types';
 import { useAuth } from '../AuthContext';
 import { GoalContextType } from './types';
 import { useGoalStorage } from './hooks/useGoalStorage';
 import { useGoalTemplates } from './hooks/useGoalTemplates';
 import {
   getGoalsByStatus,
+  getGoalsBySpace,
   getTeamGoals,
   getGoalsForReview,
   addGoal,
@@ -15,7 +16,17 @@ import {
   approveGoal,
   rejectGoal,
   returnGoalForRevision,
-  deleteGoal
+  deleteGoal,
+  createGoalSpace,
+  updateGoalSpace,
+  deleteGoalSpace,
+  getActiveSpace,
+  getAvailableSpaces,
+  getAllSpaces,
+  getSpacesForReview,
+  canCreateOrEditGoals,
+  canReviewGoals,
+  isSpaceReadOnly
 } from './services';
 import {
   markNotificationAsRead,
@@ -29,24 +40,41 @@ const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
 export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, getAllUsers } = useAuth();
-  const { goals, setGoals, notifications, setNotifications, goalBank, setGoalBank } = useGoalStorage();
+  const { 
+    goals, 
+    setGoals, 
+    notifications, 
+    setNotifications, 
+    goalBank, 
+    setGoalBank,
+    spaces,
+    setSpaces
+  } = useGoalStorage();
   const { addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = useGoalTemplates(goalBank, setGoalBank);
 
   const contextValue: GoalContextType = {
     goals,
     goalBank,
+    spaces,
+    
+    // Goal CRUD operations
     addGoal: (goalData) => addGoal({
       goals,
       goalData,
       user,
       setGoals,
       setNotifications,
-      createNotification
+      createNotification,
+      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId })
     }),
     updateGoal: (updatedGoal) => updateGoal({
       goals,
       updatedGoal,
-      setGoals
+      setGoals,
+      user,
+      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId }),
+      setNotifications,
+      createNotification
     }),
     submitGoal: (goalId) => submitGoal({
       goals,
@@ -55,7 +83,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       setGoals,
       setNotifications,
       createNotification,
-      getAllUsers
+      getAllUsers,
+      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId })
     }),
     approveGoal: (goalId, feedback) => approveGoal({
       goals,
@@ -64,7 +93,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification
+      createNotification,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
     }),
     rejectGoal: (goalId, feedback) => rejectGoal({
       goals,
@@ -73,7 +103,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification
+      createNotification,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
     }),
     returnGoalForRevision: (goalId, feedback) => returnGoalForRevision({
       goals,
@@ -82,7 +113,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       setGoals,
       setNotifications,
-      createNotification
+      createNotification,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
     }),
     deleteGoal: (goalId) => deleteGoal({
       goals,
@@ -92,9 +124,16 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       setNotifications,
       createNotification
     }),
+    
+    // Goal queries
     getGoalsByStatus: (status) => getGoalsByStatus({
       goals,
       status,
+      user
+    }),
+    getGoalsBySpace: (spaceId) => getGoalsBySpace({
+      goals,
+      spaceId,
       user
     }),
     getTeamGoals: () => getTeamGoals({
@@ -103,9 +142,43 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
       getAllUsers
     }),
     getGoalsForReview,
+    
+    // Goal Bank operations
     addGoalTemplate,
     updateGoalTemplate,
     deleteGoalTemplate,
+    
+    // Goal Space operations
+    createGoalSpace: (spaceData) => createGoalSpace({
+      ...spaceData,
+      spaces,
+      setSpaces,
+      setNotifications,
+      createNotification,
+      user
+    }),
+    updateGoalSpace: (spaceId, updatedSpace) => updateGoalSpace({
+      spaceId,
+      updatedSpace,
+      spaces,
+      setSpaces,
+      user
+    }),
+    deleteGoalSpace: (spaceId) => deleteGoalSpace({
+      spaceId,
+      spaces,
+      setSpaces,
+      user
+    }),
+    getActiveSpace: () => getActiveSpace({ spaces }),
+    getAvailableSpaces: () => getAvailableSpaces({ spaces }),
+    getAllSpaces: () => getAllSpaces({ spaces }),
+    getSpacesForReview: () => getSpacesForReview({ spaces }),
+    canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId }),
+    canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId }),
+    isSpaceReadOnly: (spaceId) => isSpaceReadOnly({ spaces, spaceId }),
+    
+    // Notification operations
     getUserNotifications: () => getUserNotifications({
       notifications,
       user

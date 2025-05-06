@@ -1,12 +1,13 @@
 
-import { Goal, GoalBank, Notification } from '@/types';
+import { Goal, GoalBank, Notification, GoalSpace } from '@/types';
 
 export interface GoalContextType {
   goals: Goal[];
   goalBank: GoalBank[];
+  spaces: GoalSpace[];
   
   // Goal CRUD operations
-  addGoal: (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>) => Goal | undefined;
+  addGoal: (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string }) => Goal | undefined;
   updateGoal: (updatedGoal: Goal) => void;
   submitGoal: (goalId: string) => void;
   approveGoal: (goalId: string, feedback?: string) => void;
@@ -16,6 +17,7 @@ export interface GoalContextType {
   
   // Goal queries
   getGoalsByStatus: (status: string) => Goal[];
+  getGoalsBySpace: (spaceId: string) => Goal[];
   getTeamGoals: () => Goal[];
   getGoalsForReview: () => Goal[];
   
@@ -23,6 +25,18 @@ export interface GoalContextType {
   addGoalTemplate: (template: Omit<GoalBank, 'id'>) => void;
   updateGoalTemplate: (updatedTemplate: GoalBank) => void;
   deleteGoalTemplate: (templateId: string) => void;
+  
+  // Goal Space operations
+  createGoalSpace: (spaceData: Omit<GoalSpace, 'id' | 'createdAt' | 'isActive'>) => GoalSpace | null;
+  updateGoalSpace: (spaceId: string, updatedSpace: Partial<GoalSpace>) => void;
+  deleteGoalSpace: (spaceId: string) => void;
+  getActiveSpace: () => GoalSpace | undefined;
+  getAvailableSpaces: () => GoalSpace[];
+  getAllSpaces: () => GoalSpace[];
+  getSpacesForReview: () => GoalSpace[];
+  canCreateOrEditGoals: (spaceId?: string) => boolean;
+  canReviewGoals: (spaceId?: string) => boolean;
+  isSpaceReadOnly: (spaceId?: string) => boolean;
   
   // Notification operations
   getUserNotifications: () => Notification[];

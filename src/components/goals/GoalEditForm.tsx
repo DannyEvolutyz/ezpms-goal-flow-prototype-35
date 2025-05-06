@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +9,7 @@ import { Goal } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, ArrowLeft, AlertCircle } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -33,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from '@/lib/utils';
+import { toast } from "@/hooks/use-toast";
 
 // Goal form schema with validation
 const goalFormSchema = z.object({
@@ -59,7 +61,8 @@ interface GoalEditFormProps {
 }
 
 const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
-  const { updateGoal } = useGoals();
+  const { updateGoal, isSpaceReadOnly } = useGoals();
+  const isReadOnly = isSpaceReadOnly(goal.spaceId);
   
   // Initialize the form with goal data
   const form = useForm<GoalFormValues>({
@@ -75,6 +78,15 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
 
   // Handle form submission
   const onSubmit = (data: GoalFormValues) => {
+    if (isReadOnly) {
+      toast({
+        title: "Cannot update goal",
+        description: "This goal belongs to a read-only space.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     updateGoal({
       ...goal,
       title: data.title,
@@ -102,6 +114,16 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
         <h2 className="text-xl font-semibold text-blue-600">Edit Goal</h2>
       </div>
       
+      {isReadOnly && (
+        <Alert variant="warning" className="bg-amber-50 border-amber-200">
+          <AlertCircle className="h-4 w-4 text-amber-500" />
+          <AlertTitle className="text-amber-800">Read-only Goal</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            This goal belongs to a space that is now read-only. You can view the details but cannot make changes.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {goal.feedback && (
         <Alert className="bg-blue-50 border-blue-200">
           <AlertTitle className="text-blue-800">Manager Feedback</AlertTitle>
@@ -125,7 +147,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                   <FormItem>
                     <FormLabel>Goal Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter goal title" {...field} />
+                      <Input placeholder="Enter goal title" {...field} disabled={isReadOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -143,6 +165,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                         placeholder="Describe your goal in detail" 
                         className="min-h-[100px]" 
                         {...field} 
+                        disabled={isReadOnly}
                       />
                     </FormControl>
                     <FormMessage />
@@ -157,7 +180,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
@@ -181,7 +204,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select priority" />
@@ -206,14 +229,16 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                   <FormItem className="flex flex-col">
                     <FormLabel>Target Completion Date</FormLabel>
                     <Popover>
-                      <PopoverTrigger asChild>
+                      <PopoverTrigger asChild disabled={isReadOnly}>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
+                              isReadOnly && "opacity-50 cursor-not-allowed"
                             )}
+                            disabled={isReadOnly}
                           >
                             {field.value ? (
                               format(field.value, "PPP")
@@ -229,7 +254,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
+                          disabled={(date) => date < new Date() || isReadOnly}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />
@@ -242,7 +267,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
               
               <div className="flex justify-between pt-4">
                 <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-                <Button type="submit">Save Changes</Button>
+                {!isReadOnly && <Button type="submit">Save Changes</Button>}
               </div>
             </form>
           </Form>

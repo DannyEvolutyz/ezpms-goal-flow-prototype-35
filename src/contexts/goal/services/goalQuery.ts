@@ -19,6 +19,24 @@ export const getGoalsByStatus = ({
   );
 };
 
+interface GetGoalsBySpaceParams {
+  goals: Goal[];
+  spaceId: string;
+  user: any;
+}
+
+export const getGoalsBySpace = ({
+  goals,
+  spaceId,
+  user
+}: GetGoalsBySpaceParams) => {
+  if (!user) return [];
+  
+  return goals.filter(goal => 
+    goal.userId === user.id && goal.spaceId === spaceId
+  );
+};
+
 interface GetTeamGoalsParams {
   goals: Goal[];
   user: any;
