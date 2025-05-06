@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { format } from 'date-fns';
 import { useGoals } from '@/contexts/GoalContext';
 import { Goal } from '@/types';
@@ -11,25 +10,8 @@ import EditFormHeader from './goal-edit/EditFormHeader';
 import ReadOnlyAlert from './goal-edit/ReadOnlyAlert';
 import FeedbackAlert from './goal-edit/FeedbackAlert';
 import EditFormFields from './goal-edit/EditFormFields';
-
-// Goal form schema with validation
-const goalFormSchema = z.object({
-  title: z.string().min(5, { message: 'Title must be at least 5 characters' }).max(100),
-  description: z.string().min(20, { message: 'Description must be at least 20 characters' }),
-  category: z.enum(['Professional Development', 'Technical Skills', 'Leadership', 'Innovation'], {
-    required_error: 'Please select a category',
-  }),
-  priority: z.enum(['high', 'medium', 'low'], {
-    required_error: 'Please select a priority',
-  }),
-  targetDate: z.date({
-    required_error: 'Please select a target date',
-  }).refine((date) => date > new Date(), {
-    message: 'Target date must be in the future',
-  }),
-});
-
-type GoalFormValues = z.infer<typeof goalFormSchema>;
+import { goalFormSchema } from './goalFormSchema';
+import { GoalFormValues } from './goalFormSchema';
 
 interface GoalEditFormProps {
   goal: Goal;

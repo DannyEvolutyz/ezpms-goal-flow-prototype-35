@@ -13,9 +13,10 @@ import { format } from 'date-fns';
 
 interface GoalTargetDatePickerProps {
   form: any;
+  isReadOnly?: boolean;
 }
 
-const GoalTargetDatePicker = ({ form }: GoalTargetDatePickerProps) => (
+const GoalTargetDatePicker = ({ form, isReadOnly = false }: GoalTargetDatePickerProps) => (
   <FormField
     control={form.control}
     name="targetDate"
@@ -23,14 +24,16 @@ const GoalTargetDatePicker = ({ form }: GoalTargetDatePickerProps) => (
       <FormItem className="flex flex-col">
         <FormLabel>Target Completion Date</FormLabel>
         <Popover>
-          <PopoverTrigger asChild>
+          <PopoverTrigger asChild disabled={isReadOnly}>
             <FormControl>
               <Button
                 variant="outline"
                 className={cn(
                   'w-full pl-3 text-left font-normal',
-                  !field.value && 'text-muted-foreground'
+                  !field.value && 'text-muted-foreground',
+                  isReadOnly && "opacity-50 cursor-not-allowed"
                 )}
+                disabled={isReadOnly}
               >
                 {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -42,7 +45,7 @@ const GoalTargetDatePicker = ({ form }: GoalTargetDatePickerProps) => (
               mode="single"
               selected={field.value}
               onSelect={field.onChange}
-              disabled={date => date < new Date()}
+              disabled={(date) => date < new Date() || isReadOnly}
               initialFocus
               className={cn('p-3 pointer-events-auto')}
             />
