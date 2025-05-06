@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, FolderPlus, Trash2 } from 'lucide-react';
+import { CalendarIcon, FolderPlus, Trash2, Clock } from 'lucide-react';
 import { useGoals } from '@/contexts/goal';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -54,6 +54,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 
 const goalSpaceSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters long" }),
@@ -146,6 +151,50 @@ const GoalSpaceManager = () => {
     return format(new Date(dateStr), 'PPP');
   };
 
+  const isCurrentDateInRange = (startDate: string, endDate: string) => {
+    const now = new Date();
+    return new Date(startDate) <= now && now <= new Date(endDate);
+  };
+
+  const getStatusIndicator = (space: GoalSpace) => {
+    const now = new Date();
+    const start = new Date(space.startDate);
+    const submitDeadline = new Date(space.submissionDeadline);
+    const reviewDeadline = new Date(space.reviewDeadline);
+
+    if (!space.isActive) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          Inactive
+        </span>
+      );
+    } else if (now < start) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          Upcoming
+        </span>
+      );
+    } else if (now >= start && now <= submitDeadline) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Goal Setting
+        </span>
+      );
+    } else if (now > submitDeadline && now <= reviewDeadline) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+          Review Period
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Completed
+        </span>
+      );
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -207,6 +256,19 @@ const GoalSpaceManager = () => {
                   )}
                 />
                 
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <AlertTitle className="text-blue-800">Timeline Configuration</AlertTitle>
+                  <AlertDescription className="text-blue-700 text-sm">
+                    Configure three important dates:
+                    <ul className="list-disc pl-5 mt-2 space-y-1">
+                      <li><strong>Start Date:</strong> When the goal space becomes active</li>
+                      <li><strong>Submission Deadline:</strong> Last day for users to create/modify goals</li>
+                      <li><strong>Review Deadline:</strong> Last day for managers to review goals</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -239,9 +301,13 @@ const GoalSpaceManager = () => {
                               selected={field.value}
                               onSelect={field.onChange}
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
+                        <FormDescription>
+                          When users can start creating goals
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -278,9 +344,13 @@ const GoalSpaceManager = () => {
                               selected={field.value}
                               onSelect={field.onChange}
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
+                        <FormDescription>
+                          Last day for goal submissions
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -317,9 +387,13 @@ const GoalSpaceManager = () => {
                               selected={field.value}
                               onSelect={field.onChange}
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
+                        <FormDescription>
+                          Last day for managers to review goals
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -350,11 +424,9 @@ const GoalSpaceManager = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Start Date</TableHead>
-                <TableHead>Submission Deadline</TableHead>
-                <TableHead>Review Deadline</TableHead>
+                <TableHead>Timeline</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -366,19 +438,24 @@ const GoalSpaceManager = () => {
                       <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">{space.description}</p>
                     )}
                   </TableCell>
-                  <TableCell>{formatDate(space.startDate)}</TableCell>
-                  <TableCell>{formatDate(space.submissionDeadline)}</TableCell>
-                  <TableCell>{formatDate(space.reviewDeadline)}</TableCell>
                   <TableCell>
-                    {space.isActive ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        Inactive
-                      </span>
-                    )}
+                    <div className="space-y-1">
+                      <div className="text-xs grid grid-cols-[80px_auto]">
+                        <span className="font-semibold">Start:</span>
+                        <span>{formatDate(space.startDate)}</span>
+                      </div>
+                      <div className="text-xs grid grid-cols-[80px_auto]">
+                        <span className="font-semibold">Submission:</span>
+                        <span>{formatDate(space.submissionDeadline)}</span>
+                      </div>
+                      <div className="text-xs grid grid-cols-[80px_auto]">
+                        <span className="font-semibold">Review:</span>
+                        <span>{formatDate(space.reviewDeadline)}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {getStatusIndicator(space)}
                   </TableCell>
                   <TableCell>
                     <Dialog>

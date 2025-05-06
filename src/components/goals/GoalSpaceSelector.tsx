@@ -3,6 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoals } from '@/contexts/GoalContext';
 import { format } from 'date-fns';
+import { Clock } from 'lucide-react';
 
 interface GoalSpaceSelectorProps {
   form: any;
@@ -11,6 +12,10 @@ interface GoalSpaceSelectorProps {
 const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
   const { getAvailableSpaces } = useGoals();
   const availableSpaces = getAvailableSpaces();
+  
+  const formatDate = (dateStr: string) => {
+    return format(new Date(dateStr), 'PPP');
+  };
   
   return (
     <FormField
@@ -35,7 +40,13 @@ const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
               ) : (
                 availableSpaces.map(space => (
                   <SelectItem key={space.id} value={space.id}>
-                    {space.name} (Due: {format(new Date(space.submissionDeadline), 'PP')})
+                    <div>
+                      <div>{space.name}</div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Clock className="h-3 w-3" />
+                        <span>Submit by: {formatDate(space.submissionDeadline)}</span>
+                      </div>
+                    </div>
                   </SelectItem>
                 ))
               )}

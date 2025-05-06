@@ -152,4 +152,32 @@ describe('useGoalSpaces', () => {
     // Past space should be read-only
     expect(result.current.isSpaceReadOnly('space-2')).toBe(true);
   });
+
+  it('should identify spaces in review period', () => {
+    // Create mock spaces with one in review period
+    const reviewPeriodSpaces = [
+      ...mockSpaces,
+      {
+        id: 'space-3',
+        name: 'Review Period Space',
+        description: 'Space in review period',
+        startDate: '2025-01-01',
+        submissionDeadline: '2025-04-30', // Submission ended
+        reviewDeadline: '2025-05-31', // Review still ongoing
+        createdAt: '2025-01-01',
+        isActive: true
+      }
+    ];
+    
+    const { result } = renderHook(() => useGoalSpaces({
+      spaces: reviewPeriodSpaces,
+      setSpaces: mockSetSpaces,
+      user: mockRegularUser,
+      setNotifications: mockSetNotifications
+    }));
+    
+    const spacesForReview = result.current.getSpacesForReview();
+    expect(spacesForReview).toHaveLength(1);
+    expect(spacesForReview[0].id).toBe('space-3');
+  });
 });
