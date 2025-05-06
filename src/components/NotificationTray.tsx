@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, BellRing, Check, Info, AlertTriangle, X, CheckCircle2 } from 'lucide-react';
@@ -31,7 +30,7 @@ const NotificationTray = () => {
   
   try {
     // Dynamically import the hook to avoid the error when not within GoalProvider
-    ({ useGoals } = require('@/contexts/GoalContext'));
+    ({ useGoals } = require('@/contexts/goal'));
     goalContext = useGoals();
   } catch (error) {
     // If useGoals throws an error, we'll use empty functionality
