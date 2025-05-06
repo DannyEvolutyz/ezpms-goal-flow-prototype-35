@@ -1,7 +1,7 @@
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGoalSpaces } from '../../contexts/goal/hooks/useGoalSpaces';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('useGoalSpaces', () => {
   const mockSetSpaces = vi.fn();

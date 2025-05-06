@@ -1,34 +1,60 @@
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGoalQueries } from '../../contexts/goal/hooks/useGoalQueries';
-import { vi, describe, it, expect } from 'vitest';
+import { Goal } from '@/types';
 
 describe('useGoalQueries', () => {
   const mockUser = { id: 'user-1', role: 'member' };
   const mockManagerUser = { id: 'manager-1', role: 'manager' };
   const mockAdminUser = { id: 'admin-1', role: 'admin' };
   
-  const mockGoals = [
+  // Properly typed mock goals
+  const mockGoals: Goal[] = [
     // User's goals with different statuses
     { 
       id: 'goal-1', 
       userId: 'user-1',
       spaceId: 'space-1',
       status: 'draft',
-      title: 'Draft Goal'
+      title: 'Draft Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'medium',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     },
     { 
       id: 'goal-2', 
       userId: 'user-1',
       spaceId: 'space-1', 
       status: 'submitted',
-      title: 'Submitted Goal'
+      title: 'Submitted Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'high',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     },
     { 
       id: 'goal-3', 
       userId: 'user-1',
       spaceId: 'space-2',
       status: 'draft',
-      title: 'Draft Goal in Space 2'
+      title: 'Draft Goal in Space 2',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'low',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     },
     // Team member's goals
     { 
@@ -36,7 +62,15 @@ describe('useGoalQueries', () => {
       userId: 'user-2',
       spaceId: 'space-1',
       status: 'draft',
-      title: 'Team Member Goal'
+      title: 'Team Member Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'medium',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     },
     // Other goals
     { 
@@ -44,7 +78,15 @@ describe('useGoalQueries', () => {
       userId: 'user-3',
       spaceId: 'space-1',
       status: 'draft',
-      title: 'Other User Goal'
+      title: 'Other User Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'medium',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     }
   ];
   

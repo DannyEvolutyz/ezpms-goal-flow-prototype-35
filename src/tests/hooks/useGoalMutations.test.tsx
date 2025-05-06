@@ -1,20 +1,23 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGoalMutations } from '../../contexts/goal/hooks/useGoalMutations';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Goal } from '@/types';
 
 describe('useGoalMutations', () => {
   const mockSetGoals = vi.fn();
   const mockSetNotifications = vi.fn();
   const mockUser = { id: 'user-1', role: 'member' };
-  const mockGoals = [{ 
+  
+  // Properly typed mock goals
+  const mockGoals: Goal[] = [{ 
     id: 'goal-1', 
     title: 'Test Goal', 
     userId: 'user-1',
     spaceId: 'space-1',
     description: 'Test description',
     category: 'Technical Skills',
-    priority: 'medium',
+    priority: 'medium', // This is a valid literal of "high" | "medium" | "low"
     weightage: 20,
     targetDate: '2025-05-20',
     status: 'draft',
@@ -22,6 +25,7 @@ describe('useGoalMutations', () => {
     updatedAt: '2025-05-01',
     feedback: ''
   }];
+  
   const mockSpaces = [{
     id: 'space-1',
     name: 'Test Space',
@@ -50,7 +54,7 @@ describe('useGoalMutations', () => {
       title: 'New Goal',
       description: 'New goal description',
       category: 'Technical Skills',
-      priority: 'high',
+      priority: 'high' as const, // Use a type assertion to ensure it's the correct type
       weightage: 10,
       targetDate: '2025-06-01',
       spaceId: 'space-1'
@@ -73,7 +77,7 @@ describe('useGoalMutations', () => {
       spaces: mockSpaces
     }));
     
-    const updatedGoal = {
+    const updatedGoal: Goal = {
       ...mockGoals[0],
       title: 'Updated Title',
     };
@@ -121,7 +125,7 @@ describe('useGoalMutations', () => {
       title: 'New Goal',
       description: 'New goal description',
       category: 'Technical Skills',
-      priority: 'high',
+      priority: 'high' as const,
       weightage: 10,
       targetDate: '2025-06-01',
       spaceId: 'space-1'

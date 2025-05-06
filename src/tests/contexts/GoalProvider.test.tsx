@@ -1,9 +1,9 @@
 
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, renderHook, act } from '@testing-library/react';
 import { GoalProvider } from '../../contexts/goal/GoalProviderImpl';
 import { useGoals } from '../../contexts/goal/hooks/useGoalContext';
-import { vi } from 'vitest';
 
 // Mock AuthContext
 vi.mock('../../contexts/AuthContext', () => ({

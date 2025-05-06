@@ -1,6 +1,6 @@
 
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, expect, beforeEach } from 'vitest';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -39,3 +39,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   localStorageMock.clear();
 });
+
+// Global mocks for describe, it and expect are not needed anymore
+// as we're using the globals: true option in vitest.config.ts

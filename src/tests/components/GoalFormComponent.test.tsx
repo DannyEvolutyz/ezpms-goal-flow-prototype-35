@@ -1,8 +1,8 @@
 
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
 import GoalFormComponent from '../../components/goals/GoalFormComponent';
-import { vi } from 'vitest';
 
 // Mock the toast component
 vi.mock('@/hooks/use-toast', () => ({

@@ -1,7 +1,8 @@
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGoalWorkflow } from '../../contexts/goal/hooks/useGoalWorkflow';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Goal } from '@/types';
 
 describe('useGoalWorkflow', () => {
   const mockSetGoals = vi.fn();
@@ -9,20 +10,36 @@ describe('useGoalWorkflow', () => {
   const mockUser = { id: 'user-1', role: 'member' };
   const mockManagerUser = { id: 'manager-1', role: 'manager' };
   
-  const mockGoals = [
+  const mockGoals: Goal[] = [
     { 
       id: 'goal-1', 
       userId: 'user-1',
       spaceId: 'space-1',
       status: 'draft',
-      title: 'Draft Goal'
+      title: 'Draft Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'medium',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     },
     { 
       id: 'goal-2', 
       userId: 'user-1',
       spaceId: 'space-1', 
       status: 'submitted',
-      title: 'Submitted Goal'
+      title: 'Submitted Goal',
+      description: 'Test description',
+      category: 'Technical Skills',
+      priority: 'high',
+      weightage: 20,
+      targetDate: '2025-05-20',
+      createdAt: '2025-05-01',
+      updatedAt: '2025-05-01',
+      feedback: ''
     }
   ];
   
@@ -44,6 +61,12 @@ describe('useGoalWorkflow', () => {
   beforeEach(() => {
     mockSetGoals.mockClear();
     mockSetNotifications.mockClear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-05-06'));
+  });
+  
+  afterEach(() => {
+    vi.useRealTimers();
   });
   
   it('should submit a goal', () => {
