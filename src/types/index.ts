@@ -1,3 +1,4 @@
+
 export type UserRole = 'admin' | 'manager' | 'member';
 
 export interface User {
@@ -11,6 +12,7 @@ export interface User {
 }
 
 export * from './goal';
+export * from './goal-space';
 
 export interface Notification {
   id: string;

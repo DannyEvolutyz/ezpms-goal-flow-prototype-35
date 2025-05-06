@@ -101,31 +101,11 @@ interface GetActiveSpaceParams {
 
 export const getActiveSpace = ({ spaces }: GetActiveSpaceParams) => {
   const now = new Date().toISOString();
-  
-  // First try to find a space where submission is still open
-  let activeSpace = spaces.find(space => 
+  return spaces.find(space => 
     space.isActive && 
     new Date(space.startDate).toISOString() <= now && 
-    new Date(space.submissionDeadline).toISOString() >= now
+    new Date(space.reviewDeadline).toISOString() >= now
   );
-  
-  // If no space with open submissions, find one where review is still open
-  if (!activeSpace) {
-    activeSpace = spaces.find(space => 
-      space.isActive && 
-      new Date(space.startDate).toISOString() <= now && 
-      new Date(space.reviewDeadline).toISOString() >= now
-    );
-  }
-  
-  // If no active space found, return the most recent space by creation date
-  if (!activeSpace && spaces.length > 0) {
-    return [...spaces].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )[0];
-  }
-  
-  return activeSpace;
 };
 
 interface CanCreateOrEditGoalsParams {

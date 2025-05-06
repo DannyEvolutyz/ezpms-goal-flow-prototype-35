@@ -6,7 +6,7 @@ import { useGoals } from '@/contexts/GoalContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { Check as CheckIcon } from 'lucide-react';
-import { Goal, GoalSpace } from '@/types';
+import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import {
   Tooltip,
@@ -30,10 +30,14 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   spaceId,
   isReadOnly = false
 }) => {
-  const { getGoalsByStatus, updateGoal, submitGoal, canCreateOrEditGoals } = useGoals();
+  const { getGoalsByStatus, updateGoal, submitGoal, isSpaceReadOnly } = useGoals();
   const { user } = useAuth();
   const navigate = useNavigate();
   const isManager = user?.role === 'manager';
+
+  // Determine if the space is read-only
+  const isSpaceReadOnlyState = spaceId ? isSpaceReadOnly(spaceId) : false;
+  const effectiveReadOnly = isReadOnly || isSpaceReadOnlyState;
 
   // Use provided goals or fetch by status
   const goals = propGoals || [
@@ -68,7 +72,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   };
 
   const handleMarkGoalComplete = (goal: Goal) => {
-    if (isReadOnly) {
+    if (effectiveReadOnly) {
       toast({
         title: "Cannot update goal",
         description: "This goal space is now read-only.",
@@ -85,7 +89,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   };
   
   const handleSubmitGoal = (goalId: string) => {
-    if (isReadOnly) {
+    if (effectiveReadOnly) {
       toast({
         title: "Cannot submit goal",
         description: "This goal space is now read-only.",
@@ -98,7 +102,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   };
   
   const handleEditGoal = (goalId: string) => {
-    if (isReadOnly) {
+    if (effectiveReadOnly) {
       toast({
         title: "Cannot edit goal",
         description: "This goal space is now read-only.",
@@ -113,7 +117,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
 
   return (
     <div className="space-y-6">
-      {isReadOnly && (
+      {effectiveReadOnly && (
         <div className="bg-amber-50 border border-amber-200 p-4 rounded-md flex items-center gap-3 mb-4">
           <AlertCircle className="h-5 w-5 text-amber-500" />
           <p className="text-amber-800 text-sm">
@@ -126,13 +130,13 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
         <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Goals Yet</h3>
           <p className="text-gray-500 mb-4">You haven't created any goals in this space yet.</p>
-          {!isManager && !isReadOnly && (
+          {!isManager && !effectiveReadOnly && (
             <Button onClick={onCreateNew} className="inline-flex items-center gap-2">
               <Plus className="h-4 w-4" />
               <span>Create my first goal</span>
             </Button>
           )}
-          {isReadOnly && (
+          {effectiveReadOnly && (
             <p className="text-sm text-muted-foreground">
               You can no longer create goals in this space as the submission deadline has passed.
             </p>
@@ -157,7 +161,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           Weightage: {goal.weightage}%
                         </span>
-                        {isReadOnly && (
+                        {effectiveReadOnly && (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -207,7 +211,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
                     </div>
                     
                     {/* Goal Action Buttons */}
-                    {goal.status === 'draft' && !isReadOnly && (
+                    {goal.status === 'draft' && !effectiveReadOnly && (
                       <div className="mt-4 flex justify-end space-x-2">
                         <Button 
                           variant="outline" 
@@ -235,7 +239,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
         )
       ))}
 
-      {hasGoals && !isManager && !isReadOnly && (
+      {hasGoals && !isManager && !effectiveReadOnly && (
         <div className="mt-6 text-center">
           <Button onClick={onCreateNew} className="inline-flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -244,7 +248,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
         </div>
       )}
       
-      {hasGoals && isReadOnly && (
+      {hasGoals && effectiveReadOnly && (
         <div className="mt-6 text-center text-sm text-muted-foreground">
           The submission period for this goal space has ended. Goals are now read-only.
         </div>

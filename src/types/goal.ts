@@ -11,6 +11,7 @@ export interface Milestone {
 export interface Goal {
   id: string;
   userId: string;
+  spaceId: string; // Adding spaceId to the Goal interface
   title: string;
   description: string;
   category: string;

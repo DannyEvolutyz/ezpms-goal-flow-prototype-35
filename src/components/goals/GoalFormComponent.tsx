@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,13 +13,15 @@ import GoalDescriptionField from './GoalDescriptionField';
 import GoalCategorySelector from './GoalCategorySelector';
 import GoalPrioritySelector from './GoalPrioritySelector';
 import GoalTargetDatePicker from './GoalTargetDatePicker';
+import GoalSpaceSelector from './GoalSpaceSelector';
 import { goalFormSchema, GoalFormValues } from './goalFormSchema';
 import { format } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 
 const GoalFormComponent = () => {
-  const { addGoal, goals } = useGoals();
+  const { addGoal, goals, getAvailableSpaces } = useGoals();
   const [formKey, setFormKey] = useState(0);
+  const availableSpaces = getAvailableSpaces();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -30,6 +33,7 @@ const GoalFormComponent = () => {
       weightage: 0,
       targetDate: undefined,
       milestones: [],
+      spaceId: availableSpaces.length > 0 ? availableSpaces[0]?.id : '',
     },
   });
 
@@ -84,6 +88,7 @@ const GoalFormComponent = () => {
       weightage: data.weightage,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
       milestones,
+      spaceId: data.spaceId,
     });
 
     form.reset();
@@ -102,6 +107,7 @@ const GoalFormComponent = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <GoalSpaceSelector form={form} />
               <GoalTitleField form={form} />
               <GoalDescriptionField form={form} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -115,7 +114,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       </div>
       
       {isReadOnly && (
-        <Alert variant="warning" className="bg-amber-50 border-amber-200">
+        <Alert variant="destructive" className="bg-amber-50 border-amber-200">
           <AlertCircle className="h-4 w-4 text-amber-500" />
           <AlertTitle className="text-amber-800">Read-only Goal</AlertTitle>
           <AlertDescription className="text-amber-700">
