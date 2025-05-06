@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, User, UserCog, ListCheck, FolderPlus } from 'lucide-react';
+import { Settings, User, UserCog, ListCheck, FolderPlus, FileCheck } from 'lucide-react';
 import GoalBankManager from '@/components/admin/GoalBankManager';
 import GoalSpaceManager from '@/components/admin/GoalSpaceManager';
+import SpaceGoalTemplateForm from '@/components/admin/SpaceGoalTemplateForm';
 
 const AdminDashboard = () => {
   return (
@@ -12,7 +13,7 @@ const AdminDashboard = () => {
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
       <Tabs defaultValue="goalbank" className="space-y-6">
-        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-4">
+        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-5">
           <TabsTrigger value="goalbank" className="flex items-center gap-2">
             <ListCheck className="h-4 w-4" />
             <span>Goal Bank</span>
@@ -20,6 +21,10 @@ const AdminDashboard = () => {
           <TabsTrigger value="goalspaces" className="flex items-center gap-2">
             <FolderPlus className="h-4 w-4" />
             <span>Goal Spaces</span>
+          </TabsTrigger>
+          <TabsTrigger value="spacegoals" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            <span>Space Goals</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <User className="h-4 w-4" />
@@ -37,6 +42,32 @@ const AdminDashboard = () => {
         
         <TabsContent value="goalspaces">
           <GoalSpaceManager />
+        </TabsContent>
+        
+        <TabsContent value="spacegoals">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SpaceGoalTemplateForm />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Space Goal Templates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500 py-4 text-center">
+                  Goal templates assigned to specific spaces will appear here.
+                </p>
+                
+                <div className="mt-4">
+                  <ul className="space-y-2">
+                    {/* This section will be expanded in the future to show templates by space */}
+                    <li className="text-center text-sm text-gray-400">
+                      No space goal templates found
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="users">
