@@ -3,7 +3,8 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoals } from '@/contexts/GoalContext';
 import { format } from 'date-fns';
-import { Clock } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface GoalSpaceSelectorProps {
   form: any;
@@ -12,6 +13,13 @@ interface GoalSpaceSelectorProps {
 const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
   const { getAvailableSpaces } = useGoals();
   const availableSpaces = getAvailableSpaces();
+  
+  // Set default value if spaces are available but none selected
+  useEffect(() => {
+    if (availableSpaces.length > 0 && !form.getValues('spaceId')) {
+      form.setValue('spaceId', availableSpaces[0].id);
+    }
+  }, [availableSpaces, form]);
   
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'PPP');
@@ -27,7 +35,7 @@ const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
           <Select
             onValueChange={field.onChange}
             defaultValue={field.value}
-            value={field.value}
+            value={field.value || ''}
           >
             <FormControl>
               <SelectTrigger className="w-full">
@@ -53,9 +61,12 @@ const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
             </SelectContent>
           </Select>
           {availableSpaces.length === 0 && (
-            <p className="text-xs text-amber-500 mt-1">
-              No goal spaces are currently available. Please contact your administrator.
-            </p>
+            <div className="flex items-center gap-2 text-amber-500 mt-2">
+              <AlertCircle className="h-4 w-4" />
+              <p className="text-xs">
+                No goal spaces are currently available. Please contact your administrator.
+              </p>
+            </div>
           )}
           <FormMessage />
         </FormItem>

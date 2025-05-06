@@ -115,6 +115,12 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
     navigate(`/goals/edit/${goalId}`);
   };
 
+  const handleCreateNew = () => {
+    if (onCreateNew) {
+      onCreateNew();
+    }
+  };
+
   return (
     <div className="space-y-6">
       {effectiveReadOnly && (
@@ -131,7 +137,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Goals Yet</h3>
           <p className="text-gray-500 mb-4">You haven't created any goals in this space yet.</p>
           {!isManager && !effectiveReadOnly && (
-            <Button onClick={onCreateNew} className="inline-flex items-center gap-2">
+            <Button onClick={handleCreateNew} className="inline-flex items-center gap-2">
               <Plus className="h-4 w-4" />
               <span>Create my first goal</span>
             </Button>
@@ -241,7 +247,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
 
       {hasGoals && !isManager && !effectiveReadOnly && (
         <div className="mt-6 text-center">
-          <Button onClick={onCreateNew} className="inline-flex items-center gap-2">
+          <Button onClick={handleCreateNew} className="inline-flex items-center gap-2">
             <Plus className="h-4 w-4" />
             <span>Create New Goal</span>
           </Button>
