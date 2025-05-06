@@ -25,6 +25,9 @@ export const goalFormSchema = z.object({
     message: 'Target date must be in the future',
   }),
   milestones: z.array(milestoneSchema).max(10, { message: 'No more than 10 milestones' }).optional(),
+  spaceId: z.string({
+    required_error: 'Please select a goal space',
+  }),
 });
 
 export type GoalFormValues = z.infer<typeof goalFormSchema>;

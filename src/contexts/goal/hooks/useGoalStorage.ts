@@ -40,7 +40,7 @@ const initialGoalSpaces: GoalSpace[] = [
 // Update default goals to have spaceId
 const goalsWithSpace = initialGoals.map(goal => ({
   ...goal,
-  spaceId: 'space-1'
+  spaceId: goal.spaceId || 'space-1'
 }));
 
 export const useGoalStorage = () => {

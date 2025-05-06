@@ -1,3 +1,4 @@
+
 import { Goal, GoalBank, Notification } from '@/types';
 
 // Predefined goal templates
@@ -78,6 +79,7 @@ export const initialGoals: Goal[] = [
   {
     id: 'goal-1',
     userId: 'member-1',
+    spaceId: 'space-1', // Adding spaceId
     title: 'Master React and TypeScript',
     description: 'Improve skills in React and TypeScript for front-end development',
     category: 'Technical Skills',
@@ -115,6 +117,7 @@ export const initialGoals: Goal[] = [
   {
     id: 'goal-2',
     userId: 'member-1',
+    spaceId: 'space-1', // Adding spaceId
     title: 'Improve Code Review Skills',
     description: 'Become more effective at reviewing code and providing constructive feedback',
     category: 'Professional Development',
@@ -145,6 +148,7 @@ export const initialGoals: Goal[] = [
   {
     id: 'goal-3',
     userId: 'member-2',
+    spaceId: 'space-1', // Adding spaceId
     title: 'Learn Cloud Computing',
     description: 'Gain knowledge and skills in cloud platforms and services',
     category: 'Technical Skills',
@@ -175,6 +179,7 @@ export const initialGoals: Goal[] = [
   {
     id: 'goal-4',
     userId: 'member-4',
+    spaceId: 'space-1', // Adding spaceId
     title: 'Develop Leadership Skills',
     description: 'Work on improving team leadership and management abilities',
     category: 'Leadership',
@@ -212,6 +217,7 @@ export const initialGoals: Goal[] = [
   {
     id: 'goal-5',
     userId: 'member-5',
+    spaceId: 'space-1', // Adding spaceId
     title: 'Improve Testing Practices',
     description: 'Enhance knowledge and implementation of testing methodologies',
     category: 'Technical Skills',

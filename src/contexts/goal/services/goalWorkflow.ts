@@ -10,6 +10,7 @@ interface SubmitGoalParams {
   setNotifications: Dispatch<SetStateAction<any[]>>;
   createNotification: (params: any) => void;
   getAllUsers: () => any[];
+  canCreateOrEditGoals?: (spaceId?: string) => boolean;
 }
 
 export const submitGoal = ({
@@ -19,13 +20,26 @@ export const submitGoal = ({
   setGoals,
   setNotifications,
   createNotification,
-  getAllUsers
+  getAllUsers,
+  canCreateOrEditGoals
 }: SubmitGoalParams) => {
   if (!user) return;
   
   const goalToSubmit = goals.find(g => g.id === goalId);
   
   if (!goalToSubmit || goalToSubmit.userId !== user.id) return;
+  
+  // Check if user can submit goals in this space
+  if (canCreateOrEditGoals && !canCreateOrEditGoals(goalToSubmit.spaceId)) {
+    createNotification({
+      userId: user.id,
+      title: 'Goal Submission Failed',
+      message: 'You cannot submit goals in this space right now due to submission deadline.',
+      type: 'error',
+      setNotifications,
+    });
+    return;
+  }
   
   setGoals(prev => 
     prev.map(goal => 
@@ -73,6 +87,7 @@ interface ApproveGoalParams {
   setGoals: Dispatch<SetStateAction<Goal[]>>;
   setNotifications: Dispatch<SetStateAction<any[]>>;
   createNotification: (params: any) => void;
+  canReviewGoals?: (spaceId?: string) => boolean;
 }
 
 export const approveGoal = ({
@@ -82,13 +97,26 @@ export const approveGoal = ({
   user,
   setGoals,
   setNotifications,
-  createNotification
+  createNotification,
+  canReviewGoals
 }: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToApprove = goals.find(g => g.id === goalId);
   
   if (!goalToApprove) return;
+  
+  // Check if manager can review goals in this space
+  if (canReviewGoals && !canReviewGoals(goalToApprove.spaceId)) {
+    createNotification({
+      userId: user.id,
+      title: 'Goal Review Failed',
+      message: 'You cannot review goals in this space right now due to review deadline.',
+      type: 'error',
+      setNotifications,
+    });
+    return;
+  }
   
   setGoals(prev => 
     prev.map(goal => 
@@ -131,13 +159,26 @@ export const rejectGoal = ({
   user,
   setGoals,
   setNotifications,
-  createNotification
+  createNotification,
+  canReviewGoals
 }: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReject = goals.find(g => g.id === goalId);
   
   if (!goalToReject) return;
+  
+  // Check if manager can review goals in this space
+  if (canReviewGoals && !canReviewGoals(goalToReject.spaceId)) {
+    createNotification({
+      userId: user.id,
+      title: 'Goal Review Failed',
+      message: 'You cannot review goals in this space right now due to review deadline.',
+      type: 'error',
+      setNotifications,
+    });
+    return;
+  }
   
   setGoals(prev => 
     prev.map(goal => 
@@ -180,13 +221,26 @@ export const returnGoalForRevision = ({
   user,
   setGoals,
   setNotifications,
-  createNotification
+  createNotification,
+  canReviewGoals
 }: ApproveGoalParams) => {
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReturn = goals.find(g => g.id === goalId);
   
   if (!goalToReturn) return;
+  
+  // Check if manager can review goals in this space
+  if (canReviewGoals && !canReviewGoals(goalToReturn.spaceId)) {
+    createNotification({
+      userId: user.id,
+      title: 'Goal Review Failed',
+      message: 'You cannot review goals in this space right now due to review deadline.',
+      type: 'error',
+      setNotifications,
+    });
+    return;
+  }
   
   setGoals(prev => 
     prev.map(goal => 
