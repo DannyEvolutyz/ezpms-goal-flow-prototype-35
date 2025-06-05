@@ -1,5 +1,5 @@
 
-import { useGoals } from '@/contexts/GoalContext';
+import { useGoals } from '@/contexts/goal';
 import { GoalBank } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,9 @@ interface GoalBankComponentProps {
 const GoalBankComponent = ({ onSelectTemplate }: GoalBankComponentProps) => {
   const { goalBank } = useGoals();
 
+  console.log('GoalBankComponent - goalBank:', goalBank);
+  console.log('GoalBankComponent - onSelectTemplate function:', onSelectTemplate);
+
   if (!goalBank.length) {
     return (
       <div className="text-gray-500 italic mb-4">
@@ -21,6 +24,17 @@ const GoalBankComponent = ({ onSelectTemplate }: GoalBankComponentProps) => {
       </div>
     );
   }
+
+  const handleTemplateSelect = (template: GoalBank) => {
+    console.log('Template selected:', template);
+    const templateData = {
+      title: template.title,
+      description: template.description,
+      category: template.category
+    };
+    console.log('Calling onSelectTemplate with:', templateData);
+    onSelectTemplate(templateData);
+  };
 
   return (
     <div className="space-y-4">
@@ -48,11 +62,7 @@ const GoalBankComponent = ({ onSelectTemplate }: GoalBankComponentProps) => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => onSelectTemplate({
-                  title: template.title,
-                  description: template.description,
-                  category: template.category
-                })}
+                onClick={() => handleTemplateSelect(template)}
               >
                 Use This Template
               </Button>
@@ -65,4 +75,3 @@ const GoalBankComponent = ({ onSelectTemplate }: GoalBankComponentProps) => {
 };
 
 export default GoalBankComponent;
-

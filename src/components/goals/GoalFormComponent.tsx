@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGoals } from '@/contexts/GoalContext';
+import { useGoals } from '@/contexts/goal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -42,15 +42,27 @@ const GoalFormComponent = () => {
   });
 
   const applyTemplate = (template: { title: string; description: string; category: string }) => {
-    console.log('Applying template:', template);
+    console.log('GoalFormComponent - Applying template:', template);
+    
+    // Set form values
     form.setValue('title', template.title);
     form.setValue('description', template.description);
     form.setValue('category', template.category as any);
-    // Force form to re-render to show the new values
-    form.trigger();
+    
+    // Force form to re-render and validate
+    form.trigger(['title', 'description', 'category']);
+    
+    console.log('Template applied successfully');
+    
+    toast({
+      title: "Template Applied",
+      description: `Template "${template.title}" has been applied to your goal form.`,
+    });
   };
 
   const onSubmit = (data: GoalFormValues) => {
+    console.log('Submitting goal with data:', data);
+    
     const withMilestones =
       data.milestones &&
       Array.isArray(data.milestones) &&
