@@ -36,6 +36,21 @@ const GoalCard: React.FC<GoalCardProps> = ({
     return Math.round(100 * (completed / goal.milestones.length));
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'submitted':
+        return <Badge className="bg-blue-100 text-blue-800">Submitted</Badge>;
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+      case 'under_review':
+        return <Badge className="bg-yellow-100 text-yellow-800">Under Review</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">Draft</Badge>;
+    }
+  };
+
   const percent = getCompletion(goal);
   const allComplete = percent === 100 && goal.milestones?.length > 0;
 
@@ -44,6 +59,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-medium">{goal.title}</h4>
         <div className="flex items-center gap-2">
+          {getStatusBadge(goal.status)}
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             Weightage: {goal.weightage}%
           </span>
@@ -64,6 +80,14 @@ const GoalCard: React.FC<GoalCardProps> = ({
         </div>
       </div>
       <div className="mt-2 text-sm text-gray-500">{goal.description}</div>
+
+      {/* Show feedback if goal has been reviewed */}
+      {goal.feedback && (goal.status === 'rejected' || goal.status === 'under_review') && (
+        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+          <p className="text-sm font-medium text-amber-800">Manager Feedback:</p>
+          <p className="text-sm text-amber-700 mt-1">{goal.feedback}</p>
+        </div>
+      )}
 
       {goal.milestones && goal.milestones.length > 0 && (
         <div className="my-2">
