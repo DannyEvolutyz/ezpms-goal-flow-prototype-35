@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +25,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
   // Allow editing if goal is under review, even if space is normally read-only
   const isReadOnly = isSpaceReadOnlyState && goal.status !== 'under_review';
   
-  // Initialize the form with goal data
+  // Initialize the form with goal data including milestones
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
     defaultValues: {
@@ -35,6 +34,14 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       category: goal.category as any,
       priority: goal.priority,
       targetDate: new Date(goal.targetDate),
+      milestones: goal.milestones?.map(milestone => ({
+        title: milestone.title,
+        description: milestone.description || '',
+        completed: milestone.completed || false,
+        completionComment: milestone.completionComment || '',
+        targetDate: milestone.targetDate ? new Date(milestone.targetDate) : undefined,
+      })) || [],
+      spaceId: goal.spaceId,
     },
   });
 
@@ -49,6 +56,19 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       return;
     }
     
+    // Process milestones data
+    const processedMilestones = data.milestones?.map((m, i) => ({
+      id: goal.milestones?.[i]?.id || `ms-${Date.now()}-${i}`,
+      title: m.title,
+      description: m.description,
+      completed: m.completed || false,
+      completionComment: m.completionComment,
+      targetDate: m.targetDate ? (m.targetDate instanceof Date
+        ? m.targetDate.toISOString().split('T')[0]
+        : m.targetDate
+      ) : undefined,
+    })) || [];
+    
     updateGoal({
       ...goal,
       title: data.title,
@@ -56,6 +76,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       category: data.category,
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
+      milestones: processedMilestones,
       // Keep the status unchanged
     });
     

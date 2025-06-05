@@ -2,12 +2,13 @@
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import GoalTitleField from '../GoalTitleField';
 import GoalDescriptionField from '../GoalDescriptionField';
 import GoalCategorySelector from '../GoalCategorySelector';
 import GoalPrioritySelector from '../GoalPrioritySelector';
 import GoalTargetDatePicker from '../GoalTargetDatePicker';
+import MilestonesArrayField from '../MilestonesArrayField';
 
 interface EditFormFieldsProps {
   form: UseFormReturn<any>;
@@ -22,6 +23,11 @@ const EditFormFields: React.FC<EditFormFieldsProps> = ({
   onCancel,
   isReadOnly
 }) => {
+  const milestoneFieldArray = useFieldArray({
+    control: form.control,
+    name: 'milestones',
+  });
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -34,6 +40,10 @@ const EditFormFields: React.FC<EditFormFieldsProps> = ({
         </div>
         
         <GoalTargetDatePicker form={form} isReadOnly={isReadOnly} />
+        
+        {!isReadOnly && (
+          <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />
+        )}
         
         <div className="flex justify-between pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
