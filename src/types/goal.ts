@@ -22,6 +22,8 @@ export interface Goal {
   reviewerId?: string;
   milestones?: Milestone[];
   weightage: number;
+  rating?: number;
+  ratingComment?: string;
   createdAt: string;
   updatedAt: string;
 }

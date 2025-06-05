@@ -1,18 +1,17 @@
-
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { BarChart, Target, ArrowDown, Users } from 'lucide-react';
+import { BarChart, Target, ArrowDown, Users, Star } from 'lucide-react';
 import PendingGoalsList from '@/components/manager/PendingGoalsList';
 import GoalReviewPanel from '@/components/manager/GoalReviewPanel';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ManagerDashboard = () => {
-  const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision } = useGoals();
+  const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
   const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
@@ -42,6 +41,9 @@ const ManagerDashboard = () => {
   
   // Get goals that need review (pending approval)
   const pendingGoals = teamGoals.filter(goal => goal.status === 'pending_approval');
+  
+  // Get goals that are submitted for review (ready for rating)
+  const submittedGoals = teamGoals.filter(goal => goal.status === 'submitted');
   
   console.log('Manager Dashboard - Filtered goals:', filteredGoals);
   
@@ -108,6 +110,27 @@ const ManagerDashboard = () => {
     setFeedback('');
   };
 
+  const handleRateGoal = (rating: number, comment: string) => {
+    if (!selectedGoal) return;
+    
+    const updatedGoal = {
+      ...selectedGoal,
+      rating,
+      ratingComment: comment,
+      status: 'final_approved' as const,
+      updatedAt: new Date().toISOString()
+    };
+    
+    updateGoal(updatedGoal);
+    toast({
+      title: 'Goal Rated',
+      description: `You've rated "${selectedGoal.title}" with ${rating} stars`,
+      duration: 3000,
+    });
+    
+    setSelectedGoal(null);
+  };
+
   const getGoalOwnerName = (userId) => {
     const user = allUsers.find(u => u.id === userId);
     return user ? user.name : 'Unknown User';
@@ -139,13 +162,22 @@ const ManagerDashboard = () => {
       <h1 className="text-2xl font-bold mb-6">Manager Dashboard</h1>
       
       <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-4">
+        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-5">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Review Goals</span>
             {pendingGoals.length > 0 && (
               <span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {pendingGoals.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="submitted" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            <span>Rate Goals</span>
+            {submittedGoals.length > 0 && (
+              <span className="ml-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {submittedGoals.length}
               </span>
             )}
           </TabsTrigger>
@@ -183,6 +215,33 @@ const ManagerDashboard = () => {
                 onApprove={handleApprove}
                 onReject={handleReject}
                 onReturnForRevision={handleReturnForRevision}
+                getGoalOwnerName={getGoalOwnerName}
+              />
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="submitted">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PendingGoalsList
+              filteredGoals={submittedGoals}
+              teamMembers={teamMembers}
+              selectedUserId={selectedUserId}
+              selectedGoal={selectedGoal}
+              onUserChange={setSelectedUserId}
+              onSelectGoal={handleSelectGoal}
+              getGoalOwnerName={getGoalOwnerName}
+            />
+            
+            {selectedGoal && (
+              <GoalReviewPanel
+                selectedGoal={selectedGoal}
+                feedback={feedback}
+                onFeedbackChange={setFeedback}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onReturnForRevision={handleReturnForRevision}
+                onRateGoal={handleRateGoal}
                 getGoalOwnerName={getGoalOwnerName}
               />
             )}
