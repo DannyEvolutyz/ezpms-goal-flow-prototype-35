@@ -64,7 +64,7 @@ const Goals = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="view">My Goals</TabsTrigger>
-          <TabsTrigger value="create" disabled={user?.role === 'manager' || !activeSpace}>Create New Goal</TabsTrigger>
+          <TabsTrigger value="create" disabled={!activeSpace}>Create New Goal</TabsTrigger>
         </TabsList>
         
         <TabsContent value="view">

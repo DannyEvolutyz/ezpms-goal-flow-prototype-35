@@ -28,7 +28,6 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   const { getGoalsByStatus, updateGoal, submitGoal, isSpaceReadOnly } = useGoals();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isManager = user?.role === 'manager';
 
   // Determine if the space is read-only
   const isSpaceReadOnlyState = spaceId ? isSpaceReadOnly(spaceId) : false;
@@ -190,7 +189,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
       {!hasGoals && (
         <NoGoalsMessage 
           onCreateNew={handleCreateNew}
-          isManager={isManager}
+          isManager={false}
           effectiveReadOnly={effectiveReadOnly}
         />
       )}
@@ -212,7 +211,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
       ))}
 
       {/* Create goal button for existing goals */}
-      {hasGoals && !isManager && !effectiveReadOnly && draftGoals.length < 5 && (
+      {hasGoals && !effectiveReadOnly && draftGoals.length < 5 && (
         <CreateGoalButton onCreateNew={handleCreateNew} />
       )}
       

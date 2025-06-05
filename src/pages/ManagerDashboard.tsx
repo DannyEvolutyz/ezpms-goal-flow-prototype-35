@@ -1,20 +1,37 @@
+
 import { useGoals } from '@/contexts/goal';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { BarChart, CheckCircle, Target, XCircle, ArrowDown } from 'lucide-react';
+import { BarChart, CheckCircle, Target, XCircle, ArrowDown, Users } from 'lucide-react';
 
 const ManagerDashboard = () => {
   const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision } = useGoals();
+  const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
   const [selectedGoal, setSelectedGoal] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState('all');
   
   const teamGoals = getTeamGoals();
-  const pendingGoals = teamGoals.filter(goal => goal.status === 'submitted');
+  const allUsers = getAllUsers();
+  
+  // Get team members for the current manager
+  const teamMembers = allUsers.filter(u => u.managerId === user?.id);
+  
+  // Filter goals based on selected user and status
+  const filteredGoals = teamGoals.filter(goal => {
+    const isSubmitted = goal.status === 'submitted';
+    if (selectedUserId === 'all') {
+      return isSubmitted;
+    }
+    return isSubmitted && goal.userId === selectedUserId;
+  });
   
   const handleSelectGoal = (goal) => {
     setSelectedGoal(goal);
@@ -78,6 +95,11 @@ const ManagerDashboard = () => {
     setSelectedGoal(null);
     setFeedback('');
   };
+
+  const getGoalOwnerName = (userId) => {
+    const user = allUsers.find(u => u.id === userId);
+    return user ? user.name : 'Unknown User';
+  };
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -88,9 +110,9 @@ const ManagerDashboard = () => {
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Review Goals</span>
-            {pendingGoals.length > 0 && (
+            {filteredGoals.length > 0 && (
               <span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {pendingGoals.length}
+                {filteredGoals.length}
               </span>
             )}
           </TabsTrigger>
@@ -108,12 +130,31 @@ const ManagerDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Goals Pending Review</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Goals Pending Review
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Filter by team member:</label>
+                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select team member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">View All</SelectItem>
+                      {teamMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
-                {pendingGoals.length > 0 ? (
+                {filteredGoals.length > 0 ? (
                   <div className="space-y-4">
-                    {pendingGoals.map((goal) => (
+                    {filteredGoals.map((goal) => (
                       <div 
                         key={goal.id}
                         className={`border rounded-lg p-4 cursor-pointer transition hover:border-blue-300 ${
@@ -121,10 +162,15 @@ const ManagerDashboard = () => {
                         }`}
                         onClick={() => handleSelectGoal(goal)}
                       >
-                        <h3 className="font-medium">{goal.title}</h3>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium">{goal.title}</h3>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            {getGoalOwnerName(goal.userId)}
+                          </span>
+                        </div>
                         <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                             {goal.category}
                           </span>
                           <span className="text-xs text-gray-500">
@@ -136,7 +182,10 @@ const ManagerDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    No goals pending your review
+                    {selectedUserId === 'all' 
+                      ? 'No goals pending your review'
+                      : `No goals pending review from ${teamMembers.find(m => m.id === selectedUserId)?.name || 'selected member'}`
+                    }
                   </div>
                 )}
               </CardContent>
@@ -146,6 +195,9 @@ const ManagerDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Review Goal</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Goal by: {getGoalOwnerName(selectedGoal.userId)}
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <h3 className="font-medium text-lg">{selectedGoal.title}</h3>
@@ -159,6 +211,10 @@ const ManagerDashboard = () => {
                     <div>
                       <span className="text-sm font-medium">Priority:</span>
                       <span className="ml-2 text-sm">{selectedGoal.priority}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Weightage:</span>
+                      <span className="ml-2 text-sm">{selectedGoal.weightage}%</span>
                     </div>
                     <div>
                       <span className="text-sm font-medium">Target Date:</span>
