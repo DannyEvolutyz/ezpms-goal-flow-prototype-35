@@ -1,13 +1,13 @@
+
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { BarChart, CheckCircle, Target, XCircle, ArrowDown, Users } from 'lucide-react';
+import { BarChart, Target, ArrowDown } from 'lucide-react';
+import PendingGoalsList from '@/components/manager/PendingGoalsList';
+import GoalReviewPanel from '@/components/manager/GoalReviewPanel';
 
 const ManagerDashboard = () => {
   const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision } = useGoals();
@@ -136,155 +136,26 @@ const ManagerDashboard = () => {
         
         <TabsContent value="pending">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Goals Pending Review ({filteredGoals.length})
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Filter by team member:</label>
-                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select team member" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">View All</SelectItem>
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
-                          {member.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {filteredGoals.length > 0 ? (
-                  <div className="space-y-4">
-                    {filteredGoals.map((goal) => (
-                      <div 
-                        key={goal.id}
-                        className={`border rounded-lg p-4 cursor-pointer transition hover:border-blue-300 ${
-                          selectedGoal?.id === goal.id ? 'border-blue-500 bg-blue-50' : ''
-                        }`}
-                        onClick={() => handleSelectGoal(goal)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-medium">{goal.title}</h3>
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            {getGoalOwnerName(goal.userId)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                            {goal.category}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            Due: {new Date(goal.targetDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="mt-2">
-                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                            Weightage: {goal.weightage}%
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    {selectedUserId === 'all' 
-                      ? 'No goals pending your review'
-                      : `No goals pending review from ${teamMembers.find(m => m.id === selectedUserId)?.name || 'selected member'}`
-                    }
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <PendingGoalsList
+              filteredGoals={filteredGoals}
+              teamMembers={teamMembers}
+              selectedUserId={selectedUserId}
+              selectedGoal={selectedGoal}
+              onUserChange={setSelectedUserId}
+              onSelectGoal={handleSelectGoal}
+              getGoalOwnerName={getGoalOwnerName}
+            />
             
             {selectedGoal && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Review Goal</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Goal by: {getGoalOwnerName(selectedGoal.userId)}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <h3 className="font-medium text-lg">{selectedGoal.title}</h3>
-                  <p className="text-gray-600 mt-1">{selectedGoal.description}</p>
-                  
-                  <div className="mt-4 space-y-2">
-                    <div>
-                      <span className="text-sm font-medium">Category:</span>
-                      <span className="ml-2 text-sm">{selectedGoal.category}</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Priority:</span>
-                      <span className="ml-2 text-sm">{selectedGoal.priority}</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Weightage:</span>
-                      <span className="ml-2 text-sm">{selectedGoal.weightage}%</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Target Date:</span>
-                      <span className="ml-2 text-sm">
-                        {new Date(selectedGoal.targetDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {selectedGoal.milestones && selectedGoal.milestones.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">Milestones:</h4>
-                      <ul className="list-disc ml-5 text-sm space-y-1">
-                        {selectedGoal.milestones.map((milestone) => (
-                          <li key={milestone.id}>{milestone.title}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  <div className="mt-6">
-                    <label className="block text-sm font-medium mb-1">Feedback</label>
-                    <Textarea
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                      placeholder="Enter feedback for the employee"
-                      className="w-full h-24"
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                    <Button
-                      onClick={handleApprove}
-                      className="flex items-center gap-1"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      <span>Approve</span>
-                    </Button>
-                    <Button
-                      onClick={handleReturnForRevision}
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                      <span>Request Revisions</span>
-                    </Button>
-                    <Button
-                      onClick={handleReject}
-                      variant="destructive"
-                      className="flex items-center gap-1"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      <span>Reject</span>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <GoalReviewPanel
+                selectedGoal={selectedGoal}
+                feedback={feedback}
+                onFeedbackChange={setFeedback}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onReturnForRevision={handleReturnForRevision}
+                getGoalOwnerName={getGoalOwnerName}
+              />
             )}
           </div>
         </TabsContent>
