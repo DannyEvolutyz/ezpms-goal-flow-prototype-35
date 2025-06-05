@@ -26,14 +26,18 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   showSubmitOption = false,
   showApprovalOption = false
 }) => {
-  if (goals.length === 0) {
-    return null;
-  }
+  if (goals.length === 0) return null;
 
   return (
     <div className="space-y-4">
-      <h3 className="font-medium text-lg">{title} Goals ({goals.length})</h3>
-      <div className="grid gap-4 md:grid-cols-2">
+      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        {title}
+        <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+          {goals.length}
+        </span>
+      </h3>
+      
+      <div className="grid gap-4">
         {goals.map(goal => (
           <GoalCard
             key={goal.id}
