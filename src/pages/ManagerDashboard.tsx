@@ -1,4 +1,3 @@
-
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -18,20 +17,29 @@ const ManagerDashboard = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState('all');
   
+  console.log('Manager Dashboard - Current user:', user);
+  
   const teamGoals = getTeamGoals();
+  console.log('Manager Dashboard - Team goals:', teamGoals);
+  
   const allUsers = getAllUsers();
+  console.log('Manager Dashboard - All users:', allUsers);
   
   // Get team members for the current manager
   const teamMembers = allUsers.filter(u => u.managerId === user?.id);
+  console.log('Manager Dashboard - Team members:', teamMembers);
   
-  // Filter goals based on selected user and status
+  // Filter goals based on selected user and status - looking for pending_approval goals
   const filteredGoals = teamGoals.filter(goal => {
-    const isSubmitted = goal.status === 'submitted';
+    console.log('Checking goal:', goal.id, 'status:', goal.status, 'userId:', goal.userId);
+    const isPendingApproval = goal.status === 'pending_approval';
     if (selectedUserId === 'all') {
-      return isSubmitted;
+      return isPendingApproval;
     }
-    return isSubmitted && goal.userId === selectedUserId;
+    return isPendingApproval && goal.userId === selectedUserId;
   });
+  
+  console.log('Manager Dashboard - Filtered goals for review:', filteredGoals);
   
   const handleSelectGoal = (goal) => {
     setSelectedGoal(goal);
@@ -132,7 +140,7 @@ const ManagerDashboard = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Goals Pending Review
+                  Goals Pending Review ({filteredGoals.length})
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium">Filter by team member:</label>
@@ -175,6 +183,11 @@ const ManagerDashboard = () => {
                           </span>
                           <span className="text-xs text-gray-500">
                             Due: {new Date(goal.targetDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Weightage: {goal.weightage}%
                           </span>
                         </div>
                       </div>
