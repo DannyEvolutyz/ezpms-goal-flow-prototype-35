@@ -10,7 +10,6 @@ import { format } from 'date-fns';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import GoalEditForm from '@/components/goals/GoalEditForm';
-import WeightageManager from '@/components/goals/goal-list/WeightageManager';
 import { CalendarDays } from 'lucide-react';
 
 const Goals = () => {
@@ -126,14 +125,6 @@ const Goals = () => {
               )}
             </CardContent>
           </Card>
-
-          {selectedSpaceId && filteredGoals.length > 0 && (
-            <WeightageManager 
-              goals={filteredGoals}
-              spaceId={selectedSpaceId}
-              isReadOnly={isReadOnly}
-            />
-          )}
           
           {selectedSpaceId ? (
             <GoalsListComponent

@@ -9,7 +9,10 @@ interface GoalStatusGroupProps {
   effectiveReadOnly: boolean;
   onEditGoal: (goalId: string) => void;
   onSubmitGoal: (goalId: string) => void;
+  onSendForApproval: (goalId: string) => void;
+  onUpdateWeightage: (goalId: string, weightage: number) => void;
   showSubmitOption?: boolean;
+  showApprovalOption?: boolean;
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -18,20 +21,18 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   effectiveReadOnly,
   onEditGoal,
   onSubmitGoal,
-  showSubmitOption = false
+  onSendForApproval,
+  onUpdateWeightage,
+  showSubmitOption = false,
+  showApprovalOption = false
 }) => {
   if (goals.length === 0) {
     return null;
   }
 
-  // Don't render draft goals section
-  if (title === 'Draft') {
-    return null;
-  }
-
   return (
     <div className="space-y-4">
-      <h3 className="font-medium text-lg">{title} Goals</h3>
+      <h3 className="font-medium text-lg">{title} Goals ({goals.length})</h3>
       <div className="grid gap-4 md:grid-cols-2">
         {goals.map(goal => (
           <GoalCard
@@ -40,7 +41,10 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             effectiveReadOnly={effectiveReadOnly}
             onEditGoal={onEditGoal}
             onSubmitGoal={onSubmitGoal}
+            onSendForApproval={onSendForApproval}
+            onUpdateWeightage={onUpdateWeightage}
             showSubmitOption={showSubmitOption}
+            showApprovalOption={showApprovalOption}
           />
         ))}
       </div>

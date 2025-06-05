@@ -14,13 +14,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Lock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface GoalCardProps {
   goal: Goal;
   effectiveReadOnly: boolean;
   onEditGoal: (goalId: string) => void;
   onSubmitGoal: (goalId: string) => void;
+  onSendForApproval: (goalId: string) => void;
+  onUpdateWeightage: (goalId: string, weightage: number) => void;
   showSubmitOption?: boolean;
+  showApprovalOption?: boolean;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({ 
@@ -28,7 +32,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
   effectiveReadOnly, 
   onEditGoal, 
   onSubmitGoal,
-  showSubmitOption = false
+  onSendForApproval,
+  onUpdateWeightage,
+  showSubmitOption = false,
+  showApprovalOption = false
 }) => {
   const getCompletion = (goal: Goal) => {
     if (!goal.milestones || !goal.milestones.length) return 0;
@@ -38,48 +45,77 @@ const GoalCard: React.FC<GoalCardProps> = ({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'submitted':
-        return <Badge className="bg-blue-100 text-blue-800">Submitted</Badge>;
+      case 'draft':
+        return <Badge className="bg-gray-100 text-gray-800">Draft</Badge>;
+      case 'pending_approval':
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending Approval</Badge>;
       case 'approved':
         return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
       case 'rejected':
         return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+      case 'submitted':
+        return <Badge className="bg-blue-100 text-blue-800">Submitted for Review</Badge>;
       case 'under_review':
-        return <Badge className="bg-yellow-100 text-yellow-800">Under Review</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800">Under Review</Badge>;
+      case 'final_approved':
+        return <Badge className="bg-emerald-100 text-emerald-800">Final Approved</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">Draft</Badge>;
     }
   };
 
   const percent = getCompletion(goal);
-  const allComplete = percent === 100 && goal.milestones?.length > 0;
+  const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'under_review' || goal.status === 'final_approved';
+  const canEdit = !effectiveReadOnly && !isApproved && goal.status !== 'pending_approval';
+  const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
+  const canSubmit = !effectiveReadOnly && goal.status === 'approved';
+
+  const handleWeightageChange = (value: string) => {
+    const numValue = parseInt(value) || 0;
+    if (numValue >= 0 && numValue <= 100) {
+      onUpdateWeightage(goal.id, numValue);
+    }
+  };
 
   return (
-    <div className="border rounded-lg p-4">
+    <div className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50 border-green-200' : ''}`}>
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-medium">{goal.title}</h4>
         <div className="flex items-center gap-2">
           {getStatusBadge(goal.status)}
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            Weightage: {goal.weightage}%
-          </span>
-          {effectiveReadOnly && (
+          {isApproved && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <Lock className="h-4 w-4 text-gray-400" />
+                    <Lock className="h-4 w-4 text-green-600" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>This goal is now read-only</p>
+                  <p>This goal is approved and cannot be edited</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}
         </div>
       </div>
+      
       <div className="mt-2 text-sm text-gray-500">{goal.description}</div>
+
+      {/* Weightage Management */}
+      <div className="mt-3 flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+        <span className="text-sm font-medium text-blue-800">Goal Weightage:</span>
+        <Input
+          type="number"
+          min="0"
+          max="100"
+          value={goal.weightage}
+          onChange={(e) => handleWeightageChange(e.target.value)}
+          disabled={isApproved || effectiveReadOnly}
+          className="w-20 h-8"
+        />
+        <span className="text-sm text-blue-800">%</span>
+      </div>
 
       {/* Show feedback if goal has been reviewed */}
       {goal.feedback && (goal.status === 'rejected' || goal.status === 'under_review') && (
@@ -123,8 +159,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
       </div>
       
       {/* Goal Action Buttons */}
-      {showSubmitOption && goal.status === 'approved' && !effectiveReadOnly && (
-        <div className="mt-4 flex justify-end space-x-2">
+      <div className="mt-4 flex justify-end space-x-2">
+        {canEdit && (
           <Button 
             variant="outline" 
             size="sm"
@@ -134,6 +170,21 @@ const GoalCard: React.FC<GoalCardProps> = ({
             <Edit className="h-3 w-3 mr-1" />
             Edit
           </Button>
+        )}
+        
+        {canSendForApproval && showApprovalOption && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onSendForApproval(goal.id)}
+            className="text-xs"
+          >
+            <Send className="h-3 w-3 mr-1" />
+            Send for Approval
+          </Button>
+        )}
+        
+        {canSubmit && showSubmitOption && (
           <Button
             size="sm"
             onClick={() => onSubmitGoal(goal.id)}
@@ -142,8 +193,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
             <Send className="h-3 w-3 mr-1" />
             Submit for Review
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -17,7 +17,7 @@ export interface Goal {
   category: string;
   priority: 'high' | 'medium' | 'low';
   targetDate: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'under_review';
+  status: 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'submitted' | 'under_review' | 'final_approved';
   feedback?: string;
   reviewerId?: string;
   milestones?: Milestone[];
