@@ -65,8 +65,11 @@ const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   const percent = getCompletion(goal);
-  const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'under_review' || goal.status === 'final_approved';
-  const canEdit = !effectiveReadOnly && !isApproved && goal.status !== 'pending_approval';
+  const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
+  const isLocked = isApproved || goal.status === 'pending_approval';
+  
+  // Allow editing for draft, rejected, and under_review statuses
+  const canEdit = !effectiveReadOnly && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review');
   const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
   const canSubmit = !effectiveReadOnly && goal.status === 'approved';
 
@@ -78,12 +81,12 @@ const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   return (
-    <div className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50 border-green-200' : ''}`}>
+    <div className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50 border-green-200' : ''} ${goal.status === 'under_review' ? 'bg-purple-50 border-purple-200' : ''}`}>
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-medium">{goal.title}</h4>
         <div className="flex items-center gap-2">
           {getStatusBadge(goal.status)}
-          {isApproved && (
+          {isLocked && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -92,7 +95,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>This goal is approved and cannot be edited</p>
+                  <p>This goal is {goal.status === 'pending_approval' ? 'pending approval' : 'approved'} and cannot be edited</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -111,7 +114,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
           max="100"
           value={goal.weightage}
           onChange={(e) => handleWeightageChange(e.target.value)}
-          disabled={isApproved || effectiveReadOnly}
+          disabled={isLocked || effectiveReadOnly}
           className="w-20 h-8"
         />
         <span className="text-sm text-blue-800">%</span>
@@ -122,6 +125,11 @@ const GoalCard: React.FC<GoalCardProps> = ({
         <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
           <p className="text-sm font-medium text-amber-800">Manager Feedback:</p>
           <p className="text-sm text-amber-700 mt-1">{goal.feedback}</p>
+          {goal.status === 'under_review' && (
+            <p className="text-sm text-purple-700 mt-2 font-medium">
+              ✏️ You can now edit this goal to address the feedback.
+            </p>
+          )}
         </div>
       )}
 

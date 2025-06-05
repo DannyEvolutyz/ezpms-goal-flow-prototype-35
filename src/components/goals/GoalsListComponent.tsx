@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useGoals } from '@/contexts/GoalContext';
+import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -55,11 +55,11 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
 
   const goalsByStatus = [
     { title: 'Draft', goals: draftGoals, showApprovalOption: true },
+    { title: 'Under Review', goals: underReviewGoals, showApprovalOption: true }, // Allow editing and sending for approval again
     { title: 'Pending Approval', goals: pendingApprovalGoals },
     { title: 'Approved', goals: approvedGoals, showSubmitOption: true },
-    { title: 'Rejected', goals: rejectedGoals },
+    { title: 'Rejected', goals: rejectedGoals, showApprovalOption: true }, // Allow editing and sending for approval again
     { title: 'Submitted for Review', goals: submittedGoals },
-    { title: 'Under Review', goals: underReviewGoals },
     { title: 'Final Approved', goals: finalApprovedGoals },
   ];
 
@@ -119,7 +119,9 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   };
   
   const handleEditGoal = (goalId: string) => {
-    if (effectiveReadOnly) {
+    const goal = goals.find(g => g.id === goalId);
+    
+    if (effectiveReadOnly && goal?.status !== 'under_review') {
       toast({
         title: "Cannot edit goal",
         description: "This goal space is now read-only.",
@@ -142,7 +144,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
     }
     
     const goal = goals.find(g => g.id === goalId);
-    if (goal && goal.status === 'draft') {
+    if (goal && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review')) {
       updateGoal({
         ...goal,
         weightage,
