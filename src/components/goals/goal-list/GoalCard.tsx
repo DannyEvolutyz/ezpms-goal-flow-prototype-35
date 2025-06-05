@@ -41,7 +41,17 @@ const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   const handleEditGoal = () => {
-    onEditGoal(goal.id);
+    console.log('handleEditGoal called in GoalCard for goal:', goal.id);
+    console.log('onEditGoal prop:', onEditGoal);
+    console.log('canEdit:', canEdit);
+    console.log('effectiveReadOnly:', effectiveReadOnly);
+    console.log('goal.status:', goal.status);
+    
+    if (onEditGoal) {
+      onEditGoal(goal.id);
+    } else {
+      console.error('onEditGoal prop is not provided to GoalCard');
+    }
   };
 
   const handleSendForApproval = () => {

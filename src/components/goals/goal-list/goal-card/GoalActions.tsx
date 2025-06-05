@@ -30,13 +30,23 @@ const GoalActions: React.FC<GoalActionsProps> = ({
     return null;
   }
 
+  const handleEditClick = () => {
+    console.log('Edit button clicked in GoalActions');
+    console.log('onEditGoal function:', onEditGoal);
+    if (onEditGoal) {
+      onEditGoal();
+    } else {
+      console.error('onEditGoal function is not provided');
+    }
+  };
+
   return (
     <div className="mt-4 flex justify-end space-x-2">
       {canEdit && (
         <Button 
           variant="outline" 
           size="sm"
-          onClick={onEditGoal}
+          onClick={handleEditClick}
           className="text-xs"
         >
           <Edit className="h-3 w-3 mr-1" />
