@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { render as rtlRender } from '@testing-library/react';
+import { render as rtlRender, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GoalProvider } from '../contexts/goal/GoalProviderImpl';
 import { AuthProvider } from '../contexts/AuthContext';
 import { vi } from 'vitest';
@@ -55,4 +55,4 @@ function render(ui, options = {}) {
 
 // Re-export everything from React Testing Library
 export * from '@testing-library/react';
-export { render };
+export { render, screen, fireEvent, waitFor };
