@@ -32,26 +32,23 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   const isSpaceReadOnlyState = spaceId ? isSpaceReadOnly(spaceId) : false;
   const effectiveReadOnly = isReadOnly || isSpaceReadOnlyState;
 
-  // Use provided goals or fetch by status
+  // Use provided goals or fetch by status, excluding draft goals
   const goals = propGoals || [
-    ...getGoalsByStatus('draft'),
     ...getGoalsByStatus('submitted'),
     ...getGoalsByStatus('approved'),
     ...getGoalsByStatus('rejected'),
     ...getGoalsByStatus('under_review')
   ];
 
-  // Group goals by status
-  const draftGoals = goals.filter(g => g.status === 'draft');
+  // Group goals by status, excluding draft goals
   const submittedGoals = goals.filter(g => g.status === 'submitted');
   const approvedGoals = goals.filter(g => g.status === 'approved');
   const rejectedGoals = goals.filter(g => g.status === 'rejected');
   const underReviewGoals = goals.filter(g => g.status === 'under_review');
 
   const goalsByStatus = [
-    { title: 'Draft', goals: draftGoals },
     { title: 'Submitted', goals: submittedGoals },
-    { title: 'Approved', goals: approvedGoals },
+    { title: 'Approved', goals: approvedGoals, showSubmitOption: true },
     { title: 'Rejected', goals: rejectedGoals },
     { title: 'Under Review', goals: underReviewGoals },
   ];
@@ -86,6 +83,11 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
     }
     
     submitGoal(goalId);
+    toast({
+      title: "Goal submitted",
+      description: "Your goal has been submitted to your manager for review.",
+      variant: "default"
+    });
   };
   
   const handleEditGoal = (goalId: string) => {
@@ -132,6 +134,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
           effectiveReadOnly={effectiveReadOnly}
           onEditGoal={handleEditGoal}
           onSubmitGoal={handleSubmitGoal}
+          showSubmitOption={group.showSubmitOption}
         />
       ))}
 

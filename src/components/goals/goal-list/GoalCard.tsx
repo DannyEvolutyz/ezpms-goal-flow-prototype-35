@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { Check as CheckIcon } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   TooltipProvider,
@@ -19,13 +20,15 @@ interface GoalCardProps {
   effectiveReadOnly: boolean;
   onEditGoal: (goalId: string) => void;
   onSubmitGoal: (goalId: string) => void;
+  showSubmitOption?: boolean;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({ 
   goal, 
   effectiveReadOnly, 
   onEditGoal, 
-  onSubmitGoal 
+  onSubmitGoal,
+  showSubmitOption = false
 }) => {
   const getCompletion = (goal: Goal) => {
     if (!goal.milestones || !goal.milestones.length) return 0;
@@ -96,7 +99,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
       </div>
       
       {/* Goal Action Buttons */}
-      {goal.status === 'draft' && !effectiveReadOnly && (
+      {showSubmitOption && goal.status === 'approved' && !effectiveReadOnly && (
         <div className="mt-4 flex justify-end space-x-2">
           <Button 
             variant="outline" 
@@ -112,7 +115,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
             onClick={() => onSubmitGoal(goal.id)}
             className="text-xs"
           >
-            Submit
+            <Send className="h-3 w-3 mr-1" />
+            Submit for Review
           </Button>
         </div>
       )}

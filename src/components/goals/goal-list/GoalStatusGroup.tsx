@@ -9,6 +9,7 @@ interface GoalStatusGroupProps {
   effectiveReadOnly: boolean;
   onEditGoal: (goalId: string) => void;
   onSubmitGoal: (goalId: string) => void;
+  showSubmitOption?: boolean;
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -16,9 +17,15 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   goals,
   effectiveReadOnly,
   onEditGoal,
-  onSubmitGoal
+  onSubmitGoal,
+  showSubmitOption = false
 }) => {
   if (goals.length === 0) {
+    return null;
+  }
+
+  // Don't render draft goals section
+  if (title === 'Draft') {
     return null;
   }
 
@@ -33,6 +40,7 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             effectiveReadOnly={effectiveReadOnly}
             onEditGoal={onEditGoal}
             onSubmitGoal={onSubmitGoal}
+            showSubmitOption={showSubmitOption}
           />
         ))}
       </div>
