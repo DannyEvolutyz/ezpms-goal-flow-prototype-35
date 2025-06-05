@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,10 +26,7 @@ const AdminDashboard = () => {
   const allGoals = getTeamGoals();
   const allUsers = getAllUsers();
   
-  // Get only managers for filtering
-  const managers = allUsers.filter(u => u.role === 'manager');
-  
-  // Filter goals based on selected manager and status
+  // Filter goals based on selected user and status
   const filteredGoals = allGoals.filter(goal => {
     const matchesStatus = selectedStatus === 'all' || goal.status === selectedStatus;
     const matchesUser = selectedUserId === 'all' || goal.userId === selectedUserId;
@@ -133,7 +129,7 @@ const AdminDashboard = () => {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
-      <Tabs defaultValue="goalbank" className="space-y-6">
+      <Tabs defaultValue="goalreview" className="space-y-6">
         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6">
           <TabsTrigger value="goalreview" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
@@ -170,7 +166,7 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <PendingGoalsList
               filteredGoals={pendingGoals}
-              teamMembers={managers}
+              teamMembers={allUsers}
               selectedUserId={selectedUserId}
               selectedGoal={selectedGoal}
               onUserChange={setSelectedUserId}
