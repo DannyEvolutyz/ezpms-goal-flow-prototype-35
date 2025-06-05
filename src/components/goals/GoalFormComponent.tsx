@@ -19,7 +19,7 @@ import { format } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 
 const GoalFormComponent = () => {
-  const { addGoal, goals, getAvailableSpaces } = useGoals();
+  const { addGoal, getAvailableSpaces } = useGoals();
   const [formKey, setFormKey] = useState(0);
   const availableSpaces = getAvailableSpaces();
 
@@ -30,7 +30,6 @@ const GoalFormComponent = () => {
       description: '',
       category: undefined,
       priority: undefined,
-      weightage: 0,
       targetDate: undefined,
       milestones: [],
       spaceId: availableSpaces.length > 0 ? availableSpaces[0]?.id : '',
@@ -43,23 +42,15 @@ const GoalFormComponent = () => {
   });
 
   const applyTemplate = (template: { title: string; description: string; category: string }) => {
+    console.log('Applying template:', template);
     form.setValue('title', template.title);
     form.setValue('description', template.description);
     form.setValue('category', template.category as any);
+    // Force form to re-render to show the new values
+    form.trigger();
   };
 
   const onSubmit = (data: GoalFormValues) => {
-    const totalWeightage = goals.reduce((sum, goal) => sum + goal.weightage, 0) + data.weightage;
-
-    if (totalWeightage > 100) {
-      toast({
-        title: "Invalid Weightage",
-        description: `Total weightage cannot exceed 100. Available: ${100 - goals.reduce((sum, goal) => sum + goal.weightage, 0)}`,
-        variant: "destructive"
-      });
-      return;
-    }
-
     const withMilestones =
       data.milestones &&
       Array.isArray(data.milestones) &&
@@ -80,22 +71,26 @@ const GoalFormComponent = () => {
         }))
       : [];
 
-    addGoal({
+    const result = addGoal({
       title: data.title,
       description: data.description,
       category: data.category,
       priority: data.priority,
-      weightage: data.weightage,
+      weightage: 0, // Default weightage, will be set later
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
       milestones,
       spaceId: data.spaceId,
     });
 
-    form.reset();
-    setFormKey(prev => prev + 1);
+    if (result) {
+      toast({
+        title: "Goal Created",
+        description: "Your goal has been created successfully. You can set weightage later.",
+      });
+      form.reset();
+      setFormKey(prev => prev + 1);
+    }
   };
-
-  const availableWeightage = 100 - goals.reduce((sum, goal) => sum + goal.weightage, 0);
 
   return (
     <div className="space-y-8">
@@ -113,21 +108,6 @@ const GoalFormComponent = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <GoalCategorySelector form={form} />
                 <GoalPrioritySelector form={form} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="weightage" className="text-sm font-medium">
-                  Weightage (Available: {availableWeightage}%)
-                </label>
-                <input
-                  type="number"
-                  {...form.register('weightage', { valueAsNumber: true })}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  min="1"
-                  max={availableWeightage}
-                />
-                {form.formState.errors.weightage && (
-                  <p className="text-sm text-red-500">{form.formState.errors.weightage.message}</p>
-                )}
               </div>
               <GoalTargetDatePicker form={form} />
               <MilestonesArrayField form={form} fieldArray={milestoneFieldArray} />

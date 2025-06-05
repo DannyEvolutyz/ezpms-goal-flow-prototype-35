@@ -103,6 +103,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
   };
 
   const handleCreateNew = () => {
+    console.log('Create new goal clicked in GoalsListComponent');
     if (onCreateNew) {
       onCreateNew();
     }

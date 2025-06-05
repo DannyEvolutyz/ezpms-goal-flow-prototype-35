@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import GoalEditForm from '@/components/goals/GoalEditForm';
+import WeightageManager from '@/components/goals/goal-list/WeightageManager';
 import { CalendarDays } from 'lucide-react';
 
 const Goals = () => {
@@ -33,6 +34,7 @@ const Goals = () => {
   }
   
   const handleCreateNew = () => {
+    console.log('Creating new goal - switching to create tab');
     setActiveTab('create');
   };
 
@@ -60,7 +62,7 @@ const Goals = () => {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Performance Goals</h1>
       
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="view">My Goals</TabsTrigger>
           <TabsTrigger value="create" disabled={user?.role === 'manager' || !activeSpace}>Create New Goal</TabsTrigger>
@@ -124,6 +126,14 @@ const Goals = () => {
               )}
             </CardContent>
           </Card>
+
+          {selectedSpaceId && filteredGoals.length > 0 && (
+            <WeightageManager 
+              goals={filteredGoals}
+              spaceId={selectedSpaceId}
+              isReadOnly={isReadOnly}
+            />
+          )}
           
           {selectedSpaceId ? (
             <GoalsListComponent

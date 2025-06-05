@@ -18,7 +18,6 @@ export const goalFormSchema = z.object({
   priority: z.enum(['high', 'medium', 'low'], {
     required_error: 'Please select a priority',
   }),
-  weightage: z.number().min(1).max(100),
   targetDate: z.date({
     required_error: 'Please select a target date',
   }).refine((date) => date > new Date(), {
