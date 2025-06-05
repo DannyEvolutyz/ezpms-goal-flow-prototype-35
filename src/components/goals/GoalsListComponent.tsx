@@ -7,6 +7,7 @@ import GoalsListContainer from './goal-list/GoalsListContainer';
 
 interface GoalsListComponentProps {
   onCreateNew?: () => void;
+  onEditGoal?: (goalId: string) => void;
   goals?: Goal[];
   spaceId?: string;
   isReadOnly?: boolean;
@@ -14,6 +15,7 @@ interface GoalsListComponentProps {
 
 const GoalsListComponent: React.FC<GoalsListComponentProps> = ({ 
   onCreateNew, 
+  onEditGoal,
   goals: propGoals,
   spaceId,
   isReadOnly = false
@@ -48,6 +50,7 @@ const GoalsListComponent: React.FC<GoalsListComponentProps> = ({
       goals={goals}
       effectiveReadOnly={effectiveReadOnly}
       onCreateNew={handleCreateNew}
+      onEditGoal={onEditGoal}
       onUpdateGoal={updateGoal}
     />
   );

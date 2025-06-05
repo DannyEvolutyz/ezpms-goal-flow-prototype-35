@@ -2,7 +2,6 @@
 import React from 'react';
 import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import ReadOnlyWarning from './ReadOnlyWarning';
 import NoGoalsMessage from './NoGoalsMessage';
 import GoalStatusGroup from './GoalStatusGroup';
@@ -13,6 +12,7 @@ interface GoalsListContainerProps {
   goals: Goal[];
   effectiveReadOnly: boolean;
   onCreateNew: () => void;
+  onEditGoal?: (goalId: string) => void;
   onUpdateGoal: (updatedGoal: Goal) => void;
 }
 
@@ -20,10 +20,9 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
   goals,
   effectiveReadOnly,
   onCreateNew,
+  onEditGoal,
   onUpdateGoal
 }) => {
-  const navigate = useNavigate();
-
   // Group goals by status
   const draftGoals = goals.filter(g => g.status === 'draft');
   const pendingApprovalGoals = goals.filter(g => g.status === 'pending_approval');
@@ -101,6 +100,11 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
   const handleEditGoal = (goalId: string) => {
     const goal = goals.find(g => g.id === goalId);
     
+    console.log('handleEditGoal called in GoalsListContainer for goalId:', goalId);
+    console.log('Goal found:', goal);
+    console.log('effectiveReadOnly:', effectiveReadOnly);
+    console.log('onEditGoal function:', onEditGoal);
+    
     if (effectiveReadOnly && goal?.status !== 'under_review') {
       toast({
         title: "Cannot edit goal",
@@ -110,7 +114,16 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
       return;
     }
     
-    navigate(`/goals/edit/${goalId}`);
+    if (onEditGoal) {
+      onEditGoal(goalId);
+    } else {
+      console.error('onEditGoal function not provided to GoalsListContainer');
+      toast({
+        title: "Cannot edit goal",
+        description: "Edit functionality is not available.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateWeightage = (goalId: string, weightage: number) => {

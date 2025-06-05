@@ -37,6 +37,17 @@ const Goals = () => {
     setActiveTab('create');
   };
 
+  const handleEditGoal = (goalId: string) => {
+    console.log('handleEditGoal called in Goals page for goalId:', goalId);
+    const goal = goals.find(g => g.id === goalId);
+    console.log('Found goal:', goal);
+    if (goal) {
+      setEditingGoal(goal);
+    } else {
+      console.error('Goal not found with id:', goalId);
+    }
+  };
+
   const isReadOnly = selectedSpaceId ? isSpaceReadOnly(selectedSpaceId) : true;
   const filteredGoals = selectedSpaceId ? getGoalsBySpace(selectedSpaceId) : [];
   
@@ -129,6 +140,7 @@ const Goals = () => {
           {selectedSpaceId ? (
             <GoalsListComponent
               onCreateNew={handleCreateNew}
+              onEditGoal={handleEditGoal}
               goals={filteredGoals}
               spaceId={selectedSpaceId}
               isReadOnly={isReadOnly}
