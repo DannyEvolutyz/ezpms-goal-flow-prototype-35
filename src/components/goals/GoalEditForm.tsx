@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,6 +70,9 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       ) : undefined,
     })) || [];
     
+    // If goal was under review, change status to draft so it can be sent for approval again
+    const newStatus = goal.status === 'under_review' ? 'draft' : goal.status;
+    
     updateGoal({
       ...goal,
       title: data.title,
@@ -77,13 +81,15 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
       priority: data.priority,
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
       milestones: processedMilestones,
-      // Keep the status unchanged
+      status: newStatus,
+      // Clear feedback when moving from under_review to draft
+      feedback: newStatus === 'draft' ? '' : goal.feedback,
     });
     
     toast({
       title: "Goal updated",
       description: goal.status === 'under_review' 
-        ? "Your goal has been updated. You can now send it for approval again."
+        ? "Your goal has been updated and moved to draft. You can now send it for approval again."
         : "Your goal has been updated successfully.",
       variant: "default"
     });
@@ -103,7 +109,7 @@ const GoalEditForm = ({ goal, onCancel }: GoalEditFormProps) => {
           <CardContent className="pt-6">
             <p className="text-purple-800 text-sm">
               ✏️ <strong>Revision Requested:</strong> Your manager has requested changes to this goal. 
-              Please review the feedback above and make necessary updates. After editing, you can send it for approval again.
+              Please review the feedback above and make necessary updates. After editing, the goal will be moved to draft status and you can send it for approval again.
             </p>
           </CardContent>
         </Card>
