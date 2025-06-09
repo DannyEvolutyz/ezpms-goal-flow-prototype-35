@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Goal, GoalBank, Notification, GoalSpace } from '@/types';
-import { initialGoalBank, initialGoals, initialNotifications } from '../initialData';
+import { initialGoalBank, initialNotifications } from '../initialData';
 
 // Sample initial goal spaces
 const initialGoalSpaces: GoalSpace[] = [
@@ -37,38 +37,20 @@ const initialGoalSpaces: GoalSpace[] = [
   }
 ];
 
-// Update default goals to have spaceId
-const goalsWithSpace = initialGoals.map(goal => ({
-  ...goal,
-  spaceId: goal.spaceId || 'space-1'
-}));
-
 export const useGoalStorage = () => {
   const [goalBank, setGoalBank] = useState<GoalBank[]>(initialGoalBank);
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
-  const [goals, setGoals] = useState<Goal[]>(goalsWithSpace);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [spaces, setSpaces] = useState<GoalSpace[]>(initialGoalSpaces);
 
   useEffect(() => {
-    const storedGoals = localStorage.getItem('ezpms_goals');
+    // Clear goals from localStorage and start fresh
+    localStorage.removeItem('ezpms_goals');
+    setGoals([]);
+    
     const storedNotifications = localStorage.getItem('ezpms_notifications');
     const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
     const storedGoalSpaces = localStorage.getItem('ezpms_goal_spaces');
-    
-    if (storedGoals) {
-      try {
-        const parsedGoals = JSON.parse(storedGoals);
-        // Add spaceId to any goals that might not have it
-        const updatedGoals = parsedGoals.map(g => ({
-          ...g,
-          spaceId: g.spaceId || 'space-1'
-        }));
-        setGoals(updatedGoals);
-      } catch (error) {
-        console.error("Failed to parse stored goals:", error);
-        setGoals(goalsWithSpace);
-      }
-    }
     
     if (storedNotifications) {
       try {
