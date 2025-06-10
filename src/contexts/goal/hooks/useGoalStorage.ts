@@ -42,79 +42,92 @@ export const useGoalStorage = () => {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [spaces, setSpaces] = useState<GoalSpace[]>(initialGoalSpaces);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Load stored data from localStorage
-    const storedGoals = localStorage.getItem('ezpms_goals');
-    const storedNotifications = localStorage.getItem('ezpms_notifications');
-    const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
-    const storedGoalSpaces = localStorage.getItem('ezpms_goal_spaces');
-    
-    if (storedGoals) {
-      try {
-        const parsedGoals = JSON.parse(storedGoals);
-        setGoals(parsedGoals);
-        console.log('Loaded goals from localStorage:', parsedGoals);
-      } catch (error) {
-        console.error("Failed to parse stored goals:", error);
+    // Load stored data from localStorage only once on initialization
+    if (!isInitialized) {
+      const storedGoals = localStorage.getItem('ezpms_goals');
+      const storedNotifications = localStorage.getItem('ezpms_notifications');
+      const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
+      const storedGoalSpaces = localStorage.getItem('ezpms_goal_spaces');
+      
+      if (storedGoals) {
+        try {
+          const parsedGoals = JSON.parse(storedGoals);
+          setGoals(parsedGoals);
+          console.log('Loaded goals from localStorage:', parsedGoals);
+        } catch (error) {
+          console.error("Failed to parse stored goals:", error);
+          setGoals([]);
+        }
+      } else {
+        console.log('No stored goals found, starting with empty array');
         setGoals([]);
       }
-    } else {
-      console.log('No stored goals found, starting with empty array');
-      setGoals([]);
-    }
-    
-    if (storedNotifications) {
-      try {
-        setNotifications(JSON.parse(storedNotifications));
-      } catch (error) {
-        console.error("Failed to parse stored notifications:", error);
-        setNotifications(initialNotifications);
+      
+      if (storedNotifications) {
+        try {
+          setNotifications(JSON.parse(storedNotifications));
+        } catch (error) {
+          console.error("Failed to parse stored notifications:", error);
+          setNotifications(initialNotifications);
+        }
       }
-    }
-    
-    if (storedGoalBank) {
-      try {
-        setGoalBank(JSON.parse(storedGoalBank));
-      } catch (error) {
-        console.error("Failed to parse stored goal bank:", error);
-        setGoalBank(initialGoalBank);
+      
+      if (storedGoalBank) {
+        try {
+          setGoalBank(JSON.parse(storedGoalBank));
+        } catch (error) {
+          console.error("Failed to parse stored goal bank:", error);
+          setGoalBank(initialGoalBank);
+        }
       }
-    }
-    
-    if (storedGoalSpaces) {
-      try {
-        const parsedSpaces = JSON.parse(storedGoalSpaces);
-        setSpaces(parsedSpaces);
-        console.log('Loaded spaces from localStorage:', parsedSpaces);
-      } catch (error) {
-        console.error("Failed to parse stored goal spaces:", error);
+      
+      if (storedGoalSpaces) {
+        try {
+          const parsedSpaces = JSON.parse(storedGoalSpaces);
+          setSpaces(parsedSpaces);
+          console.log('Loaded spaces from localStorage:', parsedSpaces);
+        } catch (error) {
+          console.error("Failed to parse stored goal spaces:", error);
+          setSpaces(initialGoalSpaces);
+        }
+      } else {
+        console.log('No stored spaces found, using initial spaces');
         setSpaces(initialGoalSpaces);
       }
-    } else {
-      console.log('No stored spaces found, using initial spaces');
-      setSpaces(initialGoalSpaces);
+      
+      setIsInitialized(true);
     }
-  }, []);
+  }, [isInitialized]);
 
-  // Save data to localStorage whenever state changes
+  // Save data to localStorage whenever state changes, but only after initialization
   useEffect(() => {
-    localStorage.setItem('ezpms_goals', JSON.stringify(goals));
-    console.log('Saved goals to localStorage:', goals);
-  }, [goals]);
+    if (isInitialized) {
+      localStorage.setItem('ezpms_goals', JSON.stringify(goals));
+      console.log('Saved goals to localStorage:', goals);
+    }
+  }, [goals, isInitialized]);
   
   useEffect(() => {
-    localStorage.setItem('ezpms_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+    if (isInitialized) {
+      localStorage.setItem('ezpms_notifications', JSON.stringify(notifications));
+    }
+  }, [notifications, isInitialized]);
   
   useEffect(() => {
-    localStorage.setItem('ezpms_goal_bank', JSON.stringify(goalBank));
-  }, [goalBank]);
+    if (isInitialized) {
+      localStorage.setItem('ezpms_goal_bank', JSON.stringify(goalBank));
+    }
+  }, [goalBank, isInitialized]);
   
   useEffect(() => {
-    localStorage.setItem('ezpms_goal_spaces', JSON.stringify(spaces));
-    console.log('Saved spaces to localStorage:', spaces);
-  }, [spaces]);
+    if (isInitialized) {
+      localStorage.setItem('ezpms_goal_spaces', JSON.stringify(spaces));
+      console.log('Saved spaces to localStorage:', spaces);
+    }
+  }, [spaces, isInitialized]);
 
   return {
     goals,
