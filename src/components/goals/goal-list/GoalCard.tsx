@@ -41,6 +41,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
   // Allow editing for draft, rejected, and under_review statuses
   const canEdit = !effectiveReadOnly && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review');
   const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
+  const canSendRejectedForApproval = !effectiveReadOnly && goal.status === 'rejected';
   const canSubmit = !effectiveReadOnly && goal.status === 'approved';
 
   const handleUpdateWeightage = (weightage: number) => {
@@ -79,7 +80,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
     <div className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50 border-green-200' : ''} ${goal.status === 'under_review' ? 'bg-purple-50 border-purple-200' : ''}`}>
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center space-x-2">
-          {showCheckbox && canSendForApproval && (
+          {showCheckbox && (canSendForApproval || canSendRejectedForApproval) && (
             <Checkbox
               checked={isSelected}
               onCheckedChange={handleToggleSelect}
@@ -114,10 +115,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
       
       <GoalActions
         canEdit={canEdit}
-        canSendForApproval={canSendForApproval && !showCheckbox}
+        canSendForApproval={(canSendForApproval && !showCheckbox) || canSendRejectedForApproval}
         canSubmit={canSubmit}
         showSubmitOption={showSubmitOption}
-        showApprovalOption={showApprovalOption && !showCheckbox}
+        showApprovalOption={showApprovalOption}
         onEditGoal={handleEditGoal}
         onSendForApproval={handleSendForApproval}
         onSubmitGoal={handleSubmitGoal}
