@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Goal } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
 import GoalStatus from './goal-card/GoalStatus';
 import GoalWeightage from './goal-card/GoalWeightage';
 import GoalFeedback from './goal-card/GoalFeedback';
@@ -16,6 +17,9 @@ interface GoalCardProps {
   onUpdateWeightage: (goalId: string, weightage: number) => void;
   showSubmitOption?: boolean;
   showApprovalOption?: boolean;
+  showCheckbox?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (goalId: string, selected: boolean) => void;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({ 
@@ -26,7 +30,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onSendForApproval,
   onUpdateWeightage,
   showSubmitOption = false,
-  showApprovalOption = false
+  showApprovalOption = false,
+  showCheckbox = false,
+  isSelected = false,
+  onToggleSelect
 }) => {
   const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
   const isLocked = isApproved || goal.status === 'pending_approval';
@@ -62,10 +69,24 @@ const GoalCard: React.FC<GoalCardProps> = ({
     onSubmitGoal(goal.id);
   };
 
+  const handleToggleSelect = (checked: boolean) => {
+    if (onToggleSelect) {
+      onToggleSelect(goal.id, checked);
+    }
+  };
+
   return (
     <div className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50 border-green-200' : ''} ${goal.status === 'under_review' ? 'bg-purple-50 border-purple-200' : ''}`}>
       <div className="flex justify-between items-start mb-2">
-        <h4 className="font-medium">{goal.title}</h4>
+        <div className="flex items-center space-x-2">
+          {showCheckbox && canSendForApproval && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={handleToggleSelect}
+            />
+          )}
+          <h4 className="font-medium">{goal.title}</h4>
+        </div>
         <GoalStatus status={goal.status} isLocked={isLocked} />
       </div>
       
@@ -93,10 +114,10 @@ const GoalCard: React.FC<GoalCardProps> = ({
       
       <GoalActions
         canEdit={canEdit}
-        canSendForApproval={canSendForApproval}
+        canSendForApproval={canSendForApproval && !showCheckbox}
         canSubmit={canSubmit}
         showSubmitOption={showSubmitOption}
-        showApprovalOption={showApprovalOption}
+        showApprovalOption={showApprovalOption && !showCheckbox}
         onEditGoal={handleEditGoal}
         onSendForApproval={handleSendForApproval}
         onSubmitGoal={handleSubmitGoal}

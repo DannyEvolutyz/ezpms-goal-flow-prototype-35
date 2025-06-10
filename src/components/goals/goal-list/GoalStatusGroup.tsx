@@ -2,6 +2,7 @@
 import React from 'react';
 import { Goal } from '@/types';
 import GoalCard from './GoalCard';
+import BulkGoalActions from './BulkGoalActions';
 
 interface GoalStatusGroupProps {
   title: string;
@@ -13,6 +14,10 @@ interface GoalStatusGroupProps {
   onUpdateWeightage: (goalId: string, weightage: number) => void;
   showSubmitOption?: boolean;
   showApprovalOption?: boolean;
+  selectedGoalIds?: string[];
+  onToggleSelectGoal?: (goalId: string, selected: boolean) => void;
+  onSelectAllGoals?: (goalIds: string[], selected: boolean) => void;
+  onBulkSendForApproval?: (goalIds: string[]) => void;
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -24,20 +29,50 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   onSendForApproval,
   onUpdateWeightage,
   showSubmitOption = false,
-  showApprovalOption = false
+  showApprovalOption = false,
+  selectedGoalIds = [],
+  onToggleSelectGoal,
+  onSelectAllGoals,
+  onBulkSendForApproval
 }) => {
-  if (goals.length === 0) return null;
+  if (goals.length === 0) {
+    return null;
+  }
+
+  // Goals that can be sent for approval (draft status)
+  const selectableGoals = goals.filter(goal => !effectiveReadOnly && goal.status === 'draft');
+  const selectableGoalIds = selectableGoals.map(goal => goal.id);
+  const selectedSelectableGoals = selectedGoalIds.filter(id => selectableGoalIds.includes(id));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (onSelectAllGoals) {
+      onSelectAllGoals(selectableGoalIds, checked);
+    }
+  };
+
+  const handleBulkSendForApproval = () => {
+    if (onBulkSendForApproval) {
+      onBulkSendForApproval(selectedSelectableGoals);
+    }
+  };
+
+  const showBulkActions = showApprovalOption && selectableGoals.length > 0;
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-        {title}
-        <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-          {goals.length}
-        </span>
-      </h3>
+      <h3 className="text-lg font-semibold">{title} ({goals.length})</h3>
       
-      <div className="grid gap-4">
+      {showBulkActions && (
+        <BulkGoalActions
+          selectedGoalIds={selectedSelectableGoals}
+          totalSelectableGoals={selectableGoals.length}
+          onSelectAll={handleSelectAll}
+          onSendSelectedForApproval={handleBulkSendForApproval}
+          effectiveReadOnly={effectiveReadOnly}
+        />
+      )}
+      
+      <div className="space-y-4">
         {goals.map(goal => (
           <GoalCard
             key={goal.id}
@@ -49,6 +84,9 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             onUpdateWeightage={onUpdateWeightage}
             showSubmitOption={showSubmitOption}
             showApprovalOption={showApprovalOption}
+            showCheckbox={showBulkActions && goal.status === 'draft'}
+            isSelected={selectedGoalIds.includes(goal.id)}
+            onToggleSelect={onToggleSelectGoal}
           />
         ))}
       </div>

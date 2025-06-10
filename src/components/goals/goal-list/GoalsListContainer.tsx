@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import ReadOnlyWarning from './ReadOnlyWarning';
@@ -23,6 +23,8 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
   onEditGoal,
   onUpdateGoal
 }) => {
+  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
+
   // Group goals by status
   const draftGoals = goals.filter(g => g.status === 'draft');
   const pendingApprovalGoals = goals.filter(g => g.status === 'pending_approval');
@@ -44,6 +46,58 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
 
   const hasGoals = goalsByStatus.some(group => group.goals.length > 0);
   const totalWeightage = goals.reduce((sum, goal) => sum + goal.weightage, 0);
+
+  const handleToggleSelectGoal = (goalId: string, selected: boolean) => {
+    setSelectedGoalIds(prev => 
+      selected 
+        ? [...prev, goalId]
+        : prev.filter(id => id !== goalId)
+    );
+  };
+
+  const handleSelectAllGoals = (goalIds: string[], selected: boolean) => {
+    setSelectedGoalIds(prev => {
+      if (selected) {
+        // Add all goalIds that aren't already selected
+        const newIds = goalIds.filter(id => !prev.includes(id));
+        return [...prev, ...newIds];
+      } else {
+        // Remove all goalIds from selection
+        return prev.filter(id => !goalIds.includes(id));
+      }
+    });
+  };
+
+  const handleBulkSendForApproval = (goalIds: string[]) => {
+    if (effectiveReadOnly) {
+      toast({
+        title: "Cannot send for approval",
+        description: "This goal space is now read-only.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    goalIds.forEach(goalId => {
+      const goal = goals.find(g => g.id === goalId);
+      if (goal && goal.status === 'draft') {
+        onUpdateGoal({
+          ...goal,
+          status: 'pending_approval',
+          updatedAt: new Date().toISOString()
+        });
+      }
+    });
+
+    toast({
+      title: "Goals sent for approval",
+      description: `${goalIds.length} goal${goalIds.length > 1 ? 's' : ''} have been sent to your manager for approval.`,
+      variant: "default"
+    });
+
+    // Clear selection after bulk action
+    setSelectedGoalIds([]);
+  };
 
   const handleSendForApproval = (goalId: string) => {
     if (effectiveReadOnly) {
@@ -176,6 +230,10 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
           onUpdateWeightage={handleUpdateWeightage}
           showSubmitOption={group.showSubmitOption}
           showApprovalOption={group.showApprovalOption}
+          selectedGoalIds={selectedGoalIds}
+          onToggleSelectGoal={handleToggleSelectGoal}
+          onSelectAllGoals={handleSelectAllGoals}
+          onBulkSendForApproval={handleBulkSendForApproval}
         />
       ))}
 
