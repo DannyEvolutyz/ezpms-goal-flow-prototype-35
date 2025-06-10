@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
@@ -92,6 +91,37 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
     toast({
       title: "Goals sent for approval",
       description: `${goalIds.length} goal${goalIds.length > 1 ? 's' : ''} have been sent to your manager for approval.`,
+      variant: "default"
+    });
+
+    // Clear selection after bulk action
+    setSelectedGoalIds([]);
+  };
+
+  const handleBulkSubmitForReview = (goalIds: string[]) => {
+    if (effectiveReadOnly) {
+      toast({
+        title: "Cannot submit goals",
+        description: "This goal space is now read-only.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    goalIds.forEach(goalId => {
+      const goal = goals.find(g => g.id === goalId);
+      if (goal && goal.status === 'approved') {
+        onUpdateGoal({
+          ...goal,
+          status: 'submitted',
+          updatedAt: new Date().toISOString()
+        });
+      }
+    });
+
+    toast({
+      title: "Goals submitted for review",
+      description: `${goalIds.length} goal${goalIds.length > 1 ? 's' : ''} have been submitted for final review.`,
       variant: "default"
     });
 
@@ -234,6 +264,7 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
           onToggleSelectGoal={handleToggleSelectGoal}
           onSelectAllGoals={handleSelectAllGoals}
           onBulkSendForApproval={handleBulkSendForApproval}
+          onBulkSubmitForReview={handleBulkSubmitForReview}
         />
       ))}
 

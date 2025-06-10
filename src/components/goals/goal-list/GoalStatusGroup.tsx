@@ -18,6 +18,7 @@ interface GoalStatusGroupProps {
   onToggleSelectGoal?: (goalId: string, selected: boolean) => void;
   onSelectAllGoals?: (goalIds: string[], selected: boolean) => void;
   onBulkSendForApproval?: (goalIds: string[]) => void;
+  onBulkSubmitForReview?: (goalIds: string[]) => void;
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -33,42 +34,73 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   selectedGoalIds = [],
   onToggleSelectGoal,
   onSelectAllGoals,
-  onBulkSendForApproval
+  onBulkSendForApproval,
+  onBulkSubmitForReview
 }) => {
   if (goals.length === 0) {
     return null;
   }
 
   // Goals that can be sent for approval (draft status)
-  const selectableGoals = goals.filter(goal => !effectiveReadOnly && goal.status === 'draft');
-  const selectableGoalIds = selectableGoals.map(goal => goal.id);
-  const selectedSelectableGoals = selectedGoalIds.filter(id => selectableGoalIds.includes(id));
+  const selectableGoalsForApproval = goals.filter(goal => !effectiveReadOnly && goal.status === 'draft');
+  const selectableApprovalGoalIds = selectableGoalsForApproval.map(goal => goal.id);
+  const selectedSelectableApprovalGoals = selectedGoalIds.filter(id => selectableApprovalGoalIds.includes(id));
 
-  const handleSelectAll = (checked: boolean) => {
+  // Goals that can be submitted for review (approved status)
+  const selectableGoalsForSubmit = goals.filter(goal => !effectiveReadOnly && goal.status === 'approved');
+  const selectableSubmitGoalIds = selectableGoalsForSubmit.map(goal => goal.id);
+  const selectedSelectableSubmitGoals = selectedGoalIds.filter(id => selectableSubmitGoalIds.includes(id));
+
+  const handleSelectAllApproval = (checked: boolean) => {
     if (onSelectAllGoals) {
-      onSelectAllGoals(selectableGoalIds, checked);
+      onSelectAllGoals(selectableApprovalGoalIds, checked);
+    }
+  };
+
+  const handleSelectAllSubmit = (checked: boolean) => {
+    if (onSelectAllGoals) {
+      onSelectAllGoals(selectableSubmitGoalIds, checked);
     }
   };
 
   const handleBulkSendForApproval = () => {
     if (onBulkSendForApproval) {
-      onBulkSendForApproval(selectedSelectableGoals);
+      onBulkSendForApproval(selectedSelectableApprovalGoals);
     }
   };
 
-  const showBulkActions = showApprovalOption && selectableGoals.length > 0;
+  const handleBulkSubmitForReview = () => {
+    if (onBulkSubmitForReview) {
+      onBulkSubmitForReview(selectedSelectableSubmitGoals);
+    }
+  };
+
+  const showApprovalBulkActions = showApprovalOption && selectableGoalsForApproval.length > 0;
+  const showSubmitBulkActions = showSubmitOption && selectableGoalsForSubmit.length > 0;
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">{title} ({goals.length})</h3>
       
-      {showBulkActions && (
+      {showApprovalBulkActions && (
         <BulkGoalActions
-          selectedGoalIds={selectedSelectableGoals}
-          totalSelectableGoals={selectableGoals.length}
-          onSelectAll={handleSelectAll}
+          selectedGoalIds={selectedSelectableApprovalGoals}
+          totalSelectableGoals={selectableGoalsForApproval.length}
+          onSelectAll={handleSelectAllApproval}
           onSendSelectedForApproval={handleBulkSendForApproval}
           effectiveReadOnly={effectiveReadOnly}
+        />
+      )}
+
+      {showSubmitBulkActions && (
+        <BulkGoalActions
+          selectedGoalIds={selectedSelectableSubmitGoals}
+          totalSelectableGoals={selectableGoalsForSubmit.length}
+          onSelectAll={handleSelectAllSubmit}
+          onSendSelectedForApproval={handleBulkSubmitForReview}
+          effectiveReadOnly={effectiveReadOnly}
+          actionLabel="Submit Selected for Review"
+          selectLabel="goals"
         />
       )}
       
@@ -84,7 +116,7 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             onUpdateWeightage={onUpdateWeightage}
             showSubmitOption={showSubmitOption}
             showApprovalOption={showApprovalOption}
-            showCheckbox={showBulkActions && goal.status === 'draft'}
+            showCheckbox={(showApprovalBulkActions && goal.status === 'draft') || (showSubmitBulkActions && goal.status === 'approved')}
             isSelected={selectedGoalIds.includes(goal.id)}
             onToggleSelect={onToggleSelectGoal}
           />

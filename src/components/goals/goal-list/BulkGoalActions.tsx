@@ -10,6 +10,8 @@ interface BulkGoalActionsProps {
   onSelectAll: (checked: boolean) => void;
   onSendSelectedForApproval: () => void;
   effectiveReadOnly: boolean;
+  actionLabel?: string;
+  selectLabel?: string;
 }
 
 const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
@@ -17,7 +19,9 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
   totalSelectableGoals,
   onSelectAll,
   onSendSelectedForApproval,
-  effectiveReadOnly
+  effectiveReadOnly,
+  actionLabel = "Send Selected for Approval",
+  selectLabel = "goals"
 }) => {
   const checkboxRef = useRef<HTMLButtonElement>(null);
   const isAllSelected = selectedGoalIds.length === totalSelectableGoals && totalSelectableGoals > 0;
@@ -43,8 +47,8 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
         />
         <span className="text-sm font-medium">
           {selectedGoalIds.length === 0 
-            ? `Select all ${totalSelectableGoals} goals`
-            : `${selectedGoalIds.length} of ${totalSelectableGoals} goals selected`
+            ? `Select all ${totalSelectableGoals} ${selectLabel}`
+            : `${selectedGoalIds.length} of ${totalSelectableGoals} ${selectLabel} selected`
           }
         </span>
       </div>
@@ -56,7 +60,7 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
           size="sm"
         >
           <Send className="h-3 w-3 mr-1" />
-          Send Selected for Approval ({selectedGoalIds.length})
+          {actionLabel} ({selectedGoalIds.length})
         </Button>
       )}
     </div>
