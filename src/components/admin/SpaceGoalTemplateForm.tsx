@@ -31,7 +31,8 @@ const goalTemplateSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters long" }),
   description: z.string().min(20, { message: "Description must be at least 20 characters long" }),
   category: z.string().min(1, { message: "Please select a category" }),
-  spaceId: z.string().min(1, { message: "Please select a space" })
+  spaceId: z.string().min(1, { message: "Please select a space" }),
+  targetAudience: z.string().min(1, { message: "Please specify target audience" })
 });
 
 type GoalTemplateFormValues = z.infer<typeof goalTemplateSchema>;
@@ -46,7 +47,8 @@ const SpaceGoalTemplateForm = () => {
       title: '',
       description: '',
       category: '',
-      spaceId: spaces.length > 0 ? spaces[0].id : ''
+      spaceId: spaces.length > 0 ? spaces[0].id : '',
+      targetAudience: 'All'
     },
   });
 
@@ -56,6 +58,10 @@ const SpaceGoalTemplateForm = () => {
         title: values.title,
         description: values.description,
         category: values.category,
+        targetAudience: values.targetAudience,
+        createdBy: 'admin',
+        isActive: true,
+        milestones: []
       });
 
       toast({
@@ -82,6 +88,15 @@ const SpaceGoalTemplateForm = () => {
     "Personal Growth",
     "Project Goals",
     "Innovation"
+  ];
+
+  const targetAudiences = [
+    "All",
+    "Managers",
+    "Developers",
+    "Customer-facing roles",
+    "Senior Staff",
+    "New Hires"
   ];
 
   return (
@@ -140,6 +155,31 @@ const SpaceGoalTemplateForm = () => {
                       {categories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="targetAudience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Audience</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select target audience" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {targetAudiences.map((audience) => (
+                        <SelectItem key={audience} value={audience}>
+                          {audience}
                         </SelectItem>
                       ))}
                     </SelectContent>

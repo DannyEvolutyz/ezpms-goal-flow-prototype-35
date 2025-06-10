@@ -24,6 +24,9 @@ const blankTemplate = (): GoalBankForm => ({
   title: "",
   description: "",
   category: "",
+  targetAudience: "All",
+  createdBy: "admin",
+  isActive: true,
   milestones: [],
 });
 
@@ -61,6 +64,9 @@ const GoalBankManager = () => {
       title: tpl.title,
       description: tpl.description,
       category: tpl.category,
+      targetAudience: tpl.targetAudience,
+      createdBy: tpl.createdBy,
+      isActive: tpl.isActive,
       // Drop milestone id for local editing
       milestones: (tpl.milestones || []).map((m) => ({
         title: m.title,
@@ -93,6 +99,9 @@ const GoalBankManager = () => {
         title: form.title,
         description: form.description,
         category: form.category,
+        targetAudience: form.targetAudience,
+        createdBy: form.createdBy,
+        isActive: form.isActive,
         milestones,
       });
     } else {
@@ -100,6 +109,9 @@ const GoalBankManager = () => {
         title: form.title,
         description: form.description,
         category: form.category,
+        targetAudience: form.targetAudience,
+        createdBy: form.createdBy,
+        isActive: form.isActive,
         milestones,
       });
     }
@@ -136,7 +148,11 @@ const GoalBankManager = () => {
           <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} required placeholder="E.g., Software Engineering, QA" />
         </div>
         <div className="mb-2">
-          <label className="block text-sm font-semibold flex items-center">
+          <label className="block text-sm font-semibold">Target Audience</label>
+          <Input value={form.targetAudience} onChange={e => setForm(f => ({ ...f, targetAudience: e.target.value }))} required placeholder="E.g., All, Managers, Developers" />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-semibold">
             Milestones <Plus onClick={addMilestone} className="w-5 h-5 ml-2 cursor-pointer text-green-700" />
           </label>
           {form.milestones.length === 0 && (
@@ -179,6 +195,9 @@ const GoalBankManager = () => {
               </CardHeader>
               <CardContent>
                 <div className="mb-2">{tpl.description}</div>
+                <div className="mb-2">
+                  <span className="font-medium">Target Audience:</span> {tpl.targetAudience}
+                </div>
                 <div>
                   <span className="font-medium">Milestones:</span>
                   <ul className="list-decimal ml-6">
