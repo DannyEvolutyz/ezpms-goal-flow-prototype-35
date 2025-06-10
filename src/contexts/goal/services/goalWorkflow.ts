@@ -53,9 +53,10 @@ export const submitGoal = ({
     )
   );
   
+  // Notification for the user who submitted
   createNotification({
     userId: user.id,
-    title: 'Goal Submitted',
+    title: 'Goal Submitted Successfully',
     message: `You've submitted your goal: ${goalToSubmit.title}`,
     type: 'success',
     targetType: 'goal',
@@ -63,13 +64,14 @@ export const submitGoal = ({
     setNotifications
   });
   
+  // Find manager and notify them
   const allUsers = getAllUsers();
   const manager = allUsers.find(u => u.id === user.managerId);
   
   if (manager) {
     createNotification({
       userId: manager.id,
-      title: 'Goal Submitted for Review',
+      title: 'New Goal Submitted for Review',
       message: `${user.name} has submitted a goal for your review: ${goalToSubmit.title}`,
       type: 'info',
       targetType: 'goal',
@@ -77,6 +79,20 @@ export const submitGoal = ({
       setNotifications
     });
   }
+  
+  // Notify all admins
+  const admins = allUsers.filter(u => u.role === 'admin');
+  admins.forEach(admin => {
+    createNotification({
+      userId: admin.id,
+      title: 'Goal Submitted',
+      message: `${user.name} submitted a goal: ${goalToSubmit.title}`,
+      type: 'info',
+      targetType: 'goal',
+      targetId: goalId,
+      setNotifications
+    });
+  });
 };
 
 interface ApproveGoalParams {
@@ -131,16 +147,18 @@ export const approveGoal = ({
     )
   );
   
+  // Notification for the goal owner
   createNotification({
     userId: goalToApprove.userId,
-    title: 'Goal Approved',
-    message: `Your goal "${goalToApprove.title}" has been approved${feedback ? '. See feedback for details.' : ''}`,
+    title: 'Goal Approved! 🎉',
+    message: `Your goal "${goalToApprove.title}" has been approved${feedback ? '. See feedback for details.' : '.'}`,
     type: 'success',
     targetType: 'goal',
     targetId: goalId,
     setNotifications
   });
   
+  // Notification for the reviewer
   createNotification({
     userId: user.id,
     title: 'Goal Approved',
@@ -193,16 +211,18 @@ export const rejectGoal = ({
     )
   );
   
+  // Notification for the goal owner
   createNotification({
     userId: goalToReject.userId,
     title: 'Goal Rejected',
-    message: `Your goal "${goalToReject.title}" has been rejected. Please check the feedback.`,
+    message: `Your goal "${goalToReject.title}" has been rejected. Please check the feedback and make necessary changes.`,
     type: 'error',
     targetType: 'goal',
     targetId: goalId,
     setNotifications
   });
   
+  // Notification for the reviewer
   createNotification({
     userId: user.id,
     title: 'Goal Rejected',
@@ -255,16 +275,18 @@ export const returnGoalForRevision = ({
     )
   );
   
+  // Notification for the goal owner
   createNotification({
     userId: goalToReturn.userId,
     title: 'Goal Needs Revision',
-    message: `Your goal "${goalToReturn.title}" requires revision. Please check the feedback.`,
+    message: `Your goal "${goalToReturn.title}" requires revision. Please check the feedback and make necessary changes.`,
     type: 'warning',
     targetType: 'goal',
     targetId: goalId,
     setNotifications
   });
   
+  // Notification for the reviewer
   createNotification({
     userId: user.id,
     title: 'Goal Returned for Revision',

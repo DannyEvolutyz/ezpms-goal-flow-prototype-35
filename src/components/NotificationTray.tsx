@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, BellRing, Check, Info, AlertTriangle, X, CheckCircle2 } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Notification } from '@/types';
+import { useGoals } from '@/contexts/goal';
 
 const NotificationTray = () => {
   const navigate = useNavigate();
@@ -24,54 +26,39 @@ const NotificationTray = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  // Safe import of useGoals to prevent the error
-  let useGoals: any;
-  let goalContext: any = {};
-  
-  try {
-    // Dynamically import the hook to avoid the error when not within GoalProvider
-    ({ useGoals } = require('@/contexts/goal'));
-    goalContext = useGoals();
-  } catch (error) {
-    // If useGoals throws an error, we'll use empty functionality
-    console.log('NotificationTray: GoalContext not available');
-  }
-  
   const {
-    getUserNotifications = () => [],
-    markNotificationAsRead = () => {},
-    clearNotifications = () => {},
-    getUnreadNotificationsCount = () => 0
-  } = goalContext;
+    getUserNotifications,
+    markNotificationAsRead,
+    clearNotifications,
+    getUnreadNotificationsCount
+  } = useGoals();
   
   useEffect(() => {
-    try {
-      // Get notifications only if the context is available
-      const userNotifications = getUserNotifications();
-      setNotifications(userNotifications || []);
-      
-      // Update unread count
-      setUnreadCount(getUnreadNotificationsCount());
-    } catch (error) {
-      // Handle case where context is not available
-      console.log('Could not load notifications');
-    }
+    // Get notifications and update state
+    const userNotifications = getUserNotifications();
+    setNotifications(userNotifications || []);
+    
+    // Update unread count
+    const count = getUnreadNotificationsCount();
+    setUnreadCount(count);
   }, [getUserNotifications, getUnreadNotificationsCount]);
   
   // Handle notification click
   const handleNotificationClick = (notification: Notification) => {
-    try {
-      markNotificationAsRead(notification.id);
-      
-      // Navigate to the target if there is one
-      if (notification.targetType === 'goal' && notification.targetId) {
-        navigate('/goals');
-      }
-    } catch (error) {
-      console.log('Error handling notification click');
+    markNotificationAsRead(notification.id);
+    
+    // Navigate to the target if there is one
+    if (notification.targetType === 'goal' && notification.targetId) {
+      navigate('/goals');
     }
     
     setOpen(false);
+  };
+  
+  // Handle clear all notifications
+  const handleClearAll = () => {
+    clearNotifications();
+    setUnreadCount(0);
   };
   
   // Render notification icon based on type
@@ -107,24 +94,6 @@ const NotificationTray = () => {
       return `${days} ${days === 1 ? 'day' : 'days'} ago`;
     }
   };
-  
-  // If we couldn't get the context, return a simplified bell icon without notifications
-  if (!useGoals) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Notifications</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -162,14 +131,7 @@ const NotificationTray = () => {
               variant="ghost" 
               size="sm"
               className="h-auto text-xs px-2 py-1 hover:bg-gray-200"
-              onClick={() => {
-                try {
-                  clearNotifications();
-                  setUnreadCount(0);
-                } catch (error) {
-                  console.log('Error clearing notifications');
-                }
-              }}
+              onClick={handleClearAll}
             >
               <Check className="h-3 w-3 mr-1" />
               Mark all as read

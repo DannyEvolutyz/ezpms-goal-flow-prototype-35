@@ -23,15 +23,20 @@ export const deleteGoal = ({
   
   const goalToDelete = goals.find(g => g.id === goalId);
   
-  if (!goalToDelete || (goalToDelete.userId !== user.id && user.role !== 'admin')) return;
+  if (!goalToDelete || goalToDelete.userId !== user.id) return;
   
   setGoals(prev => prev.filter(goal => goal.id !== goalId));
   
+  // Notification for the user who deleted the goal
   createNotification({
     userId: user.id,
     title: 'Goal Deleted',
-    message: `Goal "${goalToDelete.title}" has been deleted`,
+    message: `You've deleted the goal: ${goalToDelete.title}`,
     type: 'info',
+    targetType: 'goal',
+    targetId: goalId,
     setNotifications
   });
+  
+  return true;
 };

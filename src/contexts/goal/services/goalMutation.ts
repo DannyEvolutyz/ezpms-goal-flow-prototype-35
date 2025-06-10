@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 interface AddGoalParams {
   goals: Goal[];
-  goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string };
+  goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>;
   user: any;
   setGoals: Dispatch<SetStateAction<Goal[]>>;
   setNotifications: Dispatch<SetStateAction<any[]>>;
@@ -21,9 +21,9 @@ export const addGoal = ({
   createNotification,
   canCreateOrEditGoals
 }: AddGoalParams) => {
-  if (!user) return null;
+  if (!user) return;
   
-  // Check if goals can be created in this space
+  // Check if user can create goals in this space
   if (canCreateOrEditGoals && !canCreateOrEditGoals(goalData.spaceId)) {
     createNotification({
       userId: user.id,
@@ -32,29 +32,30 @@ export const addGoal = ({
       type: 'error',
       setNotifications,
     });
-    return null;
+    return;
   }
   
   const newGoal: Goal = {
-    ...goalData,
     id: `goal-${Date.now()}`,
     userId: user.id,
-    spaceId: goalData.spaceId,
     status: 'draft',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     feedback: '',
-    milestones: goalData.milestones || []
+    ...goalData
   };
   
   setGoals(prev => [...prev, newGoal]);
   
+  // Notification for the user who created the goal
   createNotification({
     userId: user.id,
-    title: 'Goal Created',
-    message: `You created a new goal: ${newGoal.title}`,
+    title: 'Goal Created Successfully',
+    message: `You've created a new goal: ${newGoal.title}`,
     type: 'success',
-    setNotifications,
+    targetType: 'goal',
+    targetId: newGoal.id,
+    setNotifications
   });
   
   return newGoal;
@@ -64,10 +65,10 @@ interface UpdateGoalParams {
   goals: Goal[];
   updatedGoal: Goal;
   setGoals: Dispatch<SetStateAction<Goal[]>>;
-  user?: any;
+  user: any;
   canCreateOrEditGoals?: (spaceId?: string) => boolean;
-  setNotifications?: Dispatch<SetStateAction<any[]>>;
-  createNotification?: (params: any) => void;
+  setNotifications: Dispatch<SetStateAction<any[]>>;
+  createNotification: (params: any) => void;
 }
 
 export const updateGoal = ({
@@ -79,27 +80,45 @@ export const updateGoal = ({
   setNotifications,
   createNotification
 }: UpdateGoalParams) => {
+  if (!user) return;
+  
+  const existingGoal = goals.find(g => g.id === updatedGoal.id);
+  
+  if (!existingGoal || existingGoal.userId !== user.id) return;
+  
   // Check if user can edit goals in this space
-  if (user && setNotifications && createNotification && canCreateOrEditGoals && 
-      updatedGoal.status === 'draft' && !canCreateOrEditGoals(updatedGoal.spaceId)) {
+  if (canCreateOrEditGoals && !canCreateOrEditGoals(updatedGoal.spaceId)) {
     createNotification({
       userId: user.id,
       title: 'Goal Update Failed',
-      message: 'You cannot update goals in this space right now due to submission deadline.',
+      message: 'You cannot edit goals in this space right now due to submission deadline.',
       type: 'error',
       setNotifications,
     });
-    return null;
+    return;
   }
   
   setGoals(prev => 
     prev.map(goal => 
-      goal.id === updatedGoal.id ? {
-        ...updatedGoal,
-        updatedAt: new Date().toISOString()
-      } : goal
+      goal.id === updatedGoal.id 
+        ? {
+            ...updatedGoal,
+            updatedAt: new Date().toISOString()
+          }
+        : goal
     )
   );
+  
+  // Notification for the user who updated the goal
+  createNotification({
+    userId: user.id,
+    title: 'Goal Updated Successfully',
+    message: `You've updated your goal: ${updatedGoal.title}`,
+    type: 'success',
+    targetType: 'goal',
+    targetId: updatedGoal.id,
+    setNotifications
+  });
   
   return updatedGoal;
 };
