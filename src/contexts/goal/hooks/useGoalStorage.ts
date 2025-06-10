@@ -44,13 +44,25 @@ export const useGoalStorage = () => {
   const [spaces, setSpaces] = useState<GoalSpace[]>(initialGoalSpaces);
 
   useEffect(() => {
-    // Clear goals from localStorage and start fresh
-    localStorage.removeItem('ezpms_goals');
-    setGoals([]);
-    
+    // Load stored data from localStorage
+    const storedGoals = localStorage.getItem('ezpms_goals');
     const storedNotifications = localStorage.getItem('ezpms_notifications');
     const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
     const storedGoalSpaces = localStorage.getItem('ezpms_goal_spaces');
+    
+    if (storedGoals) {
+      try {
+        const parsedGoals = JSON.parse(storedGoals);
+        setGoals(parsedGoals);
+        console.log('Loaded goals from localStorage:', parsedGoals);
+      } catch (error) {
+        console.error("Failed to parse stored goals:", error);
+        setGoals([]);
+      }
+    } else {
+      console.log('No stored goals found, starting with empty array');
+      setGoals([]);
+    }
     
     if (storedNotifications) {
       try {
@@ -72,16 +84,23 @@ export const useGoalStorage = () => {
     
     if (storedGoalSpaces) {
       try {
-        setSpaces(JSON.parse(storedGoalSpaces));
+        const parsedSpaces = JSON.parse(storedGoalSpaces);
+        setSpaces(parsedSpaces);
+        console.log('Loaded spaces from localStorage:', parsedSpaces);
       } catch (error) {
         console.error("Failed to parse stored goal spaces:", error);
         setSpaces(initialGoalSpaces);
       }
+    } else {
+      console.log('No stored spaces found, using initial spaces');
+      setSpaces(initialGoalSpaces);
     }
   }, []);
 
+  // Save data to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem('ezpms_goals', JSON.stringify(goals));
+    console.log('Saved goals to localStorage:', goals);
   }, [goals]);
   
   useEffect(() => {
@@ -94,6 +113,7 @@ export const useGoalStorage = () => {
   
   useEffect(() => {
     localStorage.setItem('ezpms_goal_spaces', JSON.stringify(spaces));
+    console.log('Saved spaces to localStorage:', spaces);
   }, [spaces]);
 
   return {
