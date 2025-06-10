@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Send } from 'lucide-react';
@@ -19,8 +19,15 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
   onSendSelectedForApproval,
   effectiveReadOnly
 }) => {
+  const checkboxRef = useRef<HTMLButtonElement>(null);
   const isAllSelected = selectedGoalIds.length === totalSelectableGoals && totalSelectableGoals > 0;
   const isIndeterminate = selectedGoalIds.length > 0 && selectedGoalIds.length < totalSelectableGoals;
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      (checkboxRef.current as any).indeterminate = isIndeterminate;
+    }
+  }, [isIndeterminate]);
 
   if (totalSelectableGoals === 0 || effectiveReadOnly) {
     return null;
@@ -30,12 +37,8 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
     <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
       <div className="flex items-center space-x-2">
         <Checkbox
+          ref={checkboxRef}
           checked={isAllSelected}
-          ref={(ref) => {
-            if (ref) {
-              ref.indeterminate = isIndeterminate;
-            }
-          }}
           onCheckedChange={onSelectAll}
         />
         <span className="text-sm font-medium">
