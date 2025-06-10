@@ -33,5 +33,8 @@ export interface GoalBank {
   title: string;
   description: string;
   category: string;
+  targetAudience: string;
+  createdBy: string;
+  isActive: boolean;
   milestones?: Milestone[];
 }
