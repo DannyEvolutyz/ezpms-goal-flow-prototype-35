@@ -1,4 +1,3 @@
-
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -11,6 +10,7 @@ import ReportsTab from '@/components/manager/ReportsTab';
 import AllGoalsTab from '@/components/manager/AllGoalsTab';
 import ReviewGoalsTab from '@/components/manager/ReviewGoalsTab';
 import RateGoalsTab from '@/components/manager/RateGoalsTab';
+import ManagerGoalSpaceSelector from '@/components/manager/ManagerGoalSpaceSelector';
 
 const ManagerDashboard = () => {
   const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
@@ -20,6 +20,7 @@ const ManagerDashboard = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('pending_approval');
+  const [selectedSpaceId, setSelectedSpaceId] = useState('');
   
   console.log('Manager Dashboard - Current user:', user);
   
@@ -33,21 +34,29 @@ const ManagerDashboard = () => {
   const teamMembers = allUsers.filter(u => u.managerId === user?.id);
   console.log('Manager Dashboard - Team members:', teamMembers);
   
-  // Filter goals based on selected user and status
+  // Filter goals based on selected space, user and status
   const filteredGoals = teamGoals.filter(goal => {
-    console.log('Checking goal:', goal.id, 'status:', goal.status, 'userId:', goal.userId);
+    console.log('Checking goal:', goal.id, 'status:', goal.status, 'userId:', goal.userId, 'spaceId:', goal.spaceId);
+    const matchesSpace = !selectedSpaceId || goal.spaceId === selectedSpaceId;
     const matchesStatus = selectedStatus === 'all' || goal.status === selectedStatus;
     const matchesUser = selectedUserId === 'all' || goal.userId === selectedUserId;
-    return matchesStatus && matchesUser;
+    return matchesSpace && matchesStatus && matchesUser;
   });
   
-  // Get goals that need review (pending approval)
-  const pendingGoals = teamGoals.filter(goal => goal.status === 'pending_approval');
+  // Get goals that need review (pending approval) filtered by space
+  const pendingGoals = teamGoals.filter(goal => 
+    goal.status === 'pending_approval' && 
+    (!selectedSpaceId || goal.spaceId === selectedSpaceId)
+  );
   
-  // Get goals that are submitted for review (ready for rating)
-  const submittedGoals = teamGoals.filter(goal => goal.status === 'submitted');
+  // Get goals that are submitted for review (ready for rating) filtered by space
+  const submittedGoals = teamGoals.filter(goal => 
+    goal.status === 'submitted' && 
+    (!selectedSpaceId || goal.spaceId === selectedSpaceId)
+  );
   
   console.log('Manager Dashboard - Filtered goals:', filteredGoals);
+  console.log('Manager Dashboard - Selected space ID:', selectedSpaceId);
   
   const handleSelectGoal = (goal) => {
     setSelectedGoal(goal);
@@ -163,98 +172,110 @@ const ManagerDashboard = () => {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Manager Dashboard</h1>
       
-      <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-5">
-          <TabsTrigger value="pending" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            <span>Review Goals</span>
-            {pendingGoals.length > 0 && (
-              <span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {pendingGoals.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="submitted" className="flex items-center gap-2">
-            <Star className="h-4 w-4" />
-            <span>Rate Goals</span>
-            {submittedGoals.length > 0 && (
-              <span className="ml-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {submittedGoals.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="all-goals" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>All Team Goals</span>
-          </TabsTrigger>
-          <TabsTrigger value="team" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            <span>Team Analytics</span>
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <ArrowDown className="h-4 w-4" />
-            <span>Reports</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="pending">
-          <ReviewGoalsTab
-            pendingGoals={pendingGoals}
-            teamMembers={teamMembers}
-            selectedUserId={selectedUserId}
-            selectedGoal={selectedGoal}
-            feedback={feedback}
-            onUserChange={setSelectedUserId}
-            onSelectGoal={handleSelectGoal}
-            onFeedbackChange={setFeedback}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onReturnForRevision={handleReturnForRevision}
-            getGoalOwnerName={getGoalOwnerName}
-          />
-        </TabsContent>
+      <ManagerGoalSpaceSelector
+        selectedSpaceId={selectedSpaceId}
+        onSpaceChange={setSelectedSpaceId}
+      />
+      
+      {!selectedSpaceId ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Target className="mx-auto h-12 w-12 mb-4 opacity-50" />
+          <p className="text-lg">Please select a goal space to view team goals and analytics.</p>
+        </div>
+      ) : (
+        <Tabs defaultValue="pending" className="space-y-6">
+          <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-5">
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              <span>Review Goals</span>
+              {pendingGoals.length > 0 && (
+                <span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {pendingGoals.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="submitted" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              <span>Rate Goals</span>
+              {submittedGoals.length > 0 && (
+                <span className="ml-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {submittedGoals.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="all-goals" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>All Team Goals</span>
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-2">
+              <BarChart className="h-4 w-4" />
+              <span>Team Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <ArrowDown className="h-4 w-4" />
+              <span>Reports</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="pending">
+            <ReviewGoalsTab
+              pendingGoals={pendingGoals}
+              teamMembers={teamMembers}
+              selectedUserId={selectedUserId}
+              selectedGoal={selectedGoal}
+              feedback={feedback}
+              onUserChange={setSelectedUserId}
+              onSelectGoal={handleSelectGoal}
+              onFeedbackChange={setFeedback}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onReturnForRevision={handleReturnForRevision}
+              getGoalOwnerName={getGoalOwnerName}
+            />
+          </TabsContent>
 
-        <TabsContent value="submitted">
-          <RateGoalsTab
-            submittedGoals={submittedGoals}
-            teamMembers={teamMembers}
-            selectedUserId={selectedUserId}
-            selectedGoal={selectedGoal}
-            feedback={feedback}
-            onUserChange={setSelectedUserId}
-            onSelectGoal={handleSelectGoal}
-            onFeedbackChange={setFeedback}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onReturnForRevision={handleReturnForRevision}
-            onRateGoal={handleRateGoal}
-            getGoalOwnerName={getGoalOwnerName}
-          />
-        </TabsContent>
+          <TabsContent value="submitted">
+            <RateGoalsTab
+              submittedGoals={submittedGoals}
+              teamMembers={teamMembers}
+              selectedUserId={selectedUserId}
+              selectedGoal={selectedGoal}
+              feedback={feedback}
+              onUserChange={setSelectedUserId}
+              onSelectGoal={handleSelectGoal}
+              onFeedbackChange={setFeedback}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onReturnForRevision={handleReturnForRevision}
+              onRateGoal={handleRateGoal}
+              getGoalOwnerName={getGoalOwnerName}
+            />
+          </TabsContent>
 
-        <TabsContent value="all-goals">
-          <AllGoalsTab
-            filteredGoals={filteredGoals}
-            teamMembers={teamMembers}
-            selectedUserId={selectedUserId}
-            selectedStatus={selectedStatus}
-            selectedGoal={selectedGoal}
-            onUserChange={setSelectedUserId}
-            onStatusChange={setSelectedStatus}
-            onSelectGoal={handleSelectGoal}
-            getGoalOwnerName={getGoalOwnerName}
-            getStatusBadge={getStatusBadge}
-          />
-        </TabsContent>
-        
-        <TabsContent value="team">
-          <TeamAnalytics />
-        </TabsContent>
-        
-        <TabsContent value="reports">
-          <ReportsTab />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="all-goals">
+            <AllGoalsTab
+              filteredGoals={filteredGoals}
+              teamMembers={teamMembers}
+              selectedUserId={selectedUserId}
+              selectedStatus={selectedStatus}
+              selectedGoal={selectedGoal}
+              onUserChange={setSelectedUserId}
+              onStatusChange={setSelectedStatus}
+              onSelectGoal={handleSelectGoal}
+              getGoalOwnerName={getGoalOwnerName}
+              getStatusBadge={getStatusBadge}
+            />
+          </TabsContent>
+          
+          <TabsContent value="team">
+            <TeamAnalytics />
+          </TabsContent>
+          
+          <TabsContent value="reports">
+            <ReportsTab />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 };
