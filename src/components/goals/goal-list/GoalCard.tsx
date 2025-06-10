@@ -42,7 +42,9 @@ const GoalCard: React.FC<GoalCardProps> = ({
   const canEdit = !effectiveReadOnly && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review');
   const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
   const canSendRejectedForApproval = !effectiveReadOnly && goal.status === 'rejected';
-  const canSubmit = !effectiveReadOnly && goal.status === 'approved';
+  
+  // Remove individual submit capability - only bulk submission allowed
+  const canSubmit = false;
 
   const handleUpdateWeightage = (weightage: number) => {
     onUpdateWeightage(goal.id, weightage);

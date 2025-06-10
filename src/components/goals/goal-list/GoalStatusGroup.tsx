@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Goal } from '@/types';
 import GoalCard from './GoalCard';
@@ -19,6 +18,7 @@ interface GoalStatusGroupProps {
   onSelectAllGoals?: (goalIds: string[], selected: boolean) => void;
   onBulkSendForApproval?: (goalIds: string[]) => void;
   onBulkSubmitForReview?: (goalIds: string[]) => void;
+  allGoals?: Goal[];
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -35,7 +35,8 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   onToggleSelectGoal,
   onSelectAllGoals,
   onBulkSendForApproval,
-  onBulkSubmitForReview
+  onBulkSubmitForReview,
+  allGoals = []
 }) => {
   if (goals.length === 0) {
     return null;
@@ -50,6 +51,10 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   const selectableGoalsForSubmit = goals.filter(goal => !effectiveReadOnly && goal.status === 'approved');
   const selectableSubmitGoalIds = selectableGoalsForSubmit.map(goal => goal.id);
   const selectedSelectableSubmitGoals = selectedGoalIds.filter(id => selectableSubmitGoalIds.includes(id));
+
+  // Calculate total weightage of all approved goals for submission validation
+  const allApprovedGoals = allGoals.filter(goal => goal.status === 'approved');
+  const totalApprovedWeightage = allApprovedGoals.reduce((sum, goal) => sum + goal.weightage, 0);
 
   const handleSelectAllApproval = (checked: boolean) => {
     if (onSelectAllGoals) {
@@ -101,6 +106,8 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
           effectiveReadOnly={effectiveReadOnly}
           actionLabel="Submit Selected for Review"
           selectLabel="goals"
+          totalWeightage={totalApprovedWeightage}
+          isSubmissionAction={true}
         />
       )}
       
@@ -114,7 +121,7 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             onSubmitGoal={onSubmitGoal}
             onSendForApproval={onSendForApproval}
             onUpdateWeightage={onUpdateWeightage}
-            showSubmitOption={showSubmitOption}
+            showSubmitOption={false}
             showApprovalOption={showApprovalOption}
             showCheckbox={(showApprovalBulkActions && goal.status === 'draft') || (showSubmitBulkActions && goal.status === 'approved')}
             isSelected={selectedGoalIds.includes(goal.id)}

@@ -12,6 +12,8 @@ interface BulkGoalActionsProps {
   effectiveReadOnly: boolean;
   actionLabel?: string;
   selectLabel?: string;
+  totalWeightage?: number;
+  isSubmissionAction?: boolean;
 }
 
 const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
@@ -21,11 +23,17 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
   onSendSelectedForApproval,
   effectiveReadOnly,
   actionLabel = "Send Selected for Approval",
-  selectLabel = "goals"
+  selectLabel = "goals",
+  totalWeightage = 0,
+  isSubmissionAction = false
 }) => {
   const checkboxRef = useRef<HTMLButtonElement>(null);
   const isAllSelected = selectedGoalIds.length === totalSelectableGoals && totalSelectableGoals > 0;
   const isIndeterminate = selectedGoalIds.length > 0 && selectedGoalIds.length < totalSelectableGoals;
+  
+  // For submission actions, check if weightage is valid
+  const isWeightageValid = !isSubmissionAction || totalWeightage === 100;
+  const canSubmit = selectedGoalIds.length > 0 && isWeightageValid;
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -54,14 +62,22 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
       </div>
       
       {selectedGoalIds.length > 0 && (
-        <Button
-          onClick={onSendSelectedForApproval}
-          className="text-xs"
-          size="sm"
-        >
-          <Send className="h-3 w-3 mr-1" />
-          {actionLabel} ({selectedGoalIds.length})
-        </Button>
+        <div className="flex flex-col items-end">
+          <Button
+            onClick={onSendSelectedForApproval}
+            className="text-xs"
+            size="sm"
+            disabled={!canSubmit}
+          >
+            <Send className="h-3 w-3 mr-1" />
+            {actionLabel} ({selectedGoalIds.length})
+          </Button>
+          {isSubmissionAction && !isWeightageValid && (
+            <span className="text-xs text-red-500 mt-1">
+              Total weightage must be 100% to submit
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

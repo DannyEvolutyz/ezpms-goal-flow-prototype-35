@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
@@ -104,6 +103,19 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
       toast({
         title: "Cannot submit goals",
         description: "This goal space is now read-only.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if total weightage of all approved goals is 100%
+    const allApprovedGoals = goals.filter(g => g.status === 'approved');
+    const totalApprovedWeightage = allApprovedGoals.reduce((sum, goal) => sum + goal.weightage, 0);
+    
+    if (totalApprovedWeightage !== 100) {
+      toast({
+        title: "Cannot submit goals",
+        description: `Total weightage of approved goals must be 100%. Current total: ${totalApprovedWeightage}%`,
         variant: "destructive"
       });
       return;
@@ -267,6 +279,7 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
           onSelectAllGoals={handleSelectAllGoals}
           onBulkSendForApproval={handleBulkSendForApproval}
           onBulkSubmitForReview={handleBulkSubmitForReview}
+          allGoals={goals}
         />
       ))}
 
