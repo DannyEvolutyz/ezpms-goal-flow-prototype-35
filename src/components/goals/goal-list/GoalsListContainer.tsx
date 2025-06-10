@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { toast } from '@/hooks/use-toast';
@@ -221,7 +222,8 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
     }
     
     const goal = goals.find(g => g.id === goalId);
-    if (goal && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review')) {
+    // Allow weightage updates for draft, rejected, under_review, and approved goals
+    if (goal && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review' || goal.status === 'approved')) {
       onUpdateGoal({
         ...goal,
         weightage,

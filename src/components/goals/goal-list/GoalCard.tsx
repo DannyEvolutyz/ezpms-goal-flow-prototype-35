@@ -98,6 +98,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
         isLocked={isLocked}
         effectiveReadOnly={effectiveReadOnly}
         onUpdateWeightage={handleUpdateWeightage}
+        goalStatus={goal.status}
       />
 
       <GoalFeedback feedback={goal.feedback} status={goal.status} />

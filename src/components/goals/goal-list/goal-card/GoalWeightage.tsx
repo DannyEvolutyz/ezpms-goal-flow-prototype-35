@@ -7,13 +7,15 @@ interface GoalWeightageProps {
   isLocked: boolean;
   effectiveReadOnly: boolean;
   onUpdateWeightage: (weightage: number) => void;
+  goalStatus: string;
 }
 
 const GoalWeightage: React.FC<GoalWeightageProps> = ({ 
   weightage, 
   isLocked, 
   effectiveReadOnly, 
-  onUpdateWeightage 
+  onUpdateWeightage,
+  goalStatus 
 }) => {
   const handleWeightageChange = (value: string) => {
     const numValue = parseInt(value) || 0;
@@ -21,6 +23,15 @@ const GoalWeightage: React.FC<GoalWeightageProps> = ({
       onUpdateWeightage(numValue);
     }
   };
+
+  // Allow weightage editing for draft, rejected, under_review, and approved goals
+  // Lock it only after submitted, final_approved, or pending_approval
+  const canEditWeightage = !effectiveReadOnly && (
+    goalStatus === 'draft' || 
+    goalStatus === 'rejected' || 
+    goalStatus === 'under_review' || 
+    goalStatus === 'approved'
+  );
 
   return (
     <div className="mt-3 flex items-center gap-2 p-2 bg-blue-50 rounded-md">
@@ -31,7 +42,7 @@ const GoalWeightage: React.FC<GoalWeightageProps> = ({
         max="100"
         value={weightage}
         onChange={(e) => handleWeightageChange(e.target.value)}
-        disabled={isLocked || effectiveReadOnly}
+        disabled={!canEditWeightage}
         className="w-20 h-8"
       />
       <span className="text-sm text-blue-800">%</span>
