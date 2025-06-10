@@ -1,4 +1,3 @@
-
 import { Goal } from '@/types';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -23,6 +22,8 @@ export const submitGoal = ({
   getAllUsers,
   canCreateOrEditGoals
 }: SubmitGoalParams) => {
+  console.log('🎯 submitGoal called for goalId:', goalId, 'by user:', user?.id);
+  
   if (!user) return;
   
   const goalToSubmit = goals.find(g => g.id === goalId);
@@ -53,6 +54,7 @@ export const submitGoal = ({
     )
   );
   
+  console.log('📤 Creating user notification for goal submission');
   // Notification for the user who submitted
   createNotification({
     userId: user.id,
@@ -69,6 +71,7 @@ export const submitGoal = ({
   const manager = allUsers.find(u => u.id === user.managerId);
   
   if (manager) {
+    console.log('👔 Creating manager notification for goal submission');
     createNotification({
       userId: manager.id,
       title: 'New Goal Submitted for Review',
@@ -82,6 +85,7 @@ export const submitGoal = ({
   
   // Notify all admins
   const admins = allUsers.filter(u => u.role === 'admin');
+  console.log('👑 Creating admin notifications for goal submission, admin count:', admins.length);
   admins.forEach(admin => {
     createNotification({
       userId: admin.id,
@@ -116,6 +120,8 @@ export const approveGoal = ({
   createNotification,
   canReviewGoals
 }: ApproveGoalParams) => {
+  console.log('✅ approveGoal called for goalId:', goalId, 'by user:', user?.id);
+  
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToApprove = goals.find(g => g.id === goalId);
@@ -147,6 +153,7 @@ export const approveGoal = ({
     )
   );
   
+  console.log('📤 Creating goal owner notification for approval');
   // Notification for the goal owner
   createNotification({
     userId: goalToApprove.userId,
@@ -158,6 +165,7 @@ export const approveGoal = ({
     setNotifications
   });
   
+  console.log('📤 Creating reviewer notification for approval');
   // Notification for the reviewer
   createNotification({
     userId: user.id,
@@ -180,6 +188,8 @@ export const rejectGoal = ({
   createNotification,
   canReviewGoals
 }: ApproveGoalParams) => {
+  console.log('❌ rejectGoal called for goalId:', goalId, 'by user:', user?.id);
+  
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReject = goals.find(g => g.id === goalId);
@@ -211,6 +221,7 @@ export const rejectGoal = ({
     )
   );
   
+  console.log('📤 Creating goal owner notification for rejection');
   // Notification for the goal owner
   createNotification({
     userId: goalToReject.userId,
@@ -222,6 +233,7 @@ export const rejectGoal = ({
     setNotifications
   });
   
+  console.log('📤 Creating reviewer notification for rejection');
   // Notification for the reviewer
   createNotification({
     userId: user.id,
@@ -244,6 +256,8 @@ export const returnGoalForRevision = ({
   createNotification,
   canReviewGoals
 }: ApproveGoalParams) => {
+  console.log('🔄 returnGoalForRevision called for goalId:', goalId, 'by user:', user?.id);
+  
   if (!user || (user.role !== 'manager' && user.role !== 'admin')) return;
   
   const goalToReturn = goals.find(g => g.id === goalId);
@@ -275,6 +289,7 @@ export const returnGoalForRevision = ({
     )
   );
   
+  console.log('📤 Creating goal owner notification for revision request');
   // Notification for the goal owner
   createNotification({
     userId: goalToReturn.userId,
@@ -286,6 +301,7 @@ export const returnGoalForRevision = ({
     setNotifications
   });
   
+  console.log('📤 Creating reviewer notification for revision request');
   // Notification for the reviewer
   createNotification({
     userId: user.id,

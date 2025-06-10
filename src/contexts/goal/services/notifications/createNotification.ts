@@ -21,6 +21,16 @@ export const createNotification = ({
   targetId,
   setNotifications
 }: CreateNotificationParams) => {
+  console.log('🔔 Creating notification:', {
+    userId,
+    title,
+    message,
+    type,
+    targetType,
+    targetId,
+    timestamp: new Date().toISOString()
+  });
+  
   const newNotification: Notification = {
     id: `notification-${Date.now()}`,
     userId,
@@ -33,7 +43,12 @@ export const createNotification = ({
     targetId
   };
   
-  setNotifications(prev => [newNotification, ...prev]);
+  setNotifications(prev => {
+    console.log('📋 Current notifications count before adding:', prev.length);
+    const updated = [newNotification, ...prev];
+    console.log('📋 Notifications count after adding:', updated.length);
+    return updated;
+  });
   
   return newNotification;
 };

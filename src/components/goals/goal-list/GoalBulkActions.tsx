@@ -11,6 +11,8 @@ interface GoalBulkActionsProps {
 
 const useGoalBulkActions = ({ goals, effectiveReadOnly, onUpdateGoal, clearSelection }: GoalBulkActionsProps) => {
   const handleBulkSendForApproval = (goalIds: string[]) => {
+    console.log('📊 handleBulkSendForApproval called for goalIds:', goalIds);
+    
     if (effectiveReadOnly) {
       toast({
         title: "Cannot send for approval",
@@ -21,6 +23,7 @@ const useGoalBulkActions = ({ goals, effectiveReadOnly, onUpdateGoal, clearSelec
     }
 
     goalIds.forEach(goalId => {
+      console.log('🔄 Processing goalId for approval:', goalId);
       const goal = goals.find(g => g.id === goalId);
       if (goal && goal.status === 'draft') {
         onUpdateGoal({
@@ -41,6 +44,8 @@ const useGoalBulkActions = ({ goals, effectiveReadOnly, onUpdateGoal, clearSelec
   };
 
   const handleBulkSubmitForReview = (goalIds: string[]) => {
+    console.log('📋 handleBulkSubmitForReview called for goalIds:', goalIds);
+    
     if (effectiveReadOnly) {
       toast({
         title: "Cannot submit goals",
@@ -54,6 +59,8 @@ const useGoalBulkActions = ({ goals, effectiveReadOnly, onUpdateGoal, clearSelec
     const allApprovedGoals = goals.filter(g => g.status === 'approved');
     const totalApprovedWeightage = allApprovedGoals.reduce((sum, goal) => sum + goal.weightage, 0);
     
+    console.log('⚖️ Total approved goals weightage:', totalApprovedWeightage);
+    
     if (totalApprovedWeightage !== 100) {
       toast({
         title: "Cannot submit goals",
@@ -64,6 +71,7 @@ const useGoalBulkActions = ({ goals, effectiveReadOnly, onUpdateGoal, clearSelec
     }
 
     goalIds.forEach(goalId => {
+      console.log('🔄 Processing goalId for review submission:', goalId);
       const goal = goals.find(g => g.id === goalId);
       if (goal && goal.status === 'approved') {
         onUpdateGoal({
