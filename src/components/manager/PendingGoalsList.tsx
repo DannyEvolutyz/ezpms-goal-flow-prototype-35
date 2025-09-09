@@ -48,20 +48,20 @@ const PendingGoalsList: React.FC<PendingGoalsListProps> = ({
             {filteredGoals.map((goal) => (
               <div 
                 key={goal.id}
-                className={`border rounded-lg p-4 cursor-pointer transition hover:border-blue-300 ${
-                  selectedGoal?.id === goal.id ? 'border-blue-500 bg-blue-50' : ''
+                className={`border rounded-lg p-4 cursor-pointer transition hover:border-primary ${
+                  selectedGoal?.id === goal.id ? 'border-primary bg-primary/10' : ''
                 }`}
                 onClick={() => onSelectGoal(goal)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium">{goal.title}</h3>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-secondary/20 text-secondary-foreground px-2 py-1 rounded-full">
                     {getGoalOwnerName(goal.userId)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-1 rounded-full">
                     {goal.category}
                   </span>
                   <span className="text-xs text-gray-500">
@@ -69,7 +69,7 @@ const PendingGoalsList: React.FC<PendingGoalsListProps> = ({
                   </span>
                 </div>
                 <div className="mt-2">
-                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                     Weightage: {goal.weightage}%
                   </span>
                 </div>

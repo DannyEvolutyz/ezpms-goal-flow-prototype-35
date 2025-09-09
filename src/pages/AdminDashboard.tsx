@@ -115,7 +115,7 @@ const AdminDashboard = () => {
       case 'rejected':
         return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
       case 'submitted':
-        return <Badge className="bg-blue-100 text-blue-800">Submitted</Badge>;
+        return <Badge className="bg-secondary/20 text-secondary-foreground">Submitted</Badge>;
       case 'under_review':
         return <Badge className="bg-purple-100 text-purple-800">Under Review</Badge>;
       case 'final_approved':
@@ -135,7 +135,7 @@ const AdminDashboard = () => {
             <Target className="h-4 w-4" />
             <span>Goal Review</span>
             {pendingGoals.length > 0 && (
-              <span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="ml-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {pendingGoals.length}
               </span>
             )}
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredGoals.map(goal => (
-                    <div key={goal.id} className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onClick={() => handleSelectGoal(goal)}>
+                    <div key={goal.id} className="border rounded-lg p-4 hover:bg-secondary/10 cursor-pointer transition-colors" onClick={() => handleSelectGoal(goal)}>
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-medium">{goal.title}</h4>
