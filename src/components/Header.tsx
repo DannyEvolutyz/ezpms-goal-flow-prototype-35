@@ -36,8 +36,8 @@ const Header = () => {
     return (
       <header className="bg-white border-b py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold text-blue-600">
-            PerformTrack
+          <Link to="/" className="flex items-center">
+            <img src="/lovable-uploads/0f761f30-dd58-41d6-9143-8874e4e3cf83.png" alt="Evolutyz" className="h-8" />
           </Link>
         </div>
       </header>
@@ -64,8 +64,8 @@ const Header = () => {
     <header className="bg-white border-b py-3">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center space-x-8">
-          <Link to="/" className="text-xl font-bold text-blue-600">
-            PerformTrack
+          <Link to="/" className="flex items-center">
+            <img src="/lovable-uploads/0f761f30-dd58-41d6-9143-8874e4e3cf83.png" alt="Evolutyz" className="h-8" />
           </Link>
           
           {!isMobile && (
@@ -74,7 +74,7 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-gray-600 hover:text-primary transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -91,7 +91,7 @@ const Header = () => {
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={user.photoUrl} alt={user.name} />
-                  <AvatarFallback className="bg-blue-600 text-white">
+                  <AvatarFallback className="bg-primary text-white">
                     {user.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
@@ -164,13 +164,15 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent side="left" className="w-64">
                 <div className="py-4">
-                  <h2 className="text-lg font-bold text-blue-600 mb-4">PerformTrack</h2>
+                  <div className="mb-4">
+                    <img src="/lovable-uploads/0f761f30-dd58-41d6-9143-8874e4e3cf83.png" alt="Evolutyz" className="h-6" />
+                  </div>
                   <nav className="flex flex-col space-y-4">
                     {menuItems.map((item) => (
                       <Link
                         key={item.path}
                         to={item.path}
-                        className="text-gray-600 hover:text-blue-600 transition-colors"
+                        className="text-gray-600 hover:text-primary transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.label}

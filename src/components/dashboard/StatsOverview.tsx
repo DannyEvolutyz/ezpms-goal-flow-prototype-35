@@ -25,7 +25,7 @@ const StatsOverview = () => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center">
-            <Target className="h-5 w-5 mr-2 text-blue-500" />
+            <Target className="h-5 w-5 mr-2 text-primary" />
             {isManager ? 'Team Goals' : 'My Goals'}
           </CardTitle>
           <CardDescription>
@@ -33,7 +33,7 @@ const StatsOverview = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-blue-600">{userGoals.length}</div>
+          <div className="text-3xl font-bold text-primary">{userGoals.length}</div>
           <p className="text-sm text-gray-500">
             {isManager ? 'Active team goals' : 'Total goals created'}
           </p>
@@ -80,13 +80,13 @@ const StatsOverview = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2 text-blue-500" />
+              <AlertCircle className="h-5 w-5 mr-2 text-primary" />
               Completion Rate
             </CardTitle>
             <CardDescription>Team goal achievement rate</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{completionRate}%</div>
+            <div className="text-3xl font-bold text-primary">{completionRate}%</div>
             <p className="text-sm text-gray-500">Overall progress</p>
           </CardContent>
         </Card>

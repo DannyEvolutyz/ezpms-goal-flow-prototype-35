@@ -13,7 +13,7 @@ const WelcomeBanner = ({ needsAttentionCount = 0 }: WelcomeBannerProps) => {
   const isManager = user?.role === 'manager';
   
   return (
-    <div className="bg-blue-50 rounded-lg p-6 mb-6">
+    <div className="bg-primary/10 rounded-lg p-6 mb-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div className="mb-4 md:mb-0">
           <h1 className="text-2xl font-bold text-gray-800">
@@ -37,13 +37,13 @@ const WelcomeBanner = ({ needsAttentionCount = 0 }: WelcomeBannerProps) => {
         <div className="flex flex-wrap gap-2">
           {isManager ? (
             <>
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Button asChild className="bg-primary hover:bg-primary/90">
                 <Link to="/manager" className="flex items-center gap-1">
                   <CheckSquare className="h-4 w-4" />
                   <span>Review Goals</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="border-blue-300">
+              <Button asChild variant="outline" className="border-primary/30">
                 <Link to="/manager" className="flex items-center gap-1">
                   <BarChart className="h-4 w-4" />
                   <span>Team Performance</span>
@@ -52,13 +52,13 @@ const WelcomeBanner = ({ needsAttentionCount = 0 }: WelcomeBannerProps) => {
             </>
           ) : (
             <>
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Button asChild className="bg-primary hover:bg-primary/90">
                 <Link to="/goals" className="flex items-center gap-1">
                   <Plus className="h-4 w-4" />
                   <span>Create New Goal</span>
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="border-blue-300">
+              <Button asChild variant="outline" className="border-primary/30">
                 <Link to="/goals" className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
                   <span>View My Goals</span>
