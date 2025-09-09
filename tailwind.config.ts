@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'lato': ['Lato', 'sans-serif'],
+				'sans': ['Lato', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,7 +65,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'light-blue': 'hsl(var(--light-blue))',
+				'teal': 'hsl(var(--teal))',
+				'dark-blue': 'hsl(var(--dark-blue))',
+				'orange-light': 'hsl(var(--orange-light))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
