@@ -151,7 +151,7 @@ const NotificationTray = () => {
                 <div key={notification.id}>
                   <button
                     className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-start gap-3 ${
-                      !notification.isRead ? 'bg-blue-50 hover:bg-blue-100' : ''
+                      !notification.isRead ? 'bg-secondary/10 hover:bg-secondary/20' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
                   >

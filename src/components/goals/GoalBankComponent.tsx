@@ -43,7 +43,7 @@ const GoalBankComponent = ({ onSelectTemplate }: GoalBankComponentProps) => {
       
       <div className="grid grid-cols-1 gap-4">
         {goalBank.map((template) => (
-          <Card key={template.id} className="hover:border-blue-300 transition-colors">
+          <Card key={template.id} className="hover:border-secondary transition-colors">
             <CardHeader className="pb-2">
               <CardTitle className="text-md font-medium">{template.title}</CardTitle>
               <CardDescription>

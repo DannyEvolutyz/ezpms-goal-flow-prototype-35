@@ -80,7 +80,7 @@ const AllGoalsTab: React.FC<AllGoalsTabProps> = ({
           ) : (
             <div className="space-y-4">
               {filteredGoals.map(goal => (
-                <div key={goal.id} className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onClick={() => onSelectGoal(goal)}>
+                <div key={goal.id} className="border rounded-lg p-4 hover:bg-secondary/10 cursor-pointer transition-colors" onClick={() => onSelectGoal(goal)}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h4 className="font-medium">{goal.title}</h4>
