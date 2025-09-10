@@ -143,6 +143,16 @@ const Login = () => {
             </form>
           </Form>
           
+          {/* Demo Accounts */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p><span className="font-medium">Admin:</span> admin@ezdanny.com</p>
+              <p><span className="font-medium">Manager:</span> darahas@ezdanny.com</p>
+              <p><span className="font-medium">Employee:</span> hema@ezdanny.com</p>
+              <p className="mt-2"><span className="font-medium">Password for all:</span> password123</p>
+            </div>
+          </div>
+          
           {/* Powered by */}
           <div className="text-center pt-16">
             <div className="flex items-center justify-center space-x-2">
