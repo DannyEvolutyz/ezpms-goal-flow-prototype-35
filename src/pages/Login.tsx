@@ -145,14 +145,12 @@ const Login = () => {
           
           {/* Powered by */}
           <div className="text-center pt-16">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-xs text-muted-foreground">powered by</span>
-              <div className="flex items-center">
-                <span className="text-xs font-bold text-primary">Evolutyz</span>
-                <div className="ml-1 w-6 h-3 bg-primary rounded-full relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary"></div>
-                </div>
-              </div>
+            <div className="flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/b8529317-fe8a-452e-99ed-83c5b41d9fd8.png" 
+                alt="Powered by Evolutyz" 
+                className="h-8"
+              />
             </div>
           </div>
         </div>
@@ -162,50 +160,29 @@ const Login = () => {
       <div className="flex-1 relative overflow-hidden bg-white">
         {/* Orange Wave Background */}
         <div className="absolute inset-0">
-          {/* Main Orange Wave Shape */}
-          <div className="absolute top-0 right-0 w-full h-full">
-            <svg viewBox="0 0 400 600" className="absolute top-0 right-0 w-full h-full" preserveAspectRatio="none">
-              <path d="M100,0 Q200,50 300,0 Q350,100 400,150 L400,600 Q300,550 200,600 Q100,550 0,500 L0,200 Q50,100 100,0 Z" fill="hsl(var(--primary))" />
-            </svg>
-          </div>
-          
-          {/* Secondary Orange Elements */}
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary rounded-full opacity-70 transform translate-x-20 translate-y-20"></div>
-          <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-secondary rounded-full opacity-60"></div>
+          <img 
+            src="/lovable-uploads/b49f6bde-e0b5-4c23-9551-ab3bf5315780.png" 
+            alt="Orange wave background" 
+            className="absolute top-0 right-0 w-full h-full object-cover object-right"
+          />
         </div>
         
         {/* Hanging Lamp */}
         <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="w-1 h-20 bg-gray-400 rounded-full"></div>
-          <div className="w-16 h-10 bg-emerald-600 rounded-full relative shadow-lg">
-            <div className="absolute bottom-0 left-2 right-2 h-4 bg-yellow-200 rounded-full opacity-80"></div>
-          </div>
+          <img 
+            src="/lovable-uploads/09294984-baed-4657-aa9c-628163e8e2bd.png" 
+            alt="Hanging lamp" 
+            className="w-20 h-auto"
+          />
         </div>
         
         {/* Character Illustration */}
-        <div className="absolute bottom-20 right-20 z-10">
-          <div className="relative">
-            {/* Character */}
-            <div className="w-40 h-48 relative">
-              {/* Head */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-pink-200 rounded-full"></div>
-              {/* Hair */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-18 h-10 bg-gray-600 rounded-t-full"></div>
-              {/* Body */}
-              <div className="absolute top-12 left-1/2 transform -translate-x-1/2 w-20 h-24 bg-white rounded-lg"></div>
-              {/* Arms */}
-              <div className="absolute top-16 left-6 w-8 h-16 bg-pink-200 rounded-full transform -rotate-12"></div>
-              <div className="absolute top-16 right-6 w-8 h-16 bg-pink-200 rounded-full transform rotate-12"></div>
-              {/* Legs */}
-              <div className="absolute bottom-8 left-8 w-6 h-16 bg-teal-400 rounded-full"></div>
-              <div className="absolute bottom-8 right-8 w-6 h-16 bg-teal-400 rounded-full"></div>
-              {/* Phone in hand */}
-              <div className="absolute top-20 right-4 w-3 h-6 bg-yellow-400 rounded-sm"></div>
-              {/* Shoes */}
-              <div className="absolute bottom-0 left-6 w-8 h-4 bg-gray-800 rounded-full"></div>
-              <div className="absolute bottom-0 right-6 w-8 h-4 bg-gray-800 rounded-full"></div>
-            </div>
-          </div>
+        <div className="absolute bottom-8 right-8 z-10">
+          <img 
+            src="/lovable-uploads/00441965-4a90-4f30-bacb-b0a09edfa3e2.png" 
+            alt="3D Character with phone" 
+            className="w-80 h-auto"
+          />
         </div>
       </div>
     </div>
