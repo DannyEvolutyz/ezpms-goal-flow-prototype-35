@@ -143,51 +143,67 @@ const Login = () => {
             </form>
           </Form>
           
-          {/* Demo Accounts */}
-          <div className="mt-12 pt-8 border-t border-border">
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p><span className="font-medium">Admin:</span> admin@ezdanny.com</p>
-              <p><span className="font-medium">Manager:</span> darahas@ezdanny.com</p>
-              <p><span className="font-medium">Employee:</span> hema@ezdanny.com</p>
-              <p className="mt-2">Password for all: password123</p>
-            </div>
-          </div>
-          
           {/* Powered by */}
-          <div className="text-center pt-8">
-            <p className="text-xs text-muted-foreground">powered by <span className="font-medium">Evolutyz</span></p>
+          <div className="text-center pt-16">
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-xs text-muted-foreground">powered by</span>
+              <div className="flex items-center">
+                <span className="text-xs font-bold text-primary">Evolutyz</span>
+                <div className="ml-1 w-6 h-3 bg-primary rounded-full relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       {/* Right Side - Illustration */}
-      <div className="flex-1 relative overflow-hidden bg-gradient-to-br from-white to-orange-50">
-        {/* Geometric Shapes */}
+      <div className="flex-1 relative overflow-hidden bg-white">
+        {/* Orange Wave Background */}
         <div className="absolute inset-0">
-          {/* Large Orange Circle */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary rounded-full opacity-20"></div>
+          {/* Main Orange Wave Shape */}
+          <div className="absolute top-0 right-0 w-full h-full">
+            <svg viewBox="0 0 400 600" className="absolute top-0 right-0 w-full h-full" preserveAspectRatio="none">
+              <path d="M100,0 Q200,50 300,0 Q350,100 400,150 L400,600 Q300,550 200,600 Q100,550 0,500 L0,200 Q50,100 100,0 Z" fill="hsl(var(--primary))" />
+            </svg>
+          </div>
           
-          {/* Orange Triangle */}
-          <div className="absolute top-0 right-0 w-0 h-0 border-l-[200px] border-l-transparent border-b-[200px] border-b-primary opacity-30"></div>
-          
-          {/* Small Orange Shapes */}
-          <div className="absolute top-20 right-20 w-16 h-16 bg-primary rounded-full opacity-25"></div>
-          <div className="absolute bottom-32 left-16 w-12 h-12 bg-primary/60 rounded-full"></div>
-          
-          {/* Hanging Lamp */}
-          <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
-            <div className="w-2 h-16 bg-muted-foreground/30"></div>
-            <div className="w-20 h-12 bg-green-600 rounded-full relative">
-              <div className="absolute bottom-0 inset-x-2 h-6 bg-yellow-300 rounded-full opacity-60"></div>
-            </div>
+          {/* Secondary Orange Elements */}
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary rounded-full opacity-70 transform translate-x-20 translate-y-20"></div>
+          <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-secondary rounded-full opacity-60"></div>
+        </div>
+        
+        {/* Hanging Lamp */}
+        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="w-1 h-20 bg-gray-400 rounded-full"></div>
+          <div className="w-16 h-10 bg-emerald-600 rounded-full relative shadow-lg">
+            <div className="absolute bottom-0 left-2 right-2 h-4 bg-yellow-200 rounded-full opacity-80"></div>
           </div>
         </div>
         
-        {/* Character Illustration Area */}
-        <div className="absolute bottom-16 right-16 text-6xl">
+        {/* Character Illustration */}
+        <div className="absolute bottom-20 right-20 z-10">
           <div className="relative">
-            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-4xl">👨‍💻</span>
+            {/* Character */}
+            <div className="w-40 h-48 relative">
+              {/* Head */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-pink-200 rounded-full"></div>
+              {/* Hair */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-18 h-10 bg-gray-600 rounded-t-full"></div>
+              {/* Body */}
+              <div className="absolute top-12 left-1/2 transform -translate-x-1/2 w-20 h-24 bg-white rounded-lg"></div>
+              {/* Arms */}
+              <div className="absolute top-16 left-6 w-8 h-16 bg-pink-200 rounded-full transform -rotate-12"></div>
+              <div className="absolute top-16 right-6 w-8 h-16 bg-pink-200 rounded-full transform rotate-12"></div>
+              {/* Legs */}
+              <div className="absolute bottom-8 left-8 w-6 h-16 bg-teal-400 rounded-full"></div>
+              <div className="absolute bottom-8 right-8 w-6 h-16 bg-teal-400 rounded-full"></div>
+              {/* Phone in hand */}
+              <div className="absolute top-20 right-4 w-3 h-6 bg-yellow-400 rounded-sm"></div>
+              {/* Shoes */}
+              <div className="absolute bottom-0 left-6 w-8 h-4 bg-gray-800 rounded-full"></div>
+              <div className="absolute bottom-0 right-6 w-8 h-4 bg-gray-800 rounded-full"></div>
             </div>
           </div>
         </div>
