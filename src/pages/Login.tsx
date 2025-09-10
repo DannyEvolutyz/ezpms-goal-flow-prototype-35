@@ -162,14 +162,14 @@ const Login = () => {
         {/* Orange Wave Background */}
         <div className="absolute inset-0">
           <img 
-            src="/lovable-uploads/b49f6bde-e0b5-4c23-9551-ab3bf5315780.png" 
+            src="/lovable-uploads/454ff883-45d6-4c19-8840-73bd45bed0dd.png" 
             alt="Orange wave background" 
             className="absolute top-0 right-0 w-full h-full object-cover object-right"
           />
         </div>
         
         {/* Hanging Lamp */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="absolute top-8 left-1/3 transform -translate-x-1/2 z-10">
           <img 
             src="/lovable-uploads/09294984-baed-4657-aa9c-628163e8e2bd.png" 
             alt="Hanging lamp" 
@@ -178,11 +178,12 @@ const Login = () => {
         </div>
         
         {/* Character Illustration */}
-        <div className="absolute bottom-8 right-8 z-10">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
           <img 
             src="/lovable-uploads/00441965-4a90-4f30-bacb-b0a09edfa3e2.png" 
             alt="3D Character with phone" 
-            className="w-80 h-auto"
+            className="h-auto"
+            style={{ width: '322px' }}
           />
         </div>
       </div>
