@@ -130,7 +130,7 @@ const AdminDashboard = () => {
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
       <Tabs defaultValue="goalreview" className="space-y-6">
-        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6">
+        <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6 bg-secondary/20 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
           <TabsTrigger value="goalreview" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Goal Review</span>
