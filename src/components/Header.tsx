@@ -48,7 +48,8 @@ const Header = () => {
   const isAdmin = user.role === 'admin';
   
   const menuItems = [
-    { label: 'Dashboard', path: '/' },
+    { label: 'Home', path: '/' },
+    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Goals', path: '/goals' },
     ...(isManager ? [{ label: 'Manager Dashboard', path: '/manager' }] : []),
     ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
