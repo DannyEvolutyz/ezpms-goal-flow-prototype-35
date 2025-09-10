@@ -145,10 +145,11 @@ const Login = () => {
           
           {/* Powered by */}
           <div className="text-center pt-16">
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-xs text-muted-foreground">powered by</span>
               <img 
                 src="/lovable-uploads/b8529317-fe8a-452e-99ed-83c5b41d9fd8.png" 
-                alt="Powered by Evolutyz" 
+                alt="Evolutyz" 
                 className="h-8"
               />
             </div>
