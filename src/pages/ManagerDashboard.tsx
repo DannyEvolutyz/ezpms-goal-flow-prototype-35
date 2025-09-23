@@ -2,6 +2,7 @@ import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Target, ArrowDown, Users, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +12,13 @@ import AllGoalsTab from '@/components/manager/AllGoalsTab';
 import ReviewGoalsTab from '@/components/manager/ReviewGoalsTab';
 import RateGoalsTab from '@/components/manager/RateGoalsTab';
 import ManagerGoalSpaceSelector from '@/components/manager/ManagerGoalSpaceSelector';
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
+import StatsOverview from '@/components/dashboard/StatsOverview';
+import GoalProgressChart from '@/components/dashboard/GoalProgressChart';
+import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 
 const ManagerDashboard = () => {
-  const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
+  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
   const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
@@ -21,6 +26,7 @@ const ManagerDashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('pending_approval');
   const [selectedSpaceId, setSelectedSpaceId] = useState('');
+  const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
   
   console.log('Manager Dashboard - Current user:', user);
   
@@ -168,9 +174,46 @@ const ManagerDashboard = () => {
     }
   };
   
+  // Get goals that need attention for personal dashboard
+  const rejectedGoals = getGoalsByStatus('rejected');
+  const underReviewGoals = getGoalsByStatus('under_review');
+  const needsAttentionCount = rejectedGoals.length + underReviewGoals.length;
+
+  if (showPersonalDashboard) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Personal Dashboard</h1>
+          <div className="flex items-center space-x-3">
+            <span className="text-sm font-medium">Team Dashboard</span>
+            <Switch
+              checked={showPersonalDashboard}
+              onCheckedChange={setShowPersonalDashboard}
+            />
+            <span className="text-sm font-medium">Personal Dashboard</span>
+          </div>
+        </div>
+        <WelcomeBanner needsAttentionCount={needsAttentionCount} />
+        <StatsOverview />
+        <GoalProgressChart />
+        <ActivityTimeline />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Manager Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+        <div className="flex items-center space-x-3">
+          <span className="text-sm font-medium">Team Dashboard</span>
+          <Switch
+            checked={showPersonalDashboard}
+            onCheckedChange={setShowPersonalDashboard}
+          />
+          <span className="text-sm font-medium">Personal Dashboard</span>
+        </div>
+      </div>
       
       <ManagerGoalSpaceSelector
         selectedSpaceId={selectedSpaceId}

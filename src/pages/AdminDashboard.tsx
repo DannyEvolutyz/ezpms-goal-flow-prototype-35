@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { Settings, User, UserCog, ListCheck, FolderPlus, FileCheck, Target } from 'lucide-react';
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,15 +13,20 @@ import GoalSpaceManager from '@/components/admin/GoalSpaceManager';
 import SpaceGoalTemplateForm from '@/components/admin/SpaceGoalTemplateForm';
 import PendingGoalsList from '@/components/manager/PendingGoalsList';
 import GoalReviewPanel from '@/components/manager/GoalReviewPanel';
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
+import StatsOverview from '@/components/dashboard/StatsOverview';
+import GoalProgressChart from '@/components/dashboard/GoalProgressChart';
+import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 
 const AdminDashboard = () => {
-  const { getTeamGoals, approveGoal, rejectGoal, returnGoalForRevision } = useGoals();
+  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision } = useGoals();
   const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('pending_approval');
+  const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
   
   // Get all goals in the system (admin can see everything)
   const allGoals = getTeamGoals();
@@ -125,9 +131,46 @@ const AdminDashboard = () => {
     }
   };
 
+  // Get goals that need attention for personal dashboard
+  const rejectedGoals = getGoalsByStatus('rejected');
+  const underReviewGoals = getGoalsByStatus('under_review');
+  const needsAttentionCount = rejectedGoals.length + underReviewGoals.length;
+
+  if (showPersonalDashboard) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Personal Dashboard</h1>
+          <div className="flex items-center space-x-3">
+            <span className="text-sm font-medium">Team Dashboard</span>
+            <Switch
+              checked={showPersonalDashboard}
+              onCheckedChange={setShowPersonalDashboard}
+            />
+            <span className="text-sm font-medium">Personal Dashboard</span>
+          </div>
+        </div>
+        <WelcomeBanner needsAttentionCount={needsAttentionCount} />
+        <StatsOverview />
+        <GoalProgressChart />
+        <ActivityTimeline />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="flex items-center space-x-3">
+          <span className="text-sm font-medium">Team Dashboard</span>
+          <Switch
+            checked={showPersonalDashboard}
+            onCheckedChange={setShowPersonalDashboard}
+          />
+          <span className="text-sm font-medium">Personal Dashboard</span>
+        </div>
+      </div>
       
       <Tabs defaultValue="goalreview" className="space-y-6">
         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6">
