@@ -84,7 +84,7 @@ export const useGoalSpaces = ({
   };
   
   const isSpaceReadOnly = (spaceId?: string) => {
-    return isSpaceReadOnlyService({ spaces, spaceId });
+    return isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' });
   };
   
   return {
