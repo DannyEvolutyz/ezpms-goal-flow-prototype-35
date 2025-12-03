@@ -17,19 +17,24 @@ const Dashboard = () => {
   const underReviewGoals = getGoalsByStatus('under_review');
   const needsAttentionCount = rejectedGoals.length + underReviewGoals.length;
 
-  if (showPersonalDashboard) {
+  const isAdmin = user?.role === 'admin';
+
+  // Admin users always see personal dashboard without toggle
+  if (isAdmin || showPersonalDashboard) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Personal Dashboard</h1>
-          <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium">Team Dashboard</span>
-            <Switch
-              checked={showPersonalDashboard}
-              onCheckedChange={setShowPersonalDashboard}
-            />
-            <span className="text-sm font-medium">Personal Dashboard</span>
-          </div>
+          {!isAdmin && (
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium">Team Dashboard</span>
+              <Switch
+                checked={showPersonalDashboard}
+                onCheckedChange={setShowPersonalDashboard}
+              />
+              <span className="text-sm font-medium">Personal Dashboard</span>
+            </div>
+          )}
         </div>
         <WelcomeBanner needsAttentionCount={needsAttentionCount} />
         <StatsOverview />
