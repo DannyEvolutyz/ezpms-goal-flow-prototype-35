@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GoalBank, Milestone } from "@/types";
 import MilestoneManager from "./MilestoneManager";
 
@@ -50,12 +51,19 @@ const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
       </div>
       <div className="mb-2">
         <label className="block text-sm font-semibold">Category</label>
-        <Input 
-          value={form.category} 
-          onChange={e => onFormChange('category', e.target.value)} 
-          required 
-          placeholder="E.g., Software Engineering, QA" 
-        />
+        <Select value={form.category} onValueChange={(value) => onFormChange('category', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Professional Development">Professional Development</SelectItem>
+            <SelectItem value="Technical Skills">Technical Skills</SelectItem>
+            <SelectItem value="Leadership">Leadership</SelectItem>
+            <SelectItem value="Innovation">Innovation</SelectItem>
+            <SelectItem value="Software Engineering">Software Engineering</SelectItem>
+            <SelectItem value="QA">QA</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="mb-2">
         <label className="block text-sm font-semibold">Target Audience</label>
