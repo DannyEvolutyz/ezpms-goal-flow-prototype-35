@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GoalBankManager from '@/components/admin/GoalBankManager';
 import GoalSpaceManager from '@/components/admin/GoalSpaceManager';
-import SpaceGoalTemplateForm from '@/components/admin/SpaceGoalTemplateForm';
+import GoalTemplateForm from '@/components/admin/GoalTemplateForm';
 import PendingGoalsList from '@/components/manager/PendingGoalsList';
 import GoalReviewPanel from '@/components/manager/GoalReviewPanel';
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="spacegoals" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
-            <span>Space Goals</span>
+            <span>Goal Templates</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <User className="h-4 w-4" />
@@ -267,11 +267,11 @@ const AdminDashboard = () => {
         
         <TabsContent value="spacegoals">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SpaceGoalTemplateForm />
+            <GoalTemplateForm />
             
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Space Goal Templates</CardTitle>
+                <CardTitle className="text-lg">Goal Templates</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-500 py-4 text-center">
@@ -282,7 +282,7 @@ const AdminDashboard = () => {
                   <ul className="space-y-2">
                     {/* This section will be expanded in the future to show templates by space */}
                     <li className="text-center text-sm text-gray-400">
-                      No space goal templates found
+                      No goal templates found
                     </li>
                   </ul>
                 </div>

@@ -37,7 +37,7 @@ const goalTemplateSchema = z.object({
 
 type GoalTemplateFormValues = z.infer<typeof goalTemplateSchema>;
 
-const SpaceGoalTemplateForm = () => {
+const GoalTemplateForm = () => {
   const { addGoalTemplate, getAllSpaces } = useGoals();
   const spaces = getAllSpaces();
   
@@ -228,4 +228,4 @@ const SpaceGoalTemplateForm = () => {
   );
 };
 
-export default SpaceGoalTemplateForm;
+export default GoalTemplateForm;
