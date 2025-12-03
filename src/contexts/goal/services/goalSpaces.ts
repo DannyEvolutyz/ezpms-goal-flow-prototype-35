@@ -219,9 +219,13 @@ export const getSpacesForReview = ({ spaces }: GetSpacesForReviewParams) => {
 interface IsSpaceReadOnlyParams {
   spaces: GoalSpace[];
   spaceId?: string;
+  isAdmin?: boolean;
 }
 
-export const isSpaceReadOnly = ({ spaces, spaceId }: IsSpaceReadOnlyParams) => {
+export const isSpaceReadOnly = ({ spaces, spaceId, isAdmin }: IsSpaceReadOnlyParams) => {
+  // Admins can always create/edit goals
+  if (isAdmin) return false;
+  
   if (!spaceId) return true;
   
   const space = spaces.find(s => s.id === spaceId);
