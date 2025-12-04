@@ -14,6 +14,7 @@ interface BulkGoalActionsProps {
   selectLabel?: string;
   totalWeightage?: number;
   isSubmissionAction?: boolean;
+  isApprovalAction?: boolean;
 }
 
 const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
@@ -25,14 +26,16 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
   actionLabel = "Send Selected for Approval",
   selectLabel = "goals",
   totalWeightage = 0,
-  isSubmissionAction = false
+  isSubmissionAction = false,
+  isApprovalAction = false
 }) => {
   const checkboxRef = useRef<HTMLButtonElement>(null);
   const isAllSelected = selectedGoalIds.length === totalSelectableGoals && totalSelectableGoals > 0;
   const isIndeterminate = selectedGoalIds.length > 0 && selectedGoalIds.length < totalSelectableGoals;
   
-  // For submission actions, check if weightage is valid
-  const isWeightageValid = !isSubmissionAction || totalWeightage === 100;
+  // For submission/approval actions, check if weightage is valid (100%)
+  const requiresWeightageValidation = isSubmissionAction || isApprovalAction;
+  const isWeightageValid = !requiresWeightageValidation || totalWeightage === 100;
   const canSubmit = selectedGoalIds.length > 0 && isWeightageValid;
 
   useEffect(() => {
@@ -72,9 +75,9 @@ const BulkGoalActions: React.FC<BulkGoalActionsProps> = ({
             <Send className="h-3 w-3 mr-1" />
             {actionLabel} ({selectedGoalIds.length})
           </Button>
-          {isSubmissionAction && !isWeightageValid && (
+          {requiresWeightageValidation && !isWeightageValid && (
             <span className="text-xs text-red-500 mt-1">
-              Total weightage must be 100% to submit
+              Total weightage must be 100% to {isApprovalAction ? 'send for approval' : 'submit'}
             </span>
           )}
         </div>

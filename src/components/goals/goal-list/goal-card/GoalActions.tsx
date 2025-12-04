@@ -12,6 +12,7 @@ interface GoalActionsProps {
   onEditGoal: () => void;
   onSendForApproval: () => void;
   onSubmitGoal: () => void;
+  totalWeightage?: number;
 }
 
 const GoalActions: React.FC<GoalActionsProps> = ({
@@ -23,7 +24,9 @@ const GoalActions: React.FC<GoalActionsProps> = ({
   onEditGoal,
   onSendForApproval,
   onSubmitGoal,
+  totalWeightage = 0,
 }) => {
+  const isWeightageValid = totalWeightage === 100;
   const hasActions = canEdit || (canSendForApproval && showApprovalOption) || (canSubmit && showSubmitOption);
 
   if (!hasActions) {
@@ -55,15 +58,23 @@ const GoalActions: React.FC<GoalActionsProps> = ({
       )}
       
       {canSendForApproval && showApprovalOption && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onSendForApproval}
-          className="text-xs"
-        >
-          <Send className="h-3 w-3 mr-1" />
-          Send for Approval
-        </Button>
+        <div className="flex flex-col items-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSendForApproval}
+            className="text-xs"
+            disabled={!isWeightageValid}
+          >
+            <Send className="h-3 w-3 mr-1" />
+            Send for Approval
+          </Button>
+          {!isWeightageValid && (
+            <span className="text-xs text-red-500 mt-1">
+              Total weightage must be 100%
+            </span>
+          )}
+        </div>
       )}
       
       {canSubmit && showSubmitOption && (

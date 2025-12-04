@@ -20,6 +20,7 @@ interface GoalCardProps {
   showCheckbox?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (goalId: string, selected: boolean) => void;
+  totalWeightage?: number;
 }
 
 const GoalCard: React.FC<GoalCardProps> = ({ 
@@ -33,7 +34,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
   showApprovalOption = false,
   showCheckbox = false,
   isSelected = false,
-  onToggleSelect
+  onToggleSelect,
+  totalWeightage = 0
 }) => {
   const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
   const isLocked = isApproved || goal.status === 'pending_approval';
@@ -125,6 +127,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
         onEditGoal={handleEditGoal}
         onSendForApproval={handleSendForApproval}
         onSubmitGoal={handleSubmitGoal}
+        totalWeightage={totalWeightage}
       />
     </div>
   );
