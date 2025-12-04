@@ -56,12 +56,12 @@ const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Professional Development">Professional Development</SelectItem>
             <SelectItem value="Technical Skills">Technical Skills</SelectItem>
             <SelectItem value="Leadership">Leadership</SelectItem>
+            <SelectItem value="Communication">Communication</SelectItem>
+            <SelectItem value="Personal Growth">Personal Growth</SelectItem>
+            <SelectItem value="Project Goals">Project Goals</SelectItem>
             <SelectItem value="Innovation">Innovation</SelectItem>
-            <SelectItem value="Software Engineering">Software Engineering</SelectItem>
-            <SelectItem value="QA">QA</SelectItem>
           </SelectContent>
         </Select>
       </div>
