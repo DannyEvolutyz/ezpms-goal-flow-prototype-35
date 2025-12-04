@@ -11,9 +11,6 @@ import {
   Clock, 
   CheckCircle2, 
   AlertTriangle, 
-  Plus,
-  ArrowRight,
-  Sparkles,
   Calendar,
   Trophy
 } from 'lucide-react';
@@ -43,45 +40,6 @@ const PersonalDashboardView = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-8 text-primary-foreground">
-        <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-40 w-40 rounded-full bg-white/5 blur-3xl" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium opacity-90">Personal Dashboard</span>
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
-          <p className="text-primary-foreground/80 mb-6 max-w-lg">
-            Track your career goals, monitor progress, and stay on top of your professional development.
-          </p>
-          
-          {needsAttention > 0 && (
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="text-sm font-medium">{needsAttention} goal{needsAttention > 1 ? 's' : ''} need{needsAttention === 1 ? 's' : ''} your attention</span>
-            </div>
-          )}
-          
-          <div className="flex flex-wrap gap-3">
-            <Button asChild className="bg-white text-primary hover:bg-white/90">
-              <Link to="/goals" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Create New Goal
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-white/30 text-white hover:bg-white/10">
-              <Link to="/goals" className="flex items-center gap-2">
-                View All Goals
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
