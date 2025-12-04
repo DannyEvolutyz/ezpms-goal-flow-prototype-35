@@ -19,6 +19,7 @@ interface GoalStatusGroupProps {
   onBulkSendForApproval?: (goalIds: string[]) => void;
   onBulkSubmitForReview?: (goalIds: string[]) => void;
   allGoals?: Goal[];
+  totalWeightage?: number;
 }
 
 const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
@@ -36,7 +37,8 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
   onSelectAllGoals,
   onBulkSendForApproval,
   onBulkSubmitForReview,
-  allGoals = []
+  allGoals = [],
+  totalWeightage = 0
 }) => {
   if (goals.length === 0) {
     return null;
@@ -94,6 +96,8 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
           onSelectAll={handleSelectAllApproval}
           onSendSelectedForApproval={handleBulkSendForApproval}
           effectiveReadOnly={effectiveReadOnly}
+          totalWeightage={totalWeightage}
+          isApprovalAction={true}
         />
       )}
 
@@ -126,6 +130,7 @@ const GoalStatusGroup: React.FC<GoalStatusGroupProps> = ({
             showCheckbox={(showApprovalBulkActions && goal.status === 'draft') || (showSubmitBulkActions && goal.status === 'approved')}
             isSelected={selectedGoalIds.includes(goal.id)}
             onToggleSelect={onToggleSelectGoal}
+            totalWeightage={totalWeightage}
           />
         ))}
       </div>

@@ -81,6 +81,7 @@ const GoalsListContainer: React.FC<GoalsListContainerProps> = ({
                 onBulkSendForApproval={bulkActions.handleBulkSendForApproval}
                 onBulkSubmitForReview={bulkActions.handleBulkSubmitForReview}
                 allGoals={goals}
+                totalWeightage={totalWeightage}
               />
             ))}
 
