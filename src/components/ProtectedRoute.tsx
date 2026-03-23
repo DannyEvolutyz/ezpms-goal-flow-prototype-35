@@ -9,23 +9,30 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If not authenticated, redirect to login
+    if (isLoading) return;
+
     if (!isAuthenticated) {
       navigate('/login', { replace: true });
       return;
     }
 
-    // If roles are specified and user's role is not allowed, redirect to unauthorized
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
       navigate('/unauthorized', { replace: true });
     }
-  }, [isAuthenticated, navigate, allowedRoles, user]);
+  }, [isAuthenticated, isLoading, navigate, allowedRoles, user]);
 
-  // Render the child routes if authenticated and authorized
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return isAuthenticated ? <Outlet /> : null;
 };
 
