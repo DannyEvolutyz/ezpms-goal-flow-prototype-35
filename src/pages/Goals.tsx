@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import GoalEditForm from '@/components/goals/GoalEditForm';
+import GoalBankComponent from '@/components/goals/GoalBankComponent';
 import { CalendarDays } from 'lucide-react';
 
 const Goals = () => {
@@ -138,13 +139,27 @@ const Goals = () => {
           </Card>
           
           {selectedSpaceId ? (
-            <GoalsListComponent
-              onCreateNew={handleCreateNew}
-              onEditGoal={handleEditGoal}
-              goals={filteredGoals}
-              spaceId={selectedSpaceId}
-              isReadOnly={isReadOnly}
-            />
+            <>
+              {/* Space-tagged templates */}
+              <Card className="mb-6">
+                <CardContent className="pt-6">
+                  <GoalBankComponent
+                    spaceId={selectedSpaceId}
+                    onSelectTemplate={(template) => {
+                      setActiveTab('create');
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              <GoalsListComponent
+                onCreateNew={handleCreateNew}
+                onEditGoal={handleEditGoal}
+                goals={filteredGoals}
+                spaceId={selectedSpaceId}
+                isReadOnly={isReadOnly}
+              />
+            </>
           ) : (
             <Card className="p-6 text-center">
               <p className="text-muted-foreground">Please select a goal space to view your goals.</p>

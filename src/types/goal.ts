@@ -37,4 +37,5 @@ export interface GoalBank {
   createdBy: string;
   isActive: boolean;
   milestones?: Milestone[];
+  spaceIds?: string[]; // Tagged goal space IDs
 }

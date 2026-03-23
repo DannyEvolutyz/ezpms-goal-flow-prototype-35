@@ -79,6 +79,42 @@ export type Database = {
           },
         ]
       }
+      goal_bank_spaces: {
+        Row: {
+          created_at: string
+          goal_bank_id: string
+          goal_space_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_bank_id: string
+          goal_space_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          goal_bank_id?: string
+          goal_space_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_bank_spaces_goal_bank_id_fkey"
+            columns: ["goal_bank_id"]
+            isOneToOne: false
+            referencedRelation: "goal_bank"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_bank_spaces_goal_space_id_fkey"
+            columns: ["goal_space_id"]
+            isOneToOne: false
+            referencedRelation: "goal_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_spaces: {
         Row: {
           created_at: string

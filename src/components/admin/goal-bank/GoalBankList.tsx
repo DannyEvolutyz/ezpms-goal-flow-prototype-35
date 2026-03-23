@@ -2,20 +2,27 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Pencil, X } from "lucide-react";
-import { GoalBank } from "@/types";
+import { GoalBank, GoalSpace } from "@/types";
 
 interface GoalBankListProps {
   goalBank: GoalBank[];
+  spaces: GoalSpace[];
   onEdit: (tpl: GoalBank) => void;
   onDelete: (tpl: GoalBank) => void;
 }
 
 const GoalBankList: React.FC<GoalBankListProps> = ({
   goalBank,
+  spaces,
   onEdit,
   onDelete,
 }) => {
+  const getSpaceName = (spaceId: string) => {
+    return spaces.find(s => s.id === spaceId)?.name || 'Unknown Space';
+  };
+
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2">Existing Goal Templates</h3>
@@ -35,6 +42,19 @@ const GoalBankList: React.FC<GoalBankListProps> = ({
               <div className="mb-2">
                 <span className="font-medium">Target Audience:</span> {tpl.targetAudience}
               </div>
+              {/* Tagged Spaces */}
+              {tpl.spaceIds && tpl.spaceIds.length > 0 && (
+                <div className="mb-2">
+                  <span className="font-medium">Tagged Spaces:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {tpl.spaceIds.map(spaceId => (
+                      <Badge key={spaceId} variant="secondary" className="text-xs">
+                        {getSpaceName(spaceId)}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div>
                 <span className="font-medium">Milestones:</span>
                 <ul className="list-decimal ml-6">
