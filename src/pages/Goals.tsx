@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import GoalFormComponent from '@/components/goals/GoalFormComponent';
 import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import GoalEditForm from '@/components/goals/GoalEditForm';
+import GoalBankComponent from '@/components/goals/GoalBankComponent';
 import { CalendarDays } from 'lucide-react';
 
 const Goals = () => {

@@ -106,7 +106,7 @@ const GoalFormComponent = () => {
 
   return (
     <div className="space-y-8">
-      <GoalBankComponent onSelectTemplate={applyTemplate} />
+      <GoalBankComponent onSelectTemplate={applyTemplate} spaceId={form.watch('spaceId')} />
       <Card key={formKey}>
         <CardHeader>
           <CardTitle className="text-lg">Goal Details</CardTitle>
