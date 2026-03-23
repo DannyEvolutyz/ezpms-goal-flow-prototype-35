@@ -14,16 +14,317 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      goal_bank: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          target_audience: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          target_audience?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          target_audience?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      goal_bank_milestones: {
+        Row: {
+          created_at: string
+          description: string | null
+          goal_bank_id: string
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          goal_bank_id: string
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          goal_bank_id?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_bank_milestones_goal_bank_id_fkey"
+            columns: ["goal_bank_id"]
+            isOneToOne: false
+            referencedRelation: "goal_bank"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_spaces: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          review_deadline: string
+          start_date: string
+          submission_deadline: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          review_deadline: string
+          start_date: string
+          submission_deadline: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          review_deadline?: string
+          start_date?: string
+          submission_deadline?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          feedback: string | null
+          id: string
+          priority: string
+          rating: number | null
+          rating_comment: string | null
+          reviewer_id: string | null
+          space_id: string
+          status: string
+          target_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          weightage: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string
+          feedback?: string | null
+          id?: string
+          priority?: string
+          rating?: number | null
+          rating_comment?: string | null
+          reviewer_id?: string | null
+          space_id: string
+          status?: string
+          target_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          weightage?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          feedback?: string | null
+          id?: string
+          priority?: string
+          rating?: number | null
+          rating_comment?: string | null
+          reviewer_id?: string | null
+          space_id?: string
+          status?: string
+          target_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          weightage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "goal_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          completed: boolean
+          completion_comment: string | null
+          created_at: string
+          description: string | null
+          goal_id: string
+          id: string
+          target_date: string | null
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          completion_comment?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id: string
+          id?: string
+          target_date?: string | null
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          completion_comment?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id?: string
+          id?: string
+          target_date?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          target_id: string | null
+          target_type: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          target_id?: string | null
+          target_type?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          target_id?: string | null
+          target_type?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          manager_id: string | null
+          name: string
+          photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          manager_id?: string | null
+          name: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          manager_id?: string | null
+          name?: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +451,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "member"],
+    },
   },
 } as const
