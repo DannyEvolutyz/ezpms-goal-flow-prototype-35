@@ -1,207 +1,194 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
   getAllUsers: () => User[];
   updateUserManager: (userId: string, managerId: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data with the defined organizational structure
-const MOCK_USERS: User[] = [
-  // Admin
-  {
-    id: 'admin-1',
-    name: 'Admin User',
-    email: 'admin@ezdanny.com',
-    role: 'admin',
-    teamMembers: ['manager-1', 'manager-2']
-  },
-  
-  // Managers
-  {
-    id: 'manager-1',
-    name: 'Darahas',
-    email: 'darahas@ezdanny.com',
-    role: 'manager',
-    managerId: 'admin-1',
-    teamMembers: ['member-1', 'member-2', 'member-3']
-  },
-  {
-    id: 'manager-2',
-    name: 'Ashok',
-    email: 'ashok@ezdanny.com',
-    role: 'manager',
-    managerId: 'admin-1',
-    teamMembers: ['member-4', 'member-5', 'member-6']
-  },
-  
-  // Team members reporting to Darahas
-  {
-    id: 'member-1',
-    name: 'Hema',
-    email: 'hema@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-1'
-  },
-  {
-    id: 'member-2',
-    name: 'Babloo',
-    email: 'babloo@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-1'
-  },
-  {
-    id: 'member-3',
-    name: 'Chitti Naidu',
-    email: 'chitti@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-1'
-  },
-  
-  // Team members reporting to Ashok
-  {
-    id: 'member-4',
-    name: 'Tarun',
-    email: 'tarun@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-2'
-  },
-  {
-    id: 'member-5',
-    name: 'Rishi',
-    email: 'rishi@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-2'
-  },
-  {
-    id: 'member-6',
-    name: 'Babu Garu',
-    email: 'babu@ezdanny.com',
-    role: 'member',
-    managerId: 'manager-2'
-  }
-];
-
-// Mock password map for demonstration (never do this in a real app!)
-const MOCK_PASSWORDS: Record<string, string> = {
-  'admin@ezdanny.com': 'password123',
-  'darahas@ezdanny.com': 'password123',
-  'ashok@ezdanny.com': 'password123',
-  'hema@ezdanny.com': 'password123',
-  'babloo@ezdanny.com': 'password123',
-  'chitti@ezdanny.com': 'password123',
-  'tarun@ezdanny.com': 'password123',
-  'rishi@ezdanny.com': 'password123',
-  'babu@ezdanny.com': 'password123'
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem('ezpms_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Failed to parse stored user data:", error);
-        localStorage.removeItem('ezpms_user');
-      }
+  const fetchUserProfile = async (userId: string): Promise<User | null> => {
+    try {
+      // Fetch profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError || !profile) return null;
+
+      // Fetch role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      const role = (roleData?.role as UserRole) || 'member';
+
+      // Fetch team members (users who have this user as manager)
+      const { data: teamData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('manager_id', userId);
+
+      const teamMembers = teamData?.map(t => t.id) || [];
+
+      return {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        role,
+        photoUrl: profile.photo_url || undefined,
+        managerId: profile.manager_id || undefined,
+        teamMembers,
+      };
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
     }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const { data: profiles } = await supabase.from('profiles').select('*');
+      const { data: roles } = await supabase.from('user_roles').select('*');
+
+      if (!profiles) return;
+
+      const users: User[] = profiles.map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.id);
+        const teamMembers = profiles
+          .filter(p => p.manager_id === profile.id)
+          .map(p => p.id);
+
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: (userRole?.role as UserRole) || 'member',
+          photoUrl: profile.photo_url || undefined,
+          managerId: profile.manager_id || undefined,
+          teamMembers,
+        };
+      });
+
+      setAllUsers(users);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+    }
+  };
+
+  // Set up auth state listener BEFORE checking session
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          // Use setTimeout to avoid Supabase auth deadlock
+          setTimeout(async () => {
+            const profile = await fetchUserProfile(session.user.id);
+            if (profile) {
+              setUser(profile);
+              setIsAuthenticated(true);
+              await fetchAllUsers();
+            }
+            setIsLoading(false);
+          }, 0);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setAllUsers([]);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // Check existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const profile = await fetchUserProfile(session.user.id);
+        if (profile) {
+          setUser(profile);
+          setIsAuthenticated(true);
+          await fetchAllUsers();
+        }
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Find user by email
-    const foundUser = users.find(u => u.email === email);
-    
-    // Check if user exists and password matches
-    if (foundUser && MOCK_PASSWORDS[email] === password) {
-      setUser(foundUser);
-      setIsAuthenticated(true);
-      
-      // Store user in localStorage (excluding password)
-      localStorage.setItem('ezpms_user', JSON.stringify(foundUser));
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.error('Login error:', error.message);
+        return false;
+      }
       return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    
-    return false;
   };
 
-  // Logout function
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('ezpms_user');
+    setAllUsers([]);
   };
 
-  // Get all users
-  const getAllUsers = () => {
-    return users;
-  };
+  const getAllUsers = () => allUsers;
 
-  // Update a user's manager
-  const updateUserManager = (userId: string, managerId: string) => {
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(u => {
-        // Update the user with the new managerId
-        if (u.id === userId) {
-          return { ...u, managerId };
-        }
-        
-        // Remove user from old manager's team
-        if (u.teamMembers?.includes(userId)) {
-          return {
-            ...u,
-            teamMembers: u.teamMembers.filter(id => id !== userId)
-          };
-        }
-        
-        // Add user to new manager's team
-        if (u.id === managerId) {
-          return {
-            ...u,
-            teamMembers: [...(u.teamMembers || []), userId]
-          };
-        }
-        
-        return u;
-      });
-      
-      return updatedUsers;
-    });
+  const updateUserManager = async (userId: string, managerId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ manager_id: managerId })
+      .eq('id', userId);
+
+    if (!error) {
+      await fetchAllUsers();
+      // Refresh current user if affected
+      if (user && (user.id === userId || user.id === managerId)) {
+        const profile = await fetchUserProfile(user.id);
+        if (profile) setUser(profile);
+      }
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      logout, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      login,
+      logout,
+      isAuthenticated,
+      isLoading,
       getAllUsers,
-      updateUserManager
+      updateUserManager,
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
