@@ -26,12 +26,15 @@ const blankTemplate = (): GoalBankForm => ({
   createdBy: "admin",
   isActive: true,
   milestones: [],
+  spaceIds: [],
 });
 
 const GoalBankManager = () => {
-  const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = useGoals();
+  const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate, getAllSpaces } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
   const [form, setForm] = useState<GoalBankForm>(blankTemplate());
+
+  const allSpaces = getAllSpaces();
 
   // ---- Form field update handler ----
   const handleFormChange = (field: keyof GoalBankForm, value: any) => {
@@ -70,6 +73,7 @@ const GoalBankManager = () => {
       targetAudience: tpl.targetAudience,
       createdBy: tpl.createdBy,
       isActive: tpl.isActive,
+      spaceIds: tpl.spaceIds || [],
       // Drop milestone id for local editing
       milestones: (tpl.milestones || []).map((m) => ({
         title: m.title,
@@ -105,6 +109,7 @@ const GoalBankManager = () => {
         targetAudience: form.targetAudience,
         createdBy: form.createdBy,
         isActive: form.isActive,
+        spaceIds: form.spaceIds || [],
         milestones,
       });
     } else {
@@ -115,6 +120,7 @@ const GoalBankManager = () => {
         targetAudience: form.targetAudience,
         createdBy: form.createdBy,
         isActive: form.isActive,
+        spaceIds: form.spaceIds || [],
         milestones,
       });
     }
@@ -134,13 +140,14 @@ const GoalBankManager = () => {
           <ListCheck className="inline w-5 h-5 text-violet-600" /> Goal Bank Management
         </h2>
         <p className="text-gray-600">
-          Create, edit, or remove goal templates. Each goal can have milestones for progress tracking and is categorized by domain.
+          Create, edit, or remove goal templates. Tag templates to goal spaces so users can adopt them.
         </p>
       </div>
 
       <GoalBankFormComponent
         form={form}
         editing={editing}
+        spaces={allSpaces}
         onFormChange={handleFormChange}
         onSubmit={handleSubmit}
         onCancel={cancelEdit}
@@ -151,6 +158,7 @@ const GoalBankManager = () => {
 
       <GoalBankList
         goalBank={goalBank}
+        spaces={allSpaces}
         onEdit={startEdit}
         onDelete={handleDelete}
       />

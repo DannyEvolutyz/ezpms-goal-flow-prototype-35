@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GoalBank, Milestone } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import { GoalBank, Milestone, GoalSpace } from "@/types";
 import MilestoneManager from "./MilestoneManager";
 
 type GoalBankForm = Omit<GoalBank, "id" | "milestones"> & {
@@ -14,6 +15,7 @@ type GoalBankForm = Omit<GoalBank, "id" | "milestones"> & {
 interface GoalBankFormProps {
   form: GoalBankForm;
   editing: GoalBank | null;
+  spaces: GoalSpace[];
   onFormChange: (field: keyof GoalBankForm, value: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
@@ -25,6 +27,7 @@ interface GoalBankFormProps {
 const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
   form,
   editing,
+  spaces,
   onFormChange,
   onSubmit,
   onCancel,
@@ -32,6 +35,15 @@ const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
   onUpdateMilestone,
   onRemoveMilestone,
 }) => {
+  const selectedSpaceIds = form.spaceIds || [];
+
+  const toggleSpace = (spaceId: string) => {
+    const updated = selectedSpaceIds.includes(spaceId)
+      ? selectedSpaceIds.filter(id => id !== spaceId)
+      : [...selectedSpaceIds, spaceId];
+    onFormChange('spaceIds', updated);
+  };
+
   return (
     <form className="bg-gray-50 p-4 rounded-md mb-10 shadow" onSubmit={onSubmit}>
       <div className="mb-2">
@@ -74,6 +86,39 @@ const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
           placeholder="E.g., All, Managers, Developers" 
         />
       </div>
+
+      {/* Multi-select Goal Spaces */}
+      <div className="mb-4">
+        <label className="block text-sm font-semibold mb-2">Tag to Goal Spaces</label>
+        {spaces.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No goal spaces available. Create goal spaces first.</p>
+        ) : (
+          <div className="space-y-2 border rounded-md p-3 bg-white max-h-48 overflow-y-auto">
+            {spaces.map(space => (
+              <div key={space.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`space-${space.id}`}
+                  checked={selectedSpaceIds.includes(space.id)}
+                  onCheckedChange={() => toggleSpace(space.id)}
+                />
+                <label
+                  htmlFor={`space-${space.id}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {space.name}
+                  {!space.isActive && <span className="text-muted-foreground ml-1">(Inactive)</span>}
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedSpaceIds.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {selectedSpaceIds.length} space{selectedSpaceIds.length > 1 ? 's' : ''} selected
+          </p>
+        )}
+      </div>
+
       <MilestoneManager
         milestones={form.milestones}
         onAddMilestone={onAddMilestone}
