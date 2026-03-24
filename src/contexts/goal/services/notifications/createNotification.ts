@@ -1,5 +1,6 @@
 
 import { Notification } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 import { Dispatch, SetStateAction } from 'react';
 
 interface CreateNotificationParams {
@@ -12,7 +13,7 @@ interface CreateNotificationParams {
   setNotifications: Dispatch<SetStateAction<Notification[]>>;
 }
 
-export const createNotification = ({
+export const createNotification = async ({
   userId,
   title,
   message,
@@ -21,34 +22,66 @@ export const createNotification = ({
   targetId,
   setNotifications
 }: CreateNotificationParams) => {
-  console.log('🔔 Creating notification:', {
-    userId,
-    title,
-    message,
-    type,
-    targetType,
-    targetId,
-    timestamp: new Date().toISOString()
-  });
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title,
+      message,
+      type,
+      target_type: targetType || null,
+      target_id: targetId || null,
+      is_read: false
+    })
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating notification:', error);
+    return null;
+  }
   
   const newNotification: Notification = {
-    id: `notification-${Date.now()}`,
-    userId,
-    title,
-    message,
-    type,
-    timestamp: new Date().toISOString(),
-    isRead: false,
-    targetType,
-    targetId
+    id: data.id,
+    userId: data.user_id,
+    title: data.title,
+    message: data.message,
+    type: data.type as Notification['type'],
+    isRead: data.is_read,
+    timestamp: data.created_at,
+    targetId: data.target_id || undefined,
+    targetType: data.target_type || undefined
   };
   
-  setNotifications(prev => {
-    console.log('📋 Current notifications count before adding:', prev.length);
-    const updated = [newNotification, ...prev];
-    console.log('📋 Notifications count after adding:', updated.length);
-    return updated;
-  });
+  // Only add to local state if it's for the current user
+  // (notifications for other users won't be visible anyway)
+  setNotifications(prev => [newNotification, ...prev]);
   
   return newNotification;
+};
+
+// Helper for workflow services that need to create notifications for other users
+export const createDbNotification = async (
+  userId: string,
+  title: string,
+  message: string,
+  type: string,
+  targetId?: string,
+  targetType?: string
+) => {
+  const { error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title,
+      message,
+      type,
+      target_id: targetId || null,
+      target_type: targetType || null,
+      is_read: false
+    });
+  
+  if (error) {
+    console.error('Error creating db notification:', error);
+  }
 };

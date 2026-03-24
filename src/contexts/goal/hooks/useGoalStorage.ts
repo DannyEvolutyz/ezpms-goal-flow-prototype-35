@@ -1,134 +1,199 @@
 
-import { useState, useEffect } from 'react';
-import { Goal, GoalBank, Notification, GoalSpace } from '@/types';
-import { initialGoalBank, initialNotifications } from '../initialData';
-
-// Sample initial goal spaces
-const initialGoalSpaces: GoalSpace[] = [
-  {
-    id: 'space-1',
-    name: 'Annual Goals 2025',
-    description: 'Annual performance goals for the year 2025',
-    startDate: '2025-01-01',
-    submissionDeadline: '2025-02-15',
-    reviewDeadline: '2025-02-28',
-    createdAt: '2024-12-15T00:00:00Z',
-    isActive: true
-  },
-  {
-    id: 'space-2',
-    name: 'Half Yearly Goals H1-2025',
-    description: 'Half-yearly performance goals for H1 2025',
-    startDate: '2025-01-01',
-    submissionDeadline: '2025-01-15',
-    reviewDeadline: '2025-01-31',
-    createdAt: '2024-12-10T00:00:00Z',
-    isActive: true
-  },
-  {
-    id: 'space-3',
-    name: 'Quarterly Goals Q1-2025',
-    description: 'Quarterly performance goals for Q1 2025',
-    startDate: '2025-01-01',
-    submissionDeadline: '2025-01-10',
-    reviewDeadline: '2025-01-20',
-    createdAt: '2024-12-05T00:00:00Z',
-    isActive: true
-  }
-];
+import { useState, useEffect, useCallback } from 'react';
+import { Goal, GoalBank, Notification, GoalSpace, Milestone } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useGoalStorage = () => {
-  const [goalBank, setGoalBank] = useState<GoalBank[]>(initialGoalBank);
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const { user } = useAuth();
+  const [goalBank, setGoalBank] = useState<GoalBank[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [spaces, setSpaces] = useState<GoalSpace[]>(initialGoalSpaces);
+  const [spaces, setSpaces] = useState<GoalSpace[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    // Load stored data from localStorage only once on initialization
-    if (!isInitialized) {
-      const storedGoals = localStorage.getItem('ezpms_goals');
-      const storedNotifications = localStorage.getItem('ezpms_notifications');
-      const storedGoalBank = localStorage.getItem('ezpms_goal_bank');
-      const storedGoalSpaces = localStorage.getItem('ezpms_goal_spaces');
-      
-      if (storedGoals) {
-        try {
-          const parsedGoals = JSON.parse(storedGoals);
-          setGoals(parsedGoals);
-          console.log('Loaded goals from localStorage:', parsedGoals);
-        } catch (error) {
-          console.error("Failed to parse stored goals:", error);
-          setGoals([]);
-        }
-      } else {
-        console.log('No stored goals found, starting with empty array');
-        setGoals([]);
-      }
-      
-      if (storedNotifications) {
-        try {
-          setNotifications(JSON.parse(storedNotifications));
-        } catch (error) {
-          console.error("Failed to parse stored notifications:", error);
-          setNotifications(initialNotifications);
-        }
-      }
-      
-      if (storedGoalBank) {
-        try {
-          setGoalBank(JSON.parse(storedGoalBank));
-        } catch (error) {
-          console.error("Failed to parse stored goal bank:", error);
-          setGoalBank(initialGoalBank);
-        }
-      }
-      
-      if (storedGoalSpaces) {
-        try {
-          const parsedSpaces = JSON.parse(storedGoalSpaces);
-          setSpaces(parsedSpaces);
-          console.log('Loaded spaces from localStorage:', parsedSpaces);
-        } catch (error) {
-          console.error("Failed to parse stored goal spaces:", error);
-          setSpaces(initialGoalSpaces);
-        }
-      } else {
-        console.log('No stored spaces found, using initial spaces');
-        setSpaces(initialGoalSpaces);
-      }
-      
-      setIsInitialized(true);
+  // Fetch goal spaces from database
+  const fetchSpaces = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('goal_spaces')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching goal spaces:', error);
+      return;
     }
-  }, [isInitialized]);
+    
+    const mapped: GoalSpace[] = (data || []).map(s => ({
+      id: s.id,
+      name: s.name,
+      description: s.description || '',
+      startDate: s.start_date,
+      submissionDeadline: s.submission_deadline,
+      reviewDeadline: s.review_deadline,
+      createdAt: s.created_at,
+      isActive: s.is_active
+    }));
+    setSpaces(mapped);
+  }, []);
 
-  // Save data to localStorage whenever state changes, but only after initialization
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('ezpms_goals', JSON.stringify(goals));
-      console.log('Saved goals to localStorage:', goals);
+  // Fetch goals from database
+  const fetchGoals = useCallback(async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('goals')
+      .select('*');
+    
+    if (error) {
+      console.error('Error fetching goals:', error);
+      return;
     }
-  }, [goals, isInitialized]);
-  
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('ezpms_notifications', JSON.stringify(notifications));
+    
+    // Fetch milestones for all goals
+    const goalIds = (data || []).map(g => g.id);
+    let milestonesMap: Record<string, Milestone[]> = {};
+    
+    if (goalIds.length > 0) {
+      const { data: milestonesData } = await supabase
+        .from('milestones')
+        .select('*')
+        .in('goal_id', goalIds);
+      
+      (milestonesData || []).forEach(m => {
+        if (!milestonesMap[m.goal_id]) milestonesMap[m.goal_id] = [];
+        milestonesMap[m.goal_id].push({
+          id: m.id,
+          title: m.title,
+          description: m.description || undefined,
+          completed: m.completed,
+          completionComment: m.completion_comment || undefined,
+          targetDate: m.target_date || undefined
+        });
+      });
     }
-  }, [notifications, isInitialized]);
-  
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('ezpms_goal_bank', JSON.stringify(goalBank));
-    }
-  }, [goalBank, isInitialized]);
-  
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('ezpms_goal_spaces', JSON.stringify(spaces));
-      console.log('Saved spaces to localStorage:', spaces);
-    }
-  }, [spaces, isInitialized]);
+    
+    const mapped: Goal[] = (data || []).map(g => ({
+      id: g.id,
+      userId: g.user_id,
+      spaceId: g.space_id,
+      title: g.title,
+      description: g.description,
+      category: g.category,
+      priority: g.priority as Goal['priority'],
+      targetDate: g.target_date,
+      status: g.status as Goal['status'],
+      feedback: g.feedback || '',
+      reviewerId: g.reviewer_id || undefined,
+      weightage: g.weightage,
+      rating: g.rating || undefined,
+      ratingComment: g.rating_comment || undefined,
+      createdAt: g.created_at,
+      updatedAt: g.updated_at,
+      milestones: milestonesMap[g.id] || []
+    }));
+    setGoals(mapped);
+  }, [user]);
 
+  // Fetch goal bank from database
+  const fetchGoalBank = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('goal_bank')
+      .select('*');
+    
+    if (error) {
+      console.error('Error fetching goal bank:', error);
+      return;
+    }
+    
+    // Fetch milestones
+    const bankIds = (data || []).map(g => g.id);
+    let milestonesMap: Record<string, Milestone[]> = {};
+    
+    if (bankIds.length > 0) {
+      const { data: milestonesData } = await supabase
+        .from('goal_bank_milestones')
+        .select('*')
+        .in('goal_bank_id', bankIds);
+      
+      (milestonesData || []).forEach(m => {
+        if (!milestonesMap[m.goal_bank_id]) milestonesMap[m.goal_bank_id] = [];
+        milestonesMap[m.goal_bank_id].push({
+          id: m.id,
+          title: m.title,
+          description: m.description || undefined,
+          completed: false
+        });
+      });
+    }
+    
+    // Fetch space associations
+    const { data: spacesData } = await supabase
+      .from('goal_bank_spaces')
+      .select('*');
+    
+    const spaceMap: Record<string, string[]> = {};
+    (spacesData || []).forEach(s => {
+      if (!spaceMap[s.goal_bank_id]) spaceMap[s.goal_bank_id] = [];
+      spaceMap[s.goal_bank_id].push(s.goal_space_id);
+    });
+    
+    const mapped: GoalBank[] = (data || []).map(g => ({
+      id: g.id,
+      title: g.title,
+      description: g.description,
+      category: g.category,
+      targetAudience: g.target_audience,
+      createdBy: g.created_by || '',
+      isActive: g.is_active,
+      milestones: milestonesMap[g.id] || [],
+      spaceIds: spaceMap[g.id] || []
+    }));
+    setGoalBank(mapped);
+  }, []);
+
+  // Fetch notifications from database
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching notifications:', error);
+      return;
+    }
+    
+    const mapped: Notification[] = (data || []).map(n => ({
+      id: n.id,
+      userId: n.user_id,
+      title: n.title,
+      message: n.message,
+      type: n.type as Notification['type'],
+      isRead: n.is_read,
+      timestamp: n.created_at,
+      targetId: n.target_id || undefined,
+      targetType: n.target_type || undefined
+    }));
+    setNotifications(mapped);
+  }, [user]);
+
+  // Initial load
+  useEffect(() => {
+    if (user && !isInitialized) {
+      Promise.all([fetchSpaces(), fetchGoals(), fetchGoalBank(), fetchNotifications()])
+        .then(() => setIsInitialized(true));
+    } else if (!user) {
+      setIsInitialized(false);
+      setGoals([]);
+      setNotifications([]);
+    }
+  }, [user, isInitialized, fetchSpaces, fetchGoals, fetchGoalBank, fetchNotifications]);
+
+  // Expose refetch functions so mutations can trigger refreshes
   return {
     goals,
     setGoals,
@@ -137,6 +202,10 @@ export const useGoalStorage = () => {
     goalBank,
     setGoalBank,
     spaces,
-    setSpaces
+    setSpaces,
+    refetchGoals: fetchGoals,
+    refetchSpaces: fetchSpaces,
+    refetchGoalBank: fetchGoalBank,
+    refetchNotifications: fetchNotifications
   };
 };
