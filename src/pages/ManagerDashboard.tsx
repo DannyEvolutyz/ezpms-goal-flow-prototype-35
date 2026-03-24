@@ -170,10 +170,6 @@ const ManagerDashboard = () => {
     }
   };
   
-  // Get goals that need attention for personal dashboard
-  const rejectedGoals = getGoalsByStatus('rejected');
-  const underReviewGoals = getGoalsByStatus('under_review');
-  const needsAttentionCount = rejectedGoals.length + underReviewGoals.length;
 
   return (
     <div className="container mx-auto py-8 px-4">
