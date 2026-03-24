@@ -1,124 +1,136 @@
 
 import { Goal } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddGoalParams {
-  goals: Goal[];
   goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback'>;
   user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
+  refetchGoals: () => Promise<void>;
   canCreateOrEditGoals?: (spaceId?: string) => boolean;
 }
 
-export const addGoal = ({
-  goals,
+export const addGoal = async ({
   goalData,
   user,
-  setGoals,
-  setNotifications,
-  createNotification,
+  refetchGoals,
   canCreateOrEditGoals
-}: AddGoalParams) => {
+}: AddGoalParams): Promise<Goal | undefined> => {
   if (!user) return;
   
-  // Check if user can create goals in this space
   if (canCreateOrEditGoals && !canCreateOrEditGoals(goalData.spaceId)) {
-    createNotification({
-      userId: user.id,
-      title: 'Goal Creation Failed',
-      message: 'You cannot create goals in this space right now due to submission deadline.',
-      type: 'error',
-      setNotifications,
-    });
-    return;
+    throw new Error('You cannot create goals in this space right now due to submission deadline.');
   }
   
-  const newGoal: Goal = {
-    id: `goal-${Date.now()}`,
-    userId: user.id,
-    status: 'draft',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    feedback: '',
-    ...goalData
+  const { data, error } = await supabase
+    .from('goals')
+    .insert({
+      user_id: user.id,
+      space_id: goalData.spaceId,
+      title: goalData.title,
+      description: goalData.description,
+      category: goalData.category,
+      priority: goalData.priority,
+      target_date: goalData.targetDate,
+      weightage: goalData.weightage || 0,
+      status: 'draft'
+    })
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error adding goal:', error);
+    throw error;
+  }
+  
+  // Insert milestones if any
+  if (goalData.milestones && goalData.milestones.length > 0) {
+    const milestonesInsert = goalData.milestones.map(m => ({
+      goal_id: data.id,
+      title: m.title,
+      description: m.description || null,
+      target_date: m.targetDate || null,
+      completed: false
+    }));
+    
+    await supabase.from('milestones').insert(milestonesInsert);
+  }
+  
+  await refetchGoals();
+  
+  return {
+    id: data.id,
+    userId: data.user_id,
+    spaceId: data.space_id,
+    title: data.title,
+    description: data.description,
+    category: data.category,
+    priority: data.priority as Goal['priority'],
+    targetDate: data.target_date,
+    status: data.status as Goal['status'],
+    feedback: data.feedback || '',
+    weightage: data.weightage,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    milestones: goalData.milestones || []
   };
-  
-  setGoals(prev => [...prev, newGoal]);
-  
-  // Notification for the user who created the goal
-  createNotification({
-    userId: user.id,
-    title: 'Goal Created Successfully',
-    message: `You've created a new goal: ${newGoal.title}`,
-    type: 'success',
-    targetType: 'goal',
-    targetId: newGoal.id,
-    setNotifications
-  });
-  
-  return newGoal;
 };
 
 interface UpdateGoalParams {
-  goals: Goal[];
   updatedGoal: Goal;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
   user: any;
+  refetchGoals: () => Promise<void>;
   canCreateOrEditGoals?: (spaceId?: string) => boolean;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
 }
 
-export const updateGoal = ({
-  goals,
+export const updateGoal = async ({
   updatedGoal,
-  setGoals,
   user,
-  canCreateOrEditGoals,
-  setNotifications,
-  createNotification
+  refetchGoals,
+  canCreateOrEditGoals
 }: UpdateGoalParams) => {
   if (!user) return;
   
-  const existingGoal = goals.find(g => g.id === updatedGoal.id);
+  const { error } = await supabase
+    .from('goals')
+    .update({
+      title: updatedGoal.title,
+      description: updatedGoal.description,
+      category: updatedGoal.category,
+      priority: updatedGoal.priority,
+      target_date: updatedGoal.targetDate,
+      weightage: updatedGoal.weightage,
+      status: updatedGoal.status,
+      feedback: updatedGoal.feedback || null,
+      rating: updatedGoal.rating || null,
+      rating_comment: updatedGoal.ratingComment || null,
+      reviewer_id: updatedGoal.reviewerId || null,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', updatedGoal.id);
   
-  if (!existingGoal || existingGoal.userId !== user.id) return;
-  
-  // Check if user can edit goals in this space
-  if (canCreateOrEditGoals && !canCreateOrEditGoals(updatedGoal.spaceId)) {
-    createNotification({
-      userId: user.id,
-      title: 'Goal Update Failed',
-      message: 'You cannot edit goals in this space right now due to submission deadline.',
-      type: 'error',
-      setNotifications,
-    });
-    return;
+  if (error) {
+    console.error('Error updating goal:', error);
+    throw error;
   }
   
-  setGoals(prev => 
-    prev.map(goal => 
-      goal.id === updatedGoal.id 
-        ? {
-            ...updatedGoal,
-            updatedAt: new Date().toISOString()
-          }
-        : goal
-    )
-  );
+  // Update milestones: delete existing and re-insert
+  if (updatedGoal.milestones) {
+    await supabase.from('milestones').delete().eq('goal_id', updatedGoal.id);
+    
+    if (updatedGoal.milestones.length > 0) {
+      const milestonesInsert = updatedGoal.milestones.map(m => ({
+        goal_id: updatedGoal.id,
+        title: m.title,
+        description: m.description || null,
+        target_date: m.targetDate || null,
+        completed: m.completed || false,
+        completion_comment: m.completionComment || null
+      }));
+      
+      await supabase.from('milestones').insert(milestonesInsert);
+    }
+  }
   
-  // Notification for the user who updated the goal
-  createNotification({
-    userId: user.id,
-    title: 'Goal Updated Successfully',
-    message: `You've updated your goal: ${updatedGoal.title}`,
-    type: 'success',
-    targetType: 'goal',
-    targetId: updatedGoal.id,
-    setNotifications
-  });
-  
+  await refetchGoals();
   return updatedGoal;
 };

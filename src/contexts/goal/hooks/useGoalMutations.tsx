@@ -1,6 +1,5 @@
 
 import { Goal } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
 import { addGoal as addGoalService } from '../services/goalMutation';
 import { updateGoal as updateGoalService } from '../services/goalMutation';
 import { deleteGoal as deleteGoalService } from '../services/goalDelete';
@@ -10,51 +9,56 @@ import { createNotification } from '../services/notifications';
 interface UseGoalMutationsParams {
   goals: Goal[];
   user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
+  setNotifications: any;
   spaces: any[];
+  refetchGoals: () => Promise<void>;
 }
 
 export const useGoalMutations = ({
   goals,
   user,
-  setGoals,
   setNotifications,
-  spaces
+  spaces,
+  refetchGoals
 }: UseGoalMutationsParams) => {
   
-  const addGoal = (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string }) => {
-    return addGoalService({
-      goals,
+  const addGoal = async (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string }) => {
+    const result = await addGoalService({
       goalData,
       user,
-      setGoals,
-      setNotifications,
-      createNotification,
+      refetchGoals,
+      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId })
+    });
+    
+    if (result) {
+      await createNotification({
+        userId: user.id,
+        title: 'Goal Created Successfully',
+        message: `You've created a new goal: ${result.title}`,
+        type: 'success',
+        targetType: 'goal',
+        targetId: result.id,
+        setNotifications
+      });
+    }
+    
+    return result;
+  };
+  
+  const updateGoal = async (updatedGoal: Goal) => {
+    await updateGoalService({
+      updatedGoal,
+      user,
+      refetchGoals,
       canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId })
     });
   };
   
-  const updateGoal = (updatedGoal: Goal) => {
-    return updateGoalService({
-      goals,
-      updatedGoal,
-      setGoals,
-      user,
-      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId }),
-      setNotifications,
-      createNotification
-    });
-  };
-  
-  const deleteGoal = (goalId: string) => {
-    return deleteGoalService({
-      goals,
+  const deleteGoal = async (goalId: string) => {
+    await deleteGoalService({
       goalId,
       user,
-      setGoals,
-      setNotifications,
-      createNotification
+      refetchGoals
     });
   };
   

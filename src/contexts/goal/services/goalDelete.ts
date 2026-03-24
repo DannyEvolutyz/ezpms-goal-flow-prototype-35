@@ -1,42 +1,32 @@
 
-import { Goal } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DeleteGoalParams {
-  goals: Goal[];
   goalId: string;
   user: any;
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
+  refetchGoals: () => Promise<void>;
 }
 
-export const deleteGoal = ({
-  goals,
+export const deleteGoal = async ({
   goalId,
   user,
-  setGoals,
-  setNotifications,
-  createNotification
+  refetchGoals
 }: DeleteGoalParams) => {
   if (!user) return;
   
-  const goalToDelete = goals.find(g => g.id === goalId);
+  // Delete milestones first (cascade should handle but be explicit)
+  await supabase.from('milestones').delete().eq('goal_id', goalId);
   
-  if (!goalToDelete || goalToDelete.userId !== user.id) return;
+  const { error } = await supabase
+    .from('goals')
+    .delete()
+    .eq('id', goalId);
   
-  setGoals(prev => prev.filter(goal => goal.id !== goalId));
+  if (error) {
+    console.error('Error deleting goal:', error);
+    throw error;
+  }
   
-  // Notification for the user who deleted the goal
-  createNotification({
-    userId: user.id,
-    title: 'Goal Deleted',
-    message: `You've deleted the goal: ${goalToDelete.title}`,
-    type: 'info',
-    targetType: 'goal',
-    targetId: goalId,
-    setNotifications
-  });
-  
+  await refetchGoals();
   return true;
 };

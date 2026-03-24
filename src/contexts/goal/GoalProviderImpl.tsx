@@ -14,43 +14,34 @@ import { useGoalWorkflow } from './hooks/useGoalWorkflow';
 export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, getAllUsers } = useAuth();
   
-  // Use custom hooks for different functionality
   const { 
-    goals, 
-    setGoals, 
-    notifications, 
-    setNotifications, 
-    goalBank, 
-    setGoalBank,
-    spaces,
-    setSpaces
+    goals, setGoals, 
+    notifications, setNotifications, 
+    goalBank, setGoalBank,
+    spaces, setSpaces,
+    refetchGoals, refetchSpaces, refetchGoalBank, refetchNotifications
   } = useGoalStorage();
   
-  // Goal templates management
   const { addGoalTemplate, updateGoalTemplate, deleteGoalTemplate } = 
-    useGoalTemplates(goalBank, setGoalBank);
+    useGoalTemplates(goalBank, setGoalBank, refetchGoalBank);
   
-  // Goal mutations and queries
   const { addGoal, updateGoal, deleteGoal } = useGoalMutations({ 
-    goals, setGoals, user, setNotifications, spaces 
+    goals, user, setNotifications, spaces, refetchGoals
   });
   
   const { getGoalsByStatus, getGoalsBySpace, getTeamGoals, getGoalsForReview } = 
     useGoalQueries({ goals, user, getAllUsers });
   
-  // Goal workflow
   const { submitGoal, approveGoal, rejectGoal, returnGoalForRevision } = 
-    useGoalWorkflow({ goals, setGoals, user, setNotifications, getAllUsers, spaces });
+    useGoalWorkflow({ goals, user, getAllUsers, spaces, refetchGoals });
   
-  // Goal spaces
   const { 
     createGoalSpace, updateGoalSpace, deleteGoalSpace,
     getActiveSpace, getAvailableSpaces, getAllSpaces,
     getSpacesForReview, canCreateOrEditGoals,
     canReviewGoals, isSpaceReadOnly 
-  } = useGoalSpaces({ spaces, setSpaces, user, setNotifications });
+  } = useGoalSpaces({ spaces, user, refetchSpaces });
   
-  // Notifications
   const { 
     getUserNotifications, markNotificationAsRead,
     clearNotifications, getUnreadNotificationsCount 
@@ -61,29 +52,24 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     goalBank,
     spaces,
     
-    // Goal CRUD operations
     addGoal,
     updateGoal,
     deleteGoal,
     
-    // Goal queries
     getGoalsByStatus,
     getGoalsBySpace,
     getTeamGoals,
     getGoalsForReview,
     
-    // Goal Bank operations
     addGoalTemplate,
     updateGoalTemplate,
     deleteGoalTemplate,
     
-    // Goal workflow
     submitGoal,
     approveGoal,
     rejectGoal,
     returnGoalForRevision,
     
-    // Goal Space operations
     createGoalSpace,
     updateGoalSpace,
     deleteGoalSpace,
@@ -95,11 +81,15 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     canReviewGoals,
     isSpaceReadOnly,
     
-    // Notification operations
     getUserNotifications,
     markNotificationAsRead,
     clearNotifications,
-    getUnreadNotificationsCount
+    getUnreadNotificationsCount,
+    
+    refetchGoals,
+    refetchSpaces,
+    refetchGoalBank,
+    refetchNotifications
   };
 
   return (

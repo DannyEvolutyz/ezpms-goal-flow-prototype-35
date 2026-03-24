@@ -1,6 +1,6 @@
 
 import { GoalSpace } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateGoalSpaceParams {
   name: string;
@@ -8,230 +8,156 @@ interface CreateGoalSpaceParams {
   startDate: string;
   submissionDeadline: string;
   reviewDeadline: string;
-  spaces: GoalSpace[];
-  setSpaces: Dispatch<SetStateAction<GoalSpace[]>>;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
-  createNotification: (params: any) => void;
   user: any;
+  refetchSpaces: () => Promise<void>;
 }
 
-export const createGoalSpace = ({
-  name,
-  description,
-  startDate,
-  submissionDeadline,
-  reviewDeadline,
-  spaces,
-  setSpaces,
-  setNotifications,
-  createNotification,
-  user
-}: CreateGoalSpaceParams) => {
+export const createGoalSpace = async ({
+  name, description, startDate, submissionDeadline, reviewDeadline, user, refetchSpaces
+}: CreateGoalSpaceParams): Promise<GoalSpace | null> => {
   if (!user || user.role !== 'admin') return null;
   
-  // Validate dates
   const startDateObj = new Date(startDate);
   const submissionDeadlineObj = new Date(submissionDeadline);
   const reviewDeadlineObj = new Date(reviewDeadline);
   
-  if (submissionDeadlineObj < startDateObj) {
-    throw new Error("Submission deadline must be after or equal to start date");
-  }
+  if (submissionDeadlineObj < startDateObj) throw new Error("Submission deadline must be after start date");
+  if (reviewDeadlineObj < submissionDeadlineObj) throw new Error("Review deadline must be after submission deadline");
   
-  if (reviewDeadlineObj < submissionDeadlineObj) {
-    throw new Error("Review deadline must be after or equal to submission deadline");
-  }
+  const { data, error } = await supabase
+    .from('goal_spaces')
+    .insert({
+      name,
+      description: description || null,
+      start_date: startDate,
+      submission_deadline: submissionDeadline,
+      review_deadline: reviewDeadline,
+      is_active: true
+    })
+    .select()
+    .single();
   
-  const newSpace: GoalSpace = {
-    id: `space-${Date.now()}`,
-    name,
-    description,
-    startDate,
-    submissionDeadline,
-    reviewDeadline,
-    createdAt: new Date().toISOString(),
-    isActive: true
+  if (error) throw error;
+  
+  await refetchSpaces();
+  
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description || '',
+    startDate: data.start_date,
+    submissionDeadline: data.submission_deadline,
+    reviewDeadline: data.review_deadline,
+    createdAt: data.created_at,
+    isActive: data.is_active
   };
-  
-  setSpaces(prev => [...prev, newSpace]);
-  
-  createNotification({
-    userId: user.id,
-    title: 'Goal Space Created',
-    message: `You created a new goal space: ${newSpace.name}`,
-    type: 'success',
-    setNotifications,
-  });
-  
-  return newSpace;
 };
 
 interface UpdateGoalSpaceParams {
   spaceId: string;
   updatedSpace: Partial<GoalSpace>;
-  spaces: GoalSpace[];
-  setSpaces: Dispatch<SetStateAction<GoalSpace[]>>;
   user: any;
+  refetchSpaces: () => Promise<void>;
 }
 
-export const updateGoalSpace = ({
-  spaceId,
-  updatedSpace,
-  spaces,
-  setSpaces,
-  user
+export const updateGoalSpace = async ({
+  spaceId, updatedSpace, user, refetchSpaces
 }: UpdateGoalSpaceParams) => {
   if (!user || user.role !== 'admin') return null;
   
-  // If updating dates, validate them
-  if (updatedSpace.startDate && updatedSpace.submissionDeadline) {
-    const startDateObj = new Date(updatedSpace.startDate);
-    const submissionDeadlineObj = new Date(updatedSpace.submissionDeadline);
-    
-    if (submissionDeadlineObj < startDateObj) {
-      throw new Error("Submission deadline must be after or equal to start date");
-    }
-  }
+  const updateData: any = {};
+  if (updatedSpace.name !== undefined) updateData.name = updatedSpace.name;
+  if (updatedSpace.description !== undefined) updateData.description = updatedSpace.description;
+  if (updatedSpace.startDate !== undefined) updateData.start_date = updatedSpace.startDate;
+  if (updatedSpace.submissionDeadline !== undefined) updateData.submission_deadline = updatedSpace.submissionDeadline;
+  if (updatedSpace.reviewDeadline !== undefined) updateData.review_deadline = updatedSpace.reviewDeadline;
+  if (updatedSpace.isActive !== undefined) updateData.is_active = updatedSpace.isActive;
   
-  if (updatedSpace.submissionDeadline && updatedSpace.reviewDeadline) {
-    const submissionDeadlineObj = new Date(updatedSpace.submissionDeadline);
-    const reviewDeadlineObj = new Date(updatedSpace.reviewDeadline);
-    
-    if (reviewDeadlineObj < submissionDeadlineObj) {
-      throw new Error("Review deadline must be after or equal to submission deadline");
-    }
-  }
+  const { error } = await supabase
+    .from('goal_spaces')
+    .update(updateData)
+    .eq('id', spaceId);
   
-  setSpaces(prev => 
-    prev.map(space => 
-      space.id === spaceId ? { ...space, ...updatedSpace } : space
-    )
-  );
+  if (error) throw error;
   
-  return spaces.find(s => s.id === spaceId);
+  await refetchSpaces();
 };
 
 interface DeleteGoalSpaceParams {
   spaceId: string;
-  spaces: GoalSpace[];
-  setSpaces: Dispatch<SetStateAction<GoalSpace[]>>;
   user: any;
+  refetchSpaces: () => Promise<void>;
 }
 
-export const deleteGoalSpace = ({
-  spaceId,
-  spaces,
-  setSpaces,
-  user
+export const deleteGoalSpace = async ({
+  spaceId, user, refetchSpaces
 }: DeleteGoalSpaceParams) => {
   if (!user || user.role !== 'admin') return null;
   
-  setSpaces(prev => prev.filter(space => space.id !== spaceId));
+  const { error } = await supabase
+    .from('goal_spaces')
+    .delete()
+    .eq('id', spaceId);
+  
+  if (error) throw error;
+  
+  await refetchSpaces();
   return true;
 };
 
-interface GetActiveSpaceParams {
-  spaces: GoalSpace[];
-}
+// These remain pure functions working on in-memory data (already fetched from DB)
+interface SpacesParams { spaces: GoalSpace[] }
 
-export const getActiveSpace = ({ spaces }: GetActiveSpaceParams) => {
+export const getActiveSpace = ({ spaces }: SpacesParams) => {
   const now = new Date();
   return spaces.find(space => 
-    space.isActive && 
-    new Date(space.startDate) <= now && 
-    new Date(space.reviewDeadline) >= now
+    space.isActive && new Date(space.startDate) <= now && new Date(space.reviewDeadline) >= now
   );
 };
 
-interface CanCreateOrEditGoalsParams {
-  spaces: GoalSpace[];
-  spaceId?: string;
-}
-
-export const canCreateOrEditGoals = ({ spaces, spaceId }: CanCreateOrEditGoalsParams) => {
+export const canCreateOrEditGoals = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
   if (!spaceId) return false;
-  
   const space = spaces.find(s => s.id === spaceId);
   if (!space) return false;
-  
   const now = new Date();
-  return space.isActive && 
-    new Date(space.startDate) <= now && 
-    new Date(space.submissionDeadline) >= now;
+  return space.isActive && new Date(space.startDate) <= now && new Date(space.submissionDeadline) >= now;
 };
 
-interface CanReviewGoalsParams {
-  spaces: GoalSpace[];
-  spaceId?: string;
-}
-
-export const canReviewGoals = ({ spaces, spaceId }: CanReviewGoalsParams) => {
+export const canReviewGoals = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
   if (!spaceId) return false;
-  
   const space = spaces.find(s => s.id === spaceId);
   if (!space) return false;
-  
   const now = new Date();
-  return space.isActive && 
-    new Date(space.startDate) <= now && 
-    new Date(space.reviewDeadline) >= now;
+  return space.isActive && new Date(space.startDate) <= now && new Date(space.reviewDeadline) >= now;
 };
 
-interface GetAvailableSpacesParams {
-  spaces: GoalSpace[];
-}
-
-export const getAvailableSpaces = ({ spaces }: GetAvailableSpacesParams) => {
+export const getAvailableSpaces = ({ spaces }: SpacesParams) => {
   const now = new Date();
   return spaces.filter(space => 
-    space.isActive && 
-    new Date(space.startDate) <= now && 
-    new Date(space.submissionDeadline) >= now
+    space.isActive && new Date(space.startDate) <= now && new Date(space.submissionDeadline) >= now
   );
 };
 
-interface GetAllSpacesParams {
-  spaces: GoalSpace[];
-}
-
-export const getAllSpaces = ({ spaces }: GetAllSpacesParams) => {
+export const getAllSpaces = ({ spaces }: SpacesParams) => {
   return [...spaces].sort((a, b) => 
-    // Sort by active status first, then by creation date
     (a.isActive === b.isActive) ? 
       new Date(b.startDate).getTime() - new Date(a.startDate).getTime() :
       a.isActive ? -1 : 1
   );
 };
 
-interface GetSpacesForReviewParams {
-  spaces: GoalSpace[];
-}
-
-export const getSpacesForReview = ({ spaces }: GetSpacesForReviewParams) => {
+export const getSpacesForReview = ({ spaces }: SpacesParams) => {
   const now = new Date();
   return spaces.filter(space => 
-    space.isActive && 
-    new Date(space.submissionDeadline) <= now && // Submission period is over
-    new Date(space.reviewDeadline) >= now // But review period is still active
+    space.isActive && new Date(space.submissionDeadline) <= now && new Date(space.reviewDeadline) >= now
   );
 };
 
-interface IsSpaceReadOnlyParams {
-  spaces: GoalSpace[];
-  spaceId?: string;
-  isAdmin?: boolean;
-}
-
-export const isSpaceReadOnly = ({ spaces, spaceId, isAdmin }: IsSpaceReadOnlyParams) => {
-  // Admins can always create/edit goals
+export const isSpaceReadOnly = ({ spaces, spaceId, isAdmin }: { spaces: GoalSpace[]; spaceId?: string; isAdmin?: boolean }) => {
   if (isAdmin) return false;
-  
   if (!spaceId) return true;
-  
   const space = spaces.find(s => s.id === spaceId);
   if (!space) return true;
-  
   const now = new Date();
-  // Read-only if inactive or submission deadline has passed
   return !space.isActive || new Date(space.submissionDeadline) < now;
 };
