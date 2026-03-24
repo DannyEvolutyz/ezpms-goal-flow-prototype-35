@@ -175,8 +175,8 @@ export const useGoalStorage = () => {
       type: n.type as Notification['type'],
       isRead: n.is_read,
       timestamp: n.created_at,
-      targetId: n.target_id || undefined,
-      targetType: n.target_type || undefined
+      ...(n.target_id ? { targetId: n.target_id } : {}),
+      ...(n.target_type ? { targetType: n.target_type } : {})
     }));
     setNotifications(mapped);
   }, [user]);
