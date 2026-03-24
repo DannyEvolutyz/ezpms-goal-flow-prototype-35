@@ -22,7 +22,7 @@ const ManagerDashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('pending_approval');
   const [selectedSpaceId, setSelectedSpaceId] = useState('');
-  const [showPersonalDashboard, setShowPersonalDashboard] = useState(false);
+  
   
   console.log('Manager Dashboard - Current user:', user);
   
