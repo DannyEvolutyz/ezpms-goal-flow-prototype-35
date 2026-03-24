@@ -49,8 +49,8 @@ export const createNotification = async ({
     type: data.type as Notification['type'],
     isRead: data.is_read,
     timestamp: data.created_at,
-    targetId: data.target_id || undefined,
-    targetType: data.target_type || undefined
+    ...(data.target_id ? { targetId: data.target_id } : {}),
+    ...(data.target_type ? { targetType: data.target_type } : {})
   };
   
   setNotifications(prev => [newNotification, ...prev]);
