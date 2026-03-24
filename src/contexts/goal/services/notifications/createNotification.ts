@@ -1,14 +1,14 @@
 
 import { Notification } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
 import { Dispatch, SetStateAction } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateNotificationParams {
   userId: string;
   title: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
-  targetType?: 'goal' | 'user';
+  targetType?: string;
   targetId?: string;
   setNotifications: Dispatch<SetStateAction<Notification[]>>;
 }
@@ -53,14 +53,12 @@ export const createNotification = async ({
     targetType: data.target_type || undefined
   };
   
-  // Only add to local state if it's for the current user
-  // (notifications for other users won't be visible anyway)
   setNotifications(prev => [newNotification, ...prev]);
   
   return newNotification;
 };
 
-// Helper for workflow services that need to create notifications for other users
+// Helper for workflow services that create notifications for other users
 export const createDbNotification = async (
   userId: string,
   title: string,
