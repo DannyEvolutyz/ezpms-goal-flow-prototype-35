@@ -12,10 +12,6 @@ import AllGoalsTab from '@/components/manager/AllGoalsTab';
 import ReviewGoalsTab from '@/components/manager/ReviewGoalsTab';
 import RateGoalsTab from '@/components/manager/RateGoalsTab';
 import ManagerGoalSpaceSelector from '@/components/manager/ManagerGoalSpaceSelector';
-import WelcomeBanner from '@/components/dashboard/WelcomeBanner';
-import StatsOverview from '@/components/dashboard/StatsOverview';
-import GoalProgressChart from '@/components/dashboard/GoalProgressChart';
-import ActivityTimeline from '@/components/dashboard/ActivityTimeline';
 
 const ManagerDashboard = () => {
   const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
