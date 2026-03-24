@@ -22,6 +22,6 @@ export interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   timestamp: string;
   isRead: boolean;
-  targetType?: 'goal' | 'user';
+  targetType?: string;
   targetId?: string;
 }
