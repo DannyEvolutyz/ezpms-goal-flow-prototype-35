@@ -1,6 +1,5 @@
 
 import { Goal } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
 import {
   submitGoal as submitGoalService,
   approveGoal as approveGoalService,
@@ -8,75 +7,72 @@ import {
   returnGoalForRevision as returnGoalForRevisionService
 } from '../services/goalWorkflow';
 import { canCreateOrEditGoals, canReviewGoals } from '../services/goalSpaces';
-import { createNotification } from '../services/notifications';
+import { createDbNotification } from '../services/notifications/createNotification';
 
 interface UseGoalWorkflowParams {
   goals: Goal[];
-  setGoals: Dispatch<SetStateAction<Goal[]>>;
   user: any;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
   getAllUsers: () => any[];
   spaces: any[];
+  refetchGoals: () => Promise<void>;
 }
 
 export const useGoalWorkflow = ({
   goals,
-  setGoals,
   user,
-  setNotifications,
   getAllUsers,
-  spaces
+  spaces,
+  refetchGoals
 }: UseGoalWorkflowParams) => {
   
-  const submitGoal = (goalId: string) => {
-    return submitGoalService({
+  const submitGoal = async (goalId: string) => {
+    await submitGoalService({
       goals,
       goalId,
       user,
-      setGoals,
-      setNotifications,
-      createNotification,
+      refetchGoals,
       getAllUsers,
-      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId })
+      canCreateOrEditGoals: (spaceId) => canCreateOrEditGoals({ spaces, spaceId }),
+      createDbNotification
     });
   };
   
-  const approveGoal = (goalId: string, feedback?: string) => {
-    return approveGoalService({
+  const approveGoal = async (goalId: string, feedback?: string) => {
+    await approveGoalService({
       goals,
       goalId,
+      user,
       feedback: feedback || '',
-      user,
-      setGoals,
-      setNotifications,
-      createNotification,
-      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
+      refetchGoals,
+      getAllUsers,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId }),
+      createDbNotification
     });
   };
   
-  const rejectGoal = (goalId: string, feedback: string) => {
-    return rejectGoalService({
+  const rejectGoal = async (goalId: string, feedback: string) => {
+    await rejectGoalService({
       goals,
       goalId,
-      feedback,
       user,
-      setGoals,
-      setNotifications,
-      createNotification,
-      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
+      feedback,
+      refetchGoals,
+      getAllUsers,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId }),
+      createDbNotification
     });
   };
   
-  const returnGoalForRevision = (goalId: string, feedback: string) => {
-    return returnGoalForRevisionService({
+  const returnGoalForRevision = async (goalId: string, feedback: string) => {
+    await returnGoalForRevisionService({
       goals,
       goalId,
-      feedback,
       user,
-      setGoals,
-      setNotifications,
-      createNotification,
-      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId })
+      feedback,
+      refetchGoals,
+      getAllUsers,
+      canReviewGoals: (spaceId) => canReviewGoals({ spaces, spaceId }),
+      createDbNotification
     });
   };
   

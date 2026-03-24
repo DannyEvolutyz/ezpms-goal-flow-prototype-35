@@ -1,16 +1,12 @@
 
+import { Notification } from '@/types';
 import { Dispatch, SetStateAction } from 'react';
-import {
-  getUserNotifications as getUserNotificationsService,
-  markNotificationAsRead as markNotificationAsReadService,
-  clearNotifications as clearNotificationsService,
-  getUnreadNotificationsCount as getUnreadNotificationsCountService
-} from '../services/notifications';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseNotificationsParams {
-  notifications: any[];
+  notifications: Notification[];
   user: any;
-  setNotifications: Dispatch<SetStateAction<any[]>>;
+  setNotifications: Dispatch<SetStateAction<Notification[]>>;
 }
 
 export const useNotifications = ({
@@ -20,33 +16,43 @@ export const useNotifications = ({
 }: UseNotificationsParams) => {
   
   const getUserNotifications = () => {
-    return getUserNotificationsService({
-      notifications,
-      user
-    });
+    if (!user) return [];
+    return notifications
+      .filter(n => n.userId === user.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   };
   
-  const markNotificationAsRead = (notificationId: string) => {
-    return markNotificationAsReadService({
-      notifications,
-      notificationId,
-      setNotifications
-    });
+  const markNotificationAsRead = async (notificationId: string) => {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+    
+    if (!error) {
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+      );
+    }
   };
   
-  const clearNotifications = () => {
-    return clearNotificationsService({
-      notifications,
-      user,
-      setNotifications
-    });
+  const clearNotifications = async () => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id);
+    
+    if (!error) {
+      setNotifications(prev =>
+        prev.map(n => n.userId === user.id ? { ...n, isRead: true } : n)
+      );
+    }
   };
   
   const getUnreadNotificationsCount = () => {
-    return getUnreadNotificationsCountService({
-      notifications,
-      user
-    });
+    if (!user) return 0;
+    return notifications.filter(n => n.userId === user.id && !n.isRead).length;
   };
   
   return {

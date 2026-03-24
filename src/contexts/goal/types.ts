@@ -7,13 +7,13 @@ export interface GoalContextType {
   spaces: GoalSpace[];
   
   // Goal CRUD operations
-  addGoal: (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string }) => Goal | undefined;
-  updateGoal: (updatedGoal: Goal) => void;
-  submitGoal: (goalId: string) => void;
-  approveGoal: (goalId: string, feedback?: string) => void;
-  rejectGoal: (goalId: string, feedback: string) => void;
-  returnGoalForRevision: (goalId: string, feedback: string) => void;
-  deleteGoal: (goalId: string) => void;
+  addGoal: (goalData: Omit<Goal, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt' | 'feedback' | 'spaceId'> & { spaceId: string }) => Promise<Goal | undefined>;
+  updateGoal: (updatedGoal: Goal) => Promise<void>;
+  submitGoal: (goalId: string) => Promise<void>;
+  approveGoal: (goalId: string, feedback?: string) => Promise<void>;
+  rejectGoal: (goalId: string, feedback: string) => Promise<void>;
+  returnGoalForRevision: (goalId: string, feedback: string) => Promise<void>;
+  deleteGoal: (goalId: string) => Promise<void>;
   
   // Goal queries
   getGoalsByStatus: (status: string) => Goal[];
@@ -22,14 +22,14 @@ export interface GoalContextType {
   getGoalsForReview: () => Goal[];
   
   // Goal Bank operations
-  addGoalTemplate: (template: Omit<GoalBank, 'id'>) => void;
-  updateGoalTemplate: (updatedTemplate: GoalBank) => void;
-  deleteGoalTemplate: (templateId: string) => void;
+  addGoalTemplate: (template: Omit<GoalBank, 'id'>) => Promise<void>;
+  updateGoalTemplate: (updatedTemplate: GoalBank) => Promise<void>;
+  deleteGoalTemplate: (templateId: string) => Promise<void>;
   
   // Goal Space operations
-  createGoalSpace: (spaceData: Omit<GoalSpace, 'id' | 'createdAt' | 'isActive'>) => GoalSpace | null;
-  updateGoalSpace: (spaceId: string, updatedSpace: Partial<GoalSpace>) => void;
-  deleteGoalSpace: (spaceId: string) => void;
+  createGoalSpace: (spaceData: Omit<GoalSpace, 'id' | 'createdAt' | 'isActive'>) => Promise<GoalSpace | null>;
+  updateGoalSpace: (spaceId: string, updatedSpace: Partial<GoalSpace>) => Promise<void>;
+  deleteGoalSpace: (spaceId: string) => Promise<void>;
   getActiveSpace: () => GoalSpace | undefined;
   getAvailableSpaces: () => GoalSpace[];
   getAllSpaces: () => GoalSpace[];
@@ -40,7 +40,13 @@ export interface GoalContextType {
   
   // Notification operations
   getUserNotifications: () => Notification[];
-  markNotificationAsRead: (notificationId: string) => void;
-  clearNotifications: () => void;
+  markNotificationAsRead: (notificationId: string) => Promise<void>;
+  clearNotifications: () => Promise<void>;
   getUnreadNotificationsCount: () => number;
+  
+  // Refetch helpers
+  refetchGoals: () => Promise<void>;
+  refetchSpaces: () => Promise<void>;
+  refetchGoalBank: () => Promise<void>;
+  refetchNotifications: () => Promise<void>;
 }
