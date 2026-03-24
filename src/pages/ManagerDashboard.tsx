@@ -2,7 +2,7 @@ import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
+
 import { useToast } from '@/components/ui/use-toast';
 import { BarChart, Target, ArrowDown, Users, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
