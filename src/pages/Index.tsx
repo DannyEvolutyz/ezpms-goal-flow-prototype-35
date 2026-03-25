@@ -22,12 +22,13 @@ const quickActions = [
 
 const Index = () => {
   const { user } = useAuth();
-  const { goals, notifications } = useGoals();
+  const { goals, getUserNotifications, getUnreadNotificationsCount } = useGoals();
 
   const myGoals = goals.filter(g => g.userId === user?.id);
   const pendingCount = myGoals.filter(g => g.status === 'pending_approval').length;
   const approvedCount = myGoals.filter(g => g.status === 'approved').length;
-  const unreadNotifications = notifications.filter(n => !n.isRead);
+  const unreadNotifications = getUserNotifications().filter(n => !n.isRead);
+  const unreadCount = getUnreadNotificationsCount();
 
   const upcomingDeadlines = myGoals
     .filter(g => {
