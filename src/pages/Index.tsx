@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 
 const quickActions = [
-  { label: 'Goals', icon: Target, path: '/goals', description: 'Manage your goals' },
-  { label: 'Dashboard', icon: BarChart3, path: '/dashboard', description: 'View analytics' },
-  { label: 'Goal Bank', icon: BookOpen, path: '/admin', description: 'Browse templates' },
+  { label: 'Timesheets', icon: ClipboardList, path: '/goals', description: 'Manage timesheets' },
+  { label: 'Leaves', icon: BookOpen, path: '/dashboard', description: 'Manage leaves' },
+  { label: 'Trainings', icon: Target, path: '/admin', description: 'View trainings' },
   { label: 'Performance', icon: TrendingUp, path: '/dashboard', description: 'Track progress' },
-  { label: 'Reports', icon: ClipboardList, path: '/manager', description: 'View reports' },
+  { label: 'Pay-slips', icon: BarChart3, path: '/manager', description: 'View pay-slips' },
 ];
 
 const Index = () => {
