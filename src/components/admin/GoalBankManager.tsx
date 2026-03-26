@@ -87,11 +87,10 @@ const GoalBankManager = () => {
     setForm(blankTemplate());
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.category.trim()) return;
 
-    // Always assign ID on submit
     const milestones: Milestone[] = form.milestones.map((m, i) => ({
       id: (editing && editing.milestones && editing.milestones[i]?.id) 
         ? editing.milestones[i].id
@@ -100,29 +99,33 @@ const GoalBankManager = () => {
       description: m.description,
     }));
 
-    if (editing) {
-      updateGoalTemplate({
-        ...editing,
-        title: form.title,
-        description: form.description,
-        category: form.category,
-        targetAudience: form.targetAudience,
-        createdBy: form.createdBy,
-        isActive: form.isActive,
-        spaceIds: form.spaceIds || [],
-        milestones,
-      });
-    } else {
-      addGoalTemplate({
-        title: form.title,
-        description: form.description,
-        category: form.category,
-        targetAudience: form.targetAudience,
-        createdBy: form.createdBy,
-        isActive: form.isActive,
-        spaceIds: form.spaceIds || [],
-        milestones,
-      });
+    try {
+      if (editing) {
+        await updateGoalTemplate({
+          ...editing,
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          targetAudience: form.targetAudience,
+          createdBy: form.createdBy,
+          isActive: form.isActive,
+          spaceIds: form.spaceIds || [],
+          milestones,
+        });
+      } else {
+        await addGoalTemplate({
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          targetAudience: form.targetAudience,
+          createdBy: form.createdBy,
+          isActive: form.isActive,
+          spaceIds: form.spaceIds || [],
+          milestones,
+        });
+      }
+    } catch (err) {
+      console.error('Error saving goal template:', err);
     }
     cancelEdit();
   };
