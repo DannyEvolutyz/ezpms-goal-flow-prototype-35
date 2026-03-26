@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { useGoals } from "@/contexts/GoalContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { GoalBank, Milestone } from "@/types";
 import { ListCheck } from "lucide-react";
 import GoalBankFormComponent from "./goal-bank/GoalBankForm";
@@ -18,21 +19,22 @@ const blankMilestone = (): Omit<Milestone, "id"> => ({
 });
 
 // Always returns all fields, milestones never undefined
-const blankTemplate = (): GoalBankForm => ({
+const blankTemplate = (createdBy = ""): GoalBankForm => ({
   title: "",
   description: "",
   category: "",
   targetAudience: "All",
-  createdBy: "admin",
+  createdBy,
   isActive: true,
   milestones: [],
   spaceIds: [],
 });
 
 const GoalBankManager = () => {
+  const { user } = useAuth();
   const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate, getAllSpaces } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
-  const [form, setForm] = useState<GoalBankForm>(blankTemplate());
+  const [form, setForm] = useState<GoalBankForm>(blankTemplate(user?.id ?? ""));
 
   const allSpaces = getAllSpaces();
 
@@ -84,7 +86,7 @@ const GoalBankManager = () => {
 
   const cancelEdit = () => {
     setEditing(null);
-    setForm(blankTemplate());
+    setForm(blankTemplate(user?.id ?? ""));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

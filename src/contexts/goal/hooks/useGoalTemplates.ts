@@ -2,6 +2,13 @@
 import { GoalBank } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
+const normalizeCreatedBy = (createdBy?: string) => {
+  if (!createdBy) return null;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(createdBy)
+    ? createdBy
+    : null;
+};
+
 export const useGoalTemplates = (
   goalBank: GoalBank[],
   setGoalBank: React.Dispatch<React.SetStateAction<GoalBank[]>>,
@@ -15,7 +22,7 @@ export const useGoalTemplates = (
         description: template.description,
         category: template.category,
         target_audience: template.targetAudience,
-        created_by: template.createdBy || null,
+        created_by: normalizeCreatedBy(template.createdBy),
         is_active: template.isActive
       })
       .select()
