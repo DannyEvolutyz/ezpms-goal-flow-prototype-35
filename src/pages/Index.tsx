@@ -84,7 +84,7 @@ const Index = () => {
               {/* Social Media Dashboard placeholder */}
               <CardHeader className="pb-2 pt-4">
                 <CardTitle className="text-base font-bold text-center" style={{ fontFamily: 'Lato, sans-serif' }}>
-                  Goal Overview
+                  Social Media Dashboard
                 </CardTitle>
               </CardHeader>
               <CardContent className="pb-4">
