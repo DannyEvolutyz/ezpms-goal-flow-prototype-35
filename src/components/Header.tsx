@@ -53,7 +53,7 @@ const Header = () => {
     { label: 'Goals', path: '/goals' },
     ...(isManager ? [{ label: 'Manager Dashboard', path: '/manager' }] : []),
     ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
-    ...((isManager || isAdmin) ? [{ label: 'Organization', path: '/organization' }] : []),
+    ...(isAdmin ? [{ label: 'Organization', path: '/organization' }] : []),
   ];
   
   const handleLogout = () => {
@@ -134,7 +134,7 @@ const Header = () => {
                   </Link>
                 </DropdownMenuItem>
               )}
-              {(isManager || isAdmin) && (
+              {isAdmin && (
                 <DropdownMenuItem asChild>
                   <Link to="/organization" className="cursor-pointer flex items-center">
                     <Users className="mr-2 h-4 w-4" />
