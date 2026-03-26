@@ -134,7 +134,7 @@ const Header = () => {
                   </Link>
                 </DropdownMenuItem>
               )}
-              {(isManager || isAdmin) && (
+              {isAdmin && (
                 <DropdownMenuItem asChild>
                   <Link to="/organization" className="cursor-pointer flex items-center">
                     <Users className="mr-2 h-4 w-4" />
