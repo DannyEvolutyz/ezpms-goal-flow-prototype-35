@@ -53,7 +53,7 @@ const Header = () => {
     { label: 'Goals', path: '/goals' },
     ...(isManager ? [{ label: 'Manager Dashboard', path: '/manager' }] : []),
     ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
-    ...((isManager || isAdmin) ? [{ label: 'Organization', path: '/organization' }] : []),
+    ...(isAdmin ? [{ label: 'Organization', path: '/organization' }] : []),
   ];
   
   const handleLogout = () => {
