@@ -7,9 +7,8 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'personal' | 'team'>('personal');
 
-  const isAdmin = user?.role === 'admin';
   const isManager = user?.role === 'manager';
-  const canToggle = isManager || isAdmin;
+  const canToggle = isManager;
 
   return (
     <div className="container mx-auto py-8 px-4">
