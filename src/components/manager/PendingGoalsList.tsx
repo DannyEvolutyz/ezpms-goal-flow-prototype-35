@@ -44,41 +44,16 @@ const PendingGoalsList: React.FC<PendingGoalsListProps> = ({
       </CardHeader>
       <CardContent>
         {filteredGoals.length > 0 ? (
-          <div className="space-y-4">
-            {filteredGoals.map((goal) => (
-              <div 
-                key={goal.id}
-                className={`border rounded-lg p-4 cursor-pointer transition hover:border-primary ${
-                  selectedGoal?.id === goal.id ? 'border-primary bg-primary/10' : ''
-                }`}
-                onClick={() => onSelectGoal(goal)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium">{goal.title}</h3>
-                  <span className="text-xs bg-secondary/20 text-secondary-foreground px-2 py-1 rounded-full">
-                    {getGoalOwnerName(goal.userId)}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs bg-accent/20 text-accent-foreground px-2 py-1 rounded-full">
-                    {goal.category}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Due: {new Date(goal.targetDate).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                    Weightage: {goal.weightage}%
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <GroupedGoals
+            filteredGoals={filteredGoals}
+            selectedGoal={selectedGoal}
+            onSelectGoal={onSelectGoal}
+            getGoalOwnerName={getGoalOwnerName}
+            groupByUser={selectedUserId === 'all'}
+          />
         ) : (
           <div className="text-center py-8 text-gray-500">
-            {selectedUserId === 'all' 
+            {selectedUserId === 'all'
               ? 'No goals pending your review'
               : `No goals pending review from ${teamMembers.find(m => m.id === selectedUserId)?.name || 'selected member'}`
             }
