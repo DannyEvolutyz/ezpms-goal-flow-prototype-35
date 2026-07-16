@@ -119,6 +119,8 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          edit_end_date: string | null
+          edit_start_date: string | null
           id: string
           is_active: boolean
           name: string
@@ -126,12 +128,15 @@ export type Database = {
           rating_deadline: string | null
           rating_start_date: string | null
           review_deadline: string | null
+          space_kind: string
           start_date: string | null
           submission_deadline: string | null
         }
         Insert: {
           created_at?: string
           description?: string | null
+          edit_end_date?: string | null
+          edit_start_date?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -139,12 +144,15 @@ export type Database = {
           rating_deadline?: string | null
           rating_start_date?: string | null
           review_deadline?: string | null
+          space_kind?: string
           start_date?: string | null
           submission_deadline?: string | null
         }
         Update: {
           created_at?: string
           description?: string | null
+          edit_end_date?: string | null
+          edit_start_date?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -152,6 +160,7 @@ export type Database = {
           rating_deadline?: string | null
           rating_start_date?: string | null
           review_deadline?: string | null
+          space_kind?: string
           start_date?: string | null
           submission_deadline?: string | null
         }
@@ -173,6 +182,7 @@ export type Database = {
           feedback: string | null
           id: string
           manager_rated_at: string | null
+          origin_space_id: string | null
           priority: string
           rating: number | null
           rating_comment: string | null
@@ -180,6 +190,7 @@ export type Database = {
           self_rated_at: string | null
           self_rating: number | null
           self_rating_comment: string | null
+          source_goal_id: string | null
           space_id: string
           status: string
           target_date: string
@@ -195,6 +206,7 @@ export type Database = {
           feedback?: string | null
           id?: string
           manager_rated_at?: string | null
+          origin_space_id?: string | null
           priority?: string
           rating?: number | null
           rating_comment?: string | null
@@ -202,6 +214,7 @@ export type Database = {
           self_rated_at?: string | null
           self_rating?: number | null
           self_rating_comment?: string | null
+          source_goal_id?: string | null
           space_id: string
           status?: string
           target_date: string
@@ -217,6 +230,7 @@ export type Database = {
           feedback?: string | null
           id?: string
           manager_rated_at?: string | null
+          origin_space_id?: string | null
           priority?: string
           rating?: number | null
           rating_comment?: string | null
@@ -224,6 +238,7 @@ export type Database = {
           self_rated_at?: string | null
           self_rating?: number | null
           self_rating_comment?: string | null
+          source_goal_id?: string | null
           space_id?: string
           status?: string
           target_date?: string
@@ -233,6 +248,20 @@ export type Database = {
           weightage?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "goals_origin_space_id_fkey"
+            columns: ["origin_space_id"]
+            isOneToOne: false
+            referencedRelation: "goal_spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_source_goal_id_fkey"
+            columns: ["source_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "goals_space_id_fkey"
             columns: ["space_id"]
