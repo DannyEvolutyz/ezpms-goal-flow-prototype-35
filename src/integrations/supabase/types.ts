@@ -122,9 +122,12 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
-          review_deadline: string
-          start_date: string
-          submission_deadline: string
+          parent_id: string | null
+          rating_deadline: string | null
+          rating_start_date: string | null
+          review_deadline: string | null
+          start_date: string | null
+          submission_deadline: string | null
         }
         Insert: {
           created_at?: string
@@ -132,9 +135,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
-          review_deadline: string
-          start_date: string
-          submission_deadline: string
+          parent_id?: string | null
+          rating_deadline?: string | null
+          rating_start_date?: string | null
+          review_deadline?: string | null
+          start_date?: string | null
+          submission_deadline?: string | null
         }
         Update: {
           created_at?: string
@@ -142,11 +148,22 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
-          review_deadline?: string
-          start_date?: string
-          submission_deadline?: string
+          parent_id?: string | null
+          rating_deadline?: string | null
+          rating_start_date?: string | null
+          review_deadline?: string | null
+          start_date?: string | null
+          submission_deadline?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "goal_spaces_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "goal_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       goals: {
         Row: {
@@ -155,10 +172,14 @@ export type Database = {
           description: string
           feedback: string | null
           id: string
+          manager_rated_at: string | null
           priority: string
           rating: number | null
           rating_comment: string | null
           reviewer_id: string | null
+          self_rated_at: string | null
+          self_rating: number | null
+          self_rating_comment: string | null
           space_id: string
           status: string
           target_date: string
@@ -173,10 +194,14 @@ export type Database = {
           description?: string
           feedback?: string | null
           id?: string
+          manager_rated_at?: string | null
           priority?: string
           rating?: number | null
           rating_comment?: string | null
           reviewer_id?: string | null
+          self_rated_at?: string | null
+          self_rating?: number | null
+          self_rating_comment?: string | null
           space_id: string
           status?: string
           target_date: string
@@ -191,10 +216,14 @@ export type Database = {
           description?: string
           feedback?: string | null
           id?: string
+          manager_rated_at?: string | null
           priority?: string
           rating?: number | null
           rating_comment?: string | null
           reviewer_id?: string | null
+          self_rated_at?: string | null
+          self_rating?: number | null
+          self_rating_comment?: string | null
           space_id?: string
           status?: string
           target_date?: string
