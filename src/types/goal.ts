@@ -11,7 +11,7 @@ export interface Milestone {
 export interface Goal {
   id: string;
   userId: string;
-  spaceId: string; // Adding spaceId to the Goal interface
+  spaceId: string;
   title: string;
   description: string;
   category: string;
@@ -24,6 +24,10 @@ export interface Goal {
   weightage: number;
   rating?: number;
   ratingComment?: string;
+  selfRating?: number;
+  selfRatingComment?: string;
+  selfRatedAt?: string;
+  managerRatedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -37,5 +41,5 @@ export interface GoalBank {
   createdBy: string;
   isActive: boolean;
   milestones?: Milestone[];
-  spaceIds?: string[]; // Tagged goal space IDs
+  spaceIds?: string[];
 }
