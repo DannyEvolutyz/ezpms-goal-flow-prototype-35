@@ -115,15 +115,28 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
         )}
 
         {isRatingMode ? (
-          // Rating interface for submitted goals
           <div className="mt-6 space-y-4">
+            {memberHasSelfRated ? (
+              <div className="rounded-md border bg-amber-50 p-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  Member self-rated: {selectedGoal.selfRating}/5
+                </div>
+                {selectedGoal.selfRatingComment && (
+                  <p className="mt-1 text-sm text-muted-foreground">"{selectedGoal.selfRatingComment}"</p>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-md border bg-muted p-3 text-sm text-muted-foreground">
+                Waiting for the member to submit their self-rating before you can rate this goal.
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium mb-2">Rating</label>
+              <label className="block text-sm font-medium mb-2">Manager Rating</label>
               <div className="flex gap-1">{renderStars()}</div>
               {rating > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {rating} out of 5 stars
-                </p>
+                <p className="text-sm text-gray-600 mt-1">{rating} out of 5 stars</p>
               )}
             </div>
 
@@ -134,12 +147,13 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
                 onChange={(e) => setRatingComment(e.target.value)}
                 placeholder="Add your comments about this goal's performance"
                 className="w-full h-24"
+                disabled={!canManagerRate}
               />
             </div>
 
             <Button
               onClick={handleRateGoal}
-              disabled={rating === 0}
+              disabled={rating === 0 || !canManagerRate}
               className="w-full"
             >
               Submit Rating & Comments
