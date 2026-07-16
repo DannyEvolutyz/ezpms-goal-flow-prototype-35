@@ -70,6 +70,7 @@ export const useGoalSpaces = ({
     canCreateOrEditGoals: (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId }),
     canReviewGoals: (spaceId?: string) => canReviewGoalsService({ spaces, spaceId }),
     canRateGoals: (spaceId?: string) => canRateGoalsService({ spaces, spaceId }),
+    canEditCycleGoal: (spaceId?: string) => canEditCycleGoalService({ spaces, spaceId }),
     isSpaceReadOnly: (spaceId?: string) => isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' })
   };
 };
