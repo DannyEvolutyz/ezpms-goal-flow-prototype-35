@@ -1,74 +1,78 @@
-# Goal Spaces: Parent Spaces, Sub-Spaces & Rating Phase
 
-## Overview
+# Goal Spaces: Mandatory Goal Setting Sub-Space + Inherited Sub-Space Cycles
 
-Rework Goal Spaces into a two-level hierarchy and add a new **Rating** phase to the timeline.
+## Concept
 
-- **Parent Goal Space** (e.g., "2027 Goals"): container only. No timeline. No goals created directly on it.
-- **Sub-Space** (e.g., "Q1 2027", "H1 2027"): belongs to a parent, has all the timeline settings. Goals are always created inside a sub-space.
-- **New Rating phase**: sequential after Review Deadline. Member self-rates first, then their manager rates.
-
-## Data Model Changes
-
-`goal_spaces` table:
-- Add `parent_id uuid` (nullable, FK → `goal_spaces.id`, ON DELETE CASCADE). NULL = parent space.
-- Add `rating_start_date date` (nullable, required for sub-spaces).
-- Add `rating_deadline date` (nullable, required for sub-spaces).
-- Timeline columns (`start_date`, `submission_deadline`, `review_deadline`) become nullable so parent spaces can skip them.
-- Constraint (via trigger): parents must have all timeline fields NULL; sub-spaces must have all timeline fields set with ordering `start ≤ submission ≤ review ≤ rating_start ≤ rating_deadline`. Only one level of nesting (a space with `parent_id` cannot itself be a parent to others).
-
-`goals` table:
-- `space_id` must reference a sub-space only (enforced via trigger).
-
-`goals` rating fields (already partly present — `rating`, `rating_comment`):
-- Add `self_rating numeric`, `self_rating_comment text`, `self_rated_at timestamptz`.
-- Add `manager_rated_at timestamptz`.
-- Manager rating only allowed after `self_rated_at` is set and current date is within the sub-space's rating window.
-
-## Admin UI (`GoalSpaceManager`)
-
-- List becomes a two-level tree: parent spaces expand to show their sub-spaces.
-- "Create Goal Space" opens a simplified form: **name + description only** (no dates).
-- Each parent row has "+ Add Sub-Space". Sub-space form matches today's space form **plus** the new Rating Start / Rating Deadline pickers. Validation enforces the ordering above.
-- Edit/delete supported on both levels. Deleting a parent cascades to its sub-spaces (with confirm).
-
-## Space Selector (goal creation, manager review, dashboards)
-
-- `GoalSpaceSelector` and `ManagerGoalSpaceSelector` show a grouped dropdown: parent name as a non-selectable heading, sub-spaces indented beneath it. Only sub-spaces are selectable.
-- `getAvailableSpaces`, `getSpacesForReview`, `getActiveSpace` filter to sub-spaces only.
-
-## Rating Workflow
-
-- New phase gate `canRateGoals(spaceId)`: today is between `rating_start_date` and `rating_deadline` of the sub-space.
-- Member view: on their approved/final-approved goals, during the rating window, show "Self-Rate" action (rating + comment). Locks after submit.
-- Manager view: new "Rate Goals" section shows their team's goals where `self_rated_at IS NOT NULL` and rating window is open. Manager submits rating + comment. If self-rating missing, manager sees a disabled state with "Waiting for self-rating".
-- Notifications: notify manager when a member self-rates; notify member when their manager rates.
-
-## Timeline Order
+Every parent Goal Space has exactly one **Goal Setting** sub-space (auto-created, non-deletable, non-renameable). All goals are authored there. Additional sub-spaces are **cycles** (e.g., Q1, Q2) that automatically receive an independent copy of every approved Goal Setting goal, and only expose an editing window and a rating window.
 
 ```text
-Start Date ─► Submission Deadline ─► Review Deadline ─► Rating Start ─► Rating Deadline
- create/edit        (locks edits)     (managers review)   (self-rate)     (manager rates)
+Parent Space "2027 Goals"
+├── Goal Setting  ← auto-created; start / submission / review dates
+│    └── goals authored & approved here
+├── Q1 2027       ← edit window + rating window; inherits copies
+├── Q2 2027
+└── ...
 ```
 
-## Files to Touch
+## Admin UI Changes (`GoalSpaceManager`)
 
-- Migration: `goal_spaces` + `goals` schema + validation triggers + RLS updates.
-- `src/types/goal-space.ts`, `src/types/goal.ts` — new fields.
-- `src/contexts/goal/services/goalSpaces.ts` — parent/sub logic, new queries (`getParentSpaces`, `getSubSpaces(parentId)`, `getSpacesForRating`, `canRateGoals`).
-- `src/contexts/goal/hooks/useGoalSpaces.tsx`, `useGoalStorage.ts`, `types.ts` — expose new API.
-- `src/components/admin/GoalSpaceManager.tsx` — tree UI + parent/sub forms.
-- `src/components/goals/GoalSpaceSelector.tsx`, `src/components/manager/ManagerGoalSpaceSelector.tsx` — grouped dropdown.
-- `src/components/goals/GoalFormComponent.tsx` — default to first available sub-space.
-- New: `src/components/goals/GoalSelfRating.tsx`, `src/components/manager/RateGoalsTab.tsx` (already exists — wire up to new gating and self-rating dependency).
-- `src/contexts/goal/services/goalWorkflow.ts` — `submitSelfRating`, `submitManagerRating` guarded by phase + sequence.
+- **Create Parent form** now collects: name, description, **Start Date**, **Submission Deadline**, **Review Deadline**. On submit, the parent row is created and a Goal Setting sub-space is created in the same transaction using those three dates.
+- Goal Setting sub-space is rendered under the parent with a lock icon; edit is limited to its dates, delete is disabled.
+- **Add Sub-Space form** (for cycles) collects: name, description, **Edit Start Date**, **Edit End Date**, **Rating Start Date**, **Rating End Date**. Ordering enforced: edit_start ≤ edit_end ≤ rating_start ≤ rating_end. Cycles cannot be created until the parent's Goal Setting review deadline has passed (admin override allowed).
+
+## Data Model
+
+`goal_spaces` table changes:
+- Add `space_kind text` with values `'parent' | 'goal_setting' | 'cycle'`.
+- Rename semantics of existing timeline columns:
+  - `goal_setting` uses `start_date`, `submission_deadline`, `review_deadline` (rating cols NULL).
+  - `cycle` uses new `edit_start_date`, `edit_end_date`, `rating_start_date`, `rating_deadline` (submission/review NULL).
+- Add `source_goal_id uuid` on `goals` (nullable) pointing back to the original Goal Setting goal for traceability.
+- Add `origin_space_id uuid` on `goals` (nullable) — the Goal Setting space it was copied from.
+- Validation trigger rewritten to enforce the three kinds and their required date sets.
+- Trigger on `goals`: when a goal reaches `final_approved` status in a Goal Setting space, insert an independent copy into every existing cycle sub-space of the same parent (status reset to `approved`, rating fields cleared, `source_goal_id` set). When a new cycle sub-space is created, backfill copies from its parent's Goal Setting approved goals.
+- Each copy is fully independent: separate progress, self-rating, manager rating, edits.
+
+## Service / Hook Changes
+
+- `goalSpaces.ts`:
+  - `createGoalSpace` accepts `kind` and the appropriate date set; parent creation returns both parent + auto-created goal-setting sub-space.
+  - New selectors: `getGoalSettingSpace(parentId)`, `getCycleSpaces(parentId)`.
+  - `canCreateOrEditGoals` → true only inside a `goal_setting` space, gated by its start/submission window.
+  - `canEditCycleGoal(spaceId)` → true inside a `cycle` between edit_start/edit_end (limited-field edit).
+  - `canRateGoals(spaceId)` → true inside a `cycle` between rating_start/rating_deadline; unchanged sequential rule (self then manager).
+  - `getSpacesForReview` → returns only `goal_setting` spaces in review window.
+  - `getSpacesForRating` → returns only `cycle` spaces in rating window.
+- `useGoalSpaces` exposes the new selectors and kind info.
+
+## Goal Creation & Rating Flow
+
+- Goal creation form only lists Goal Setting sub-spaces in the selector.
+- After a Goal Setting goal is `final_approved`, copies appear in each existing cycle for the parent.
+- In a cycle, member sees the goal read-only outside the edit window; during the edit window they can adjust progress/notes (not title/weightage). During the rating window: self-rate first, then manager rates (existing logic).
+- Manager review screen only surfaces Goal Setting goals awaiting approval; cycle sub-spaces surface goals awaiting manager rating.
 
 ## Migration Plan for Existing Data
 
-Existing `goal_spaces` rows are treated as sub-spaces without a parent. The migration creates a default parent "Legacy Goals" and sets every existing space's `parent_id` to it, then backfills `rating_start_date` = `review_deadline + 1 day` and `rating_deadline` = `review_deadline + 14 days` so no space is stuck without a rating window. Existing goals keep their `space_id` unchanged.
+Per user decision: wipe and re-setup.
+- Migration deletes all existing rows in `goal_spaces` and `goals` (and cascades to `milestones`, `notifications` referencing them).
+- Admins re-create parent spaces; Goal Setting is auto-created; cycles added as needed.
+- One-shot destructive migration guarded by an explicit note in the migration description.
+
+## Files to Touch
+
+- Migration: `goal_spaces` schema (`space_kind`, new date cols), `goals` (`source_goal_id`, `origin_space_id`), triggers for validation + auto-copy, wipe existing data.
+- `src/types/goal-space.ts`, `src/types/goal.ts` — new fields.
+- `src/contexts/goal/services/goalSpaces.ts`, `hooks/useGoalSpaces.tsx`, `types.ts`, `GoalProviderImpl.tsx` — new API surface.
+- `src/contexts/goal/hooks/useGoalStorage.ts` — map new columns.
+- `src/components/admin/GoalSpaceManager.tsx` — parent form with dates, auto-created Goal Setting node, cycle form with edit/rating dates.
+- `src/components/goals/GoalSpaceSelector.tsx`, `src/components/manager/ManagerGoalSpaceSelector.tsx` — filter by kind.
+- `src/components/goals/GoalFormComponent.tsx` — only Goal Setting spaces available.
+- `src/components/goals/goal-list/GoalCard.tsx` — cycle-context editing + existing self-rating.
+- `src/components/manager/GoalReviewPanel.tsx`, `RateGoalsTab.tsx` — split review (Goal Setting) vs rating (cycles).
 
 ## Out of Scope
 
-- Deeper nesting (sub-sub-spaces).
-- Bulk rating, rating templates, rating scales beyond what already exists on `goals`.
-- Changing existing approval/review workflow other than adding the rating phase after it.
+- Cross-cycle rating rollups or aggregate scoring.
+- Editing the goal's core fields inside a cycle (title, weightage, milestones structure).
+- Multi-parent inheritance or copying between unrelated parents.
