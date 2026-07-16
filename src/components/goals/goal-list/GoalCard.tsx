@@ -137,6 +137,25 @@ const GoalCard: React.FC<GoalCardProps> = ({
         onSubmitGoal={handleSubmitGoal}
         totalWeightage={totalWeightage}
       />
+
+      {canSelfRate && (
+        <div className="mt-3 flex items-center justify-between border-t pt-3">
+          {alreadySelfRated ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              Self-rated {goal.selfRating}/5
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Rating window is open. Submit your self-rating.</span>
+          )}
+          <Button size="sm" variant={alreadySelfRated ? 'outline' : 'default'} onClick={() => setSelfRateOpen(true)}>
+            <Star className="h-3 w-3 mr-1" />
+            {alreadySelfRated ? 'Update self-rating' : 'Self-Rate'}
+          </Button>
+        </div>
+      )}
+
+      <SelfRatingDialog goal={goal} open={selfRateOpen} onOpenChange={setSelfRateOpen} />
     </div>
   );
 };
