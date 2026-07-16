@@ -1,12 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Star } from 'lucide-react';
 import GoalStatus from './goal-card/GoalStatus';
 import GoalWeightage from './goal-card/GoalWeightage';
 import GoalFeedback from './goal-card/GoalFeedback';
 import GoalMilestones from './goal-card/GoalMilestones';
 import GoalActions from './goal-card/GoalActions';
+import SelfRatingDialog from '../SelfRatingDialog';
+import { useGoals } from '@/contexts/goal';
 
 interface GoalCardProps {
   goal: Goal;
