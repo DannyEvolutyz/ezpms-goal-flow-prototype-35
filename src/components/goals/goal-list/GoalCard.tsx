@@ -41,16 +41,20 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onToggleSelect,
   totalWeightage = 0
 }) => {
+  const { canRateGoals } = useGoals();
+  const [selfRateOpen, setSelfRateOpen] = useState(false);
+
   const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
   const isLocked = isApproved || goal.status === 'pending_approval';
-  
-  // Allow editing for draft, rejected, and under_review statuses
+
   const canEdit = !effectiveReadOnly && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review');
   const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
   const canSendRejectedForApproval = !effectiveReadOnly && goal.status === 'rejected';
-  
-  // Remove individual submit capability - only bulk submission allowed
   const canSubmit = false;
+
+  const ratingOpen = canRateGoals(goal.spaceId);
+  const canSelfRate = ratingOpen && (goal.status === 'approved' || goal.status === 'final_approved');
+  const alreadySelfRated = !!goal.selfRatedAt;
 
   const handleUpdateWeightage = (weightage: number) => {
     onUpdateWeightage(goal.id, weightage);
