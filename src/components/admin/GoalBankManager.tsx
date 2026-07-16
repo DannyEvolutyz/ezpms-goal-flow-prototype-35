@@ -32,11 +32,11 @@ const blankTemplate = (createdBy = ""): GoalBankForm => ({
 
 const GoalBankManager = () => {
   const { user } = useAuth();
-  const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate, getAllSpaces } = useGoals();
+  const { goalBank, addGoalTemplate, updateGoalTemplate, deleteGoalTemplate, getParentSpaces } = useGoals();
   const [editing, setEditing] = useState<GoalBank | null>(null);
   const [form, setForm] = useState<GoalBankForm>(blankTemplate(user?.id ?? ""));
 
-  const allSpaces = getAllSpaces();
+  const allSpaces = getParentSpaces();
 
   // ---- Form field update handler ----
   const handleFormChange = (field: keyof GoalBankForm, value: any) => {
