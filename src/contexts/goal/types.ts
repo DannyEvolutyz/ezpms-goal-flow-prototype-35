@@ -40,6 +40,7 @@ export interface GoalContextType {
   canCreateOrEditGoals: (spaceId?: string) => boolean;
   canReviewGoals: (spaceId?: string) => boolean;
   canRateGoals: (spaceId?: string) => boolean;
+  canEditCycleGoal: (spaceId?: string) => boolean;
   isSpaceReadOnly: (spaceId?: string) => boolean;
   
   // Notification operations
