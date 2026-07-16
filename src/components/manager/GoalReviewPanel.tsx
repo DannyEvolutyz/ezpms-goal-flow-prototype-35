@@ -72,7 +72,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">
-          {isSubmittedGoal ? 'Rate Goal' : 'Review Goal'}
+          {isRatingMode ? 'Rate Goal' : 'Review Goal'}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Goal by: {getGoalOwnerName(selectedGoal.userId)}
@@ -114,7 +114,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
           </div>
         )}
 
-        {isSubmittedGoal ? (
+        {isRatingMode ? (
           // Rating interface for submitted goals
           <div className="mt-6 space-y-4">
             <div>
