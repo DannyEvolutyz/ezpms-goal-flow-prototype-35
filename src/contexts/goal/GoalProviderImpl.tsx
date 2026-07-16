@@ -83,6 +83,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     canCreateOrEditGoals,
     canReviewGoals,
     canRateGoals,
+    canEditCycleGoal,
     isSpaceReadOnly,
     
     getUserNotifications,
