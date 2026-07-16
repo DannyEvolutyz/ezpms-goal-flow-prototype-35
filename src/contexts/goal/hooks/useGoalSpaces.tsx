@@ -14,6 +14,7 @@ import {
   canCreateOrEditGoals as canCreateOrEditGoalsService,
   canReviewGoals as canReviewGoalsService,
   canRateGoals as canRateGoalsService,
+  canEditCycleGoal as canEditCycleGoalService,
   isSpaceReadOnly as isSpaceReadOnlyService
 } from '../services/goalSpaces';
 
