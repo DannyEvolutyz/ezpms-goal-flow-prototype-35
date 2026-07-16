@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle, ArrowDown, Star } from 'lucide-react';
 import { Goal } from '@/types';
+import { useGoals } from '@/contexts/goal';
 
 interface GoalReviewPanelProps {
   selectedGoal: Goal;
@@ -27,11 +28,15 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   onRateGoal,
   getGoalOwnerName
 }) => {
+  const { canRateGoals } = useGoals();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
 
-  const isSubmittedGoal = selectedGoal.status === 'submitted';
+  const ratingWindowOpen = canRateGoals(selectedGoal.spaceId);
+  const memberHasSelfRated = !!selectedGoal.selfRatedAt;
+  const isRatingMode = ratingWindowOpen || selectedGoal.status === 'submitted';
+  const canManagerRate = isRatingMode && memberHasSelfRated;
 
   const handleRateGoal = () => {
     if (onRateGoal && rating > 0) {
