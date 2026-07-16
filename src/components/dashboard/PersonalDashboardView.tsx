@@ -87,7 +87,6 @@ const PersonalDashboardView = () => {
         <Card className="border-2 border-amber-200 dark:border-amber-800">
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-foreground">My Goals</h3>
-            <p className="text-sm text-muted-foreground mt-1">Your total goals</p>
             <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-3">{myGoals.length}</p>
             <p className="text-sm text-muted-foreground mt-1">Total goals created</p>
           </CardContent>
