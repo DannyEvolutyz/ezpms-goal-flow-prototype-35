@@ -14,6 +14,7 @@ import {
   canCreateOrEditGoals as canCreateOrEditGoalsService,
   canReviewGoals as canReviewGoalsService,
   canRateGoals as canRateGoalsService,
+  canEditCycleGoal as canEditCycleGoalService,
   isSpaceReadOnly as isSpaceReadOnlyService
 } from '../services/goalSpaces';
 
@@ -36,9 +37,12 @@ export const useGoalSpaces = ({
       name: spaceData.name,
       description: spaceData.description,
       parentId: spaceData.parentId ?? null,
+      spaceKind: spaceData.spaceKind,
       startDate: spaceData.startDate ?? null,
       submissionDeadline: spaceData.submissionDeadline ?? null,
       reviewDeadline: spaceData.reviewDeadline ?? null,
+      editStartDate: spaceData.editStartDate ?? null,
+      editEndDate: spaceData.editEndDate ?? null,
       ratingStartDate: spaceData.ratingStartDate ?? null,
       ratingDeadline: spaceData.ratingDeadline ?? null,
       user,
@@ -66,6 +70,7 @@ export const useGoalSpaces = ({
     canCreateOrEditGoals: (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId }),
     canReviewGoals: (spaceId?: string) => canReviewGoalsService({ spaces, spaceId }),
     canRateGoals: (spaceId?: string) => canRateGoalsService({ spaces, spaceId }),
+    canEditCycleGoal: (spaceId?: string) => canEditCycleGoalService({ spaces, spaceId }),
     isSpaceReadOnly: (spaceId?: string) => isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' })
   };
 };
