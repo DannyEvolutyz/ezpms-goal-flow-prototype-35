@@ -89,9 +89,9 @@ const GoalBankFormComponent: React.FC<GoalBankFormProps> = ({
 
       {/* Multi-select Goal Spaces */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold mb-2">Tag to Goal Spaces</label>
+        <label className="block text-sm font-semibold mb-2">Tag to Parent Goal Spaces</label>
         {spaces.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">No goal spaces available. Create goal spaces first.</p>
+          <p className="text-sm text-muted-foreground italic">No parent goal spaces available. Create a parent goal space first.</p>
         ) : (
           <div className="space-y-2 border rounded-md p-3 bg-white max-h-48 overflow-y-auto">
             {spaces.map(space => (

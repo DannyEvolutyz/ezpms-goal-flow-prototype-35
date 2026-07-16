@@ -11,11 +11,14 @@ interface GoalBankComponentProps {
 }
 
 const GoalBankComponent = ({ onSelectTemplate, spaceId }: GoalBankComponentProps) => {
-  const { goalBank } = useGoals();
+  const { goalBank, spaces } = useGoals();
 
-  // Filter templates by space if a spaceId is provided
-  const filteredTemplates = spaceId
-    ? goalBank.filter(t => t.spaceIds?.includes(spaceId))
+  // Templates are tagged to parent spaces. Resolve the parent of the current space.
+  const currentSpace = spaceId ? spaces.find(s => s.id === spaceId) : undefined;
+  const parentId = currentSpace?.parentId || (currentSpace?.spaceKind === 'parent' ? currentSpace.id : undefined);
+
+  const filteredTemplates = parentId
+    ? goalBank.filter(t => t.spaceIds?.includes(parentId))
     : goalBank;
 
   if (!filteredTemplates.length) {
