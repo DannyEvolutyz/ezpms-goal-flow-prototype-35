@@ -34,8 +34,12 @@ export interface GoalContextType {
   getAvailableSpaces: () => GoalSpace[];
   getAllSpaces: () => GoalSpace[];
   getSpacesForReview: () => GoalSpace[];
+  getSpacesForRating: () => GoalSpace[];
+  getParentSpaces: () => GoalSpace[];
+  getSubSpaces: (parentId: string) => GoalSpace[];
   canCreateOrEditGoals: (spaceId?: string) => boolean;
   canReviewGoals: (spaceId?: string) => boolean;
+  canRateGoals: (spaceId?: string) => boolean;
   isSpaceReadOnly: (spaceId?: string) => boolean;
   
   // Notification operations

@@ -1,12 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Goal } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Star } from 'lucide-react';
 import GoalStatus from './goal-card/GoalStatus';
 import GoalWeightage from './goal-card/GoalWeightage';
 import GoalFeedback from './goal-card/GoalFeedback';
 import GoalMilestones from './goal-card/GoalMilestones';
 import GoalActions from './goal-card/GoalActions';
+import SelfRatingDialog from '../SelfRatingDialog';
+import { useGoals } from '@/contexts/goal';
 
 interface GoalCardProps {
   goal: Goal;
@@ -37,16 +41,20 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onToggleSelect,
   totalWeightage = 0
 }) => {
+  const { canRateGoals } = useGoals();
+  const [selfRateOpen, setSelfRateOpen] = useState(false);
+
   const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
   const isLocked = isApproved || goal.status === 'pending_approval';
-  
-  // Allow editing for draft, rejected, and under_review statuses
+
   const canEdit = !effectiveReadOnly && (goal.status === 'draft' || goal.status === 'rejected' || goal.status === 'under_review');
   const canSendForApproval = !effectiveReadOnly && goal.status === 'draft';
   const canSendRejectedForApproval = !effectiveReadOnly && goal.status === 'rejected';
-  
-  // Remove individual submit capability - only bulk submission allowed
   const canSubmit = false;
+
+  const ratingOpen = canRateGoals(goal.spaceId);
+  const canSelfRate = ratingOpen && (goal.status === 'approved' || goal.status === 'final_approved');
+  const alreadySelfRated = !!goal.selfRatedAt;
 
   const handleUpdateWeightage = (weightage: number) => {
     onUpdateWeightage(goal.id, weightage);
@@ -129,6 +137,25 @@ const GoalCard: React.FC<GoalCardProps> = ({
         onSubmitGoal={handleSubmitGoal}
         totalWeightage={totalWeightage}
       />
+
+      {canSelfRate && (
+        <div className="mt-3 flex items-center justify-between border-t pt-3">
+          {alreadySelfRated ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              Self-rated {goal.selfRating}/5
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Rating window is open. Submit your self-rating.</span>
+          )}
+          <Button size="sm" variant={alreadySelfRated ? 'outline' : 'default'} onClick={() => setSelfRateOpen(true)}>
+            <Star className="h-3 w-3 mr-1" />
+            {alreadySelfRated ? 'Update self-rating' : 'Self-Rate'}
+          </Button>
+        </div>
+      )}
+
+      <SelfRatingDialog goal={goal} open={selfRateOpen} onOpenChange={setSelfRateOpen} />
     </div>
   );
 };

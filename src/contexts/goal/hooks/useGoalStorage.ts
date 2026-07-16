@@ -24,13 +24,16 @@ export const useGoalStorage = () => {
       return;
     }
     
-    const mapped: GoalSpace[] = (data || []).map(s => ({
+    const mapped: GoalSpace[] = (data || []).map((s: any) => ({
       id: s.id,
       name: s.name,
       description: s.description || '',
+      parentId: s.parent_id || null,
       startDate: s.start_date,
       submissionDeadline: s.submission_deadline,
       reviewDeadline: s.review_deadline,
+      ratingStartDate: s.rating_start_date,
+      ratingDeadline: s.rating_deadline,
       createdAt: s.created_at,
       isActive: s.is_active
     }));
@@ -73,7 +76,7 @@ export const useGoalStorage = () => {
       });
     }
     
-    const mapped: Goal[] = (data || []).map(g => ({
+    const mapped: Goal[] = (data || []).map((g: any) => ({
       id: g.id,
       userId: g.user_id,
       spaceId: g.space_id,
@@ -88,6 +91,10 @@ export const useGoalStorage = () => {
       weightage: g.weightage,
       rating: g.rating || undefined,
       ratingComment: g.rating_comment || undefined,
+      selfRating: g.self_rating || undefined,
+      selfRatingComment: g.self_rating_comment || undefined,
+      selfRatedAt: g.self_rated_at || undefined,
+      managerRatedAt: g.manager_rated_at || undefined,
       createdAt: g.created_at,
       updatedAt: g.updated_at,
       milestones: milestonesMap[g.id] || []

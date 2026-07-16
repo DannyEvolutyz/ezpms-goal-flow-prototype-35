@@ -103,9 +103,13 @@ export const updateGoal = async ({
       feedback: updatedGoal.feedback || null,
       rating: updatedGoal.rating || null,
       rating_comment: updatedGoal.ratingComment || null,
+      self_rating: updatedGoal.selfRating || null,
+      self_rating_comment: updatedGoal.selfRatingComment || null,
+      self_rated_at: updatedGoal.selfRatedAt || null,
+      manager_rated_at: updatedGoal.managerRatedAt || null,
       reviewer_id: updatedGoal.reviewerId || null,
       updated_at: new Date().toISOString()
-    })
+    } as any)
     .eq('id', updatedGoal.id);
   
   if (error) {

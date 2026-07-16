@@ -8,8 +8,12 @@ import {
   getAvailableSpaces as getAvailableSpacesService,
   getAllSpaces as getAllSpacesService,
   getSpacesForReview as getSpacesForReviewService,
+  getSpacesForRating as getSpacesForRatingService,
+  getParentSpaces as getParentSpacesService,
+  getSubSpaces as getSubSpacesService,
   canCreateOrEditGoals as canCreateOrEditGoalsService,
   canReviewGoals as canReviewGoalsService,
+  canRateGoals as canRateGoalsService,
   isSpaceReadOnly as isSpaceReadOnlyService
 } from '../services/goalSpaces';
 
@@ -24,43 +28,44 @@ export const useGoalSpaces = ({
   user,
   refetchSpaces
 }: UseGoalSpacesParams) => {
-  
-  const createGoalSpace = async (spaceData: Omit<GoalSpace, 'id' | 'createdAt' | 'isActive'>) => {
+
+  const createGoalSpace = async (
+    spaceData: Omit<GoalSpace, 'id' | 'createdAt' | 'isActive'>
+  ) => {
     return createGoalSpaceService({
-      ...spaceData,
+      name: spaceData.name,
+      description: spaceData.description,
+      parentId: spaceData.parentId ?? null,
+      startDate: spaceData.startDate ?? null,
+      submissionDeadline: spaceData.submissionDeadline ?? null,
+      reviewDeadline: spaceData.reviewDeadline ?? null,
+      ratingStartDate: spaceData.ratingStartDate ?? null,
+      ratingDeadline: spaceData.ratingDeadline ?? null,
       user,
       refetchSpaces
     });
   };
-  
+
   const updateGoalSpace = async (spaceId: string, updatedSpace: Partial<GoalSpace>) => {
-    await updateGoalSpaceService({
-      spaceId,
-      updatedSpace,
-      user,
-      refetchSpaces
-    });
+    await updateGoalSpaceService({ spaceId, updatedSpace, user, refetchSpaces });
   };
-  
+
   const deleteGoalSpace = async (spaceId: string) => {
-    await deleteGoalSpaceService({
-      spaceId,
-      user,
-      refetchSpaces
-    });
+    await deleteGoalSpaceService({ spaceId, user, refetchSpaces });
   };
-  
-  const getActiveSpace = () => getActiveSpaceService({ spaces });
-  const getAvailableSpaces = () => getAvailableSpacesService({ spaces });
-  const getAllSpaces = () => getAllSpacesService({ spaces });
-  const getSpacesForReview = () => getSpacesForReviewService({ spaces });
-  const canCreateOrEditGoals = (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId });
-  const canReviewGoals = (spaceId?: string) => canReviewGoalsService({ spaces, spaceId });
-  const isSpaceReadOnly = (spaceId?: string) => isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' });
-  
+
   return {
     createGoalSpace, updateGoalSpace, deleteGoalSpace,
-    getActiveSpace, getAvailableSpaces, getAllSpaces,
-    getSpacesForReview, canCreateOrEditGoals, canReviewGoals, isSpaceReadOnly
+    getActiveSpace: () => getActiveSpaceService({ spaces }),
+    getAvailableSpaces: () => getAvailableSpacesService({ spaces }),
+    getAllSpaces: () => getAllSpacesService({ spaces }),
+    getSpacesForReview: () => getSpacesForReviewService({ spaces }),
+    getSpacesForRating: () => getSpacesForRatingService({ spaces }),
+    getParentSpaces: () => getParentSpacesService({ spaces }),
+    getSubSpaces: (parentId: string) => getSubSpacesService({ spaces, parentId }),
+    canCreateOrEditGoals: (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId }),
+    canReviewGoals: (spaceId?: string) => canReviewGoalsService({ spaces, spaceId }),
+    canRateGoals: (spaceId?: string) => canRateGoalsService({ spaces, spaceId }),
+    isSpaceReadOnly: (spaceId?: string) => isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' })
   };
 };
