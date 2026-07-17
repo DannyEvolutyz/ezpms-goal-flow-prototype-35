@@ -19,9 +19,9 @@ import { format } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 
 const GoalFormComponent = () => {
-  const { addGoal, getAvailableSpaces } = useGoals();
+  const { addGoal, getParentSpacesOpenForCreation, getGoalSettingSpaceForParent } = useGoals();
   const [formKey, setFormKey] = useState(0);
-  const availableSpaces = getAvailableSpaces();
+  const availableParents = getParentSpacesOpenForCreation();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -32,7 +32,7 @@ const GoalFormComponent = () => {
       priority: undefined,
       targetDate: undefined,
       milestones: [],
-      spaceId: availableSpaces.length > 0 ? availableSpaces[0]?.id : '',
+      spaceId: availableParents.length > 0 ? availableParents[0]?.id : '',
     },
   });
 
