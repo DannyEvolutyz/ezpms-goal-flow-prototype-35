@@ -18,7 +18,7 @@ const Goals = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('view');
   const [editingGoal, setEditingGoal] = useState(null);
-  const allSpaces = getAllSpaces();
+  const allSpaces = getAllSpaces().filter(s => s.spaceKind !== 'parent');
   const activeSpace = getActiveSpace();
   const [selectedSpaceId, setSelectedSpaceId] = useState(activeSpace?.id || '');
   
