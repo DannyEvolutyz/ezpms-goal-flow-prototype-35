@@ -241,6 +241,22 @@ export const getSpacesForRating = ({ spaces }: SpacesParams) => {
 export const getParentSpaces = ({ spaces }: SpacesParams) =>
   spaces.filter(s => s.spaceKind === 'parent').sort((a, b) => a.name.localeCompare(b.name));
 
+export const getGoalSettingSpaceForParent = ({ spaces, parentId }: { spaces: GoalSpace[]; parentId: string }) =>
+  spaces.find(s => s.parentId === parentId && s.spaceKind === 'goal_setting');
+
+export const getParentSpacesOpenForCreation = ({ spaces, isAdmin }: { spaces: GoalSpace[]; isAdmin?: boolean }) => {
+  const now = new Date();
+  return spaces
+    .filter(s => s.spaceKind === 'parent')
+    .filter(parent => {
+      const gs = spaces.find(x => x.parentId === parent.id && x.spaceKind === 'goal_setting');
+      if (!gs || !gs.isActive || !gs.startDate || !gs.submissionDeadline) return false;
+      if (isAdmin) return true;
+      return new Date(gs.startDate) <= now && new Date(gs.submissionDeadline) >= now;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+};
+
 export const getSubSpaces = ({ spaces, parentId }: { spaces: GoalSpace[]; parentId: string }) =>
   spaces.filter(s => s.parentId === parentId).sort((a, b) => {
     if (a.spaceKind === 'goal_setting' && b.spaceKind !== 'goal_setting') return -1;

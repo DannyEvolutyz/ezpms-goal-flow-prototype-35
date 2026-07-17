@@ -19,9 +19,9 @@ import { format } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 
 const GoalFormComponent = () => {
-  const { addGoal, getAvailableSpaces } = useGoals();
+  const { addGoal, getParentSpacesOpenForCreation, getGoalSettingSpaceForParent } = useGoals();
   const [formKey, setFormKey] = useState(0);
-  const availableSpaces = getAvailableSpaces();
+  const availableParents = getParentSpacesOpenForCreation();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -32,7 +32,7 @@ const GoalFormComponent = () => {
       priority: undefined,
       targetDate: undefined,
       milestones: [],
-      spaceId: availableSpaces.length > 0 ? availableSpaces[0]?.id : '',
+      spaceId: availableParents.length > 0 ? availableParents[0]?.id : '',
     },
   });
 
@@ -83,6 +83,17 @@ const GoalFormComponent = () => {
         }))
       : [];
 
+    // The form's spaceId is a Parent Space id; resolve to its Goal Setting sub-space
+    const gs = getGoalSettingSpaceForParent(data.spaceId);
+    if (!gs) {
+      toast({
+        title: "Cannot create goal",
+        description: "This space has no active Goal Setting sub-space.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const result = addGoal({
       title: data.title,
       description: data.description,
@@ -91,7 +102,7 @@ const GoalFormComponent = () => {
       weightage: 0, // Default weightage, will be set later
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
       milestones,
-      spaceId: data.spaceId,
+      spaceId: gs.id,
     });
 
     if (result) {

@@ -37,6 +37,8 @@ export interface GoalContextType {
   getSpacesForRating: () => GoalSpace[];
   getParentSpaces: () => GoalSpace[];
   getSubSpaces: (parentId: string) => GoalSpace[];
+  getGoalSettingSpaceForParent: (parentId: string) => GoalSpace | undefined;
+  getParentSpacesOpenForCreation: () => GoalSpace[];
   canCreateOrEditGoals: (spaceId?: string) => boolean;
   canReviewGoals: (spaceId?: string) => boolean;
   canRateGoals: (spaceId?: string) => boolean;
