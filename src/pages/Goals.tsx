@@ -130,13 +130,16 @@ const Goals = () => {
                     <p className="text-amber-600">
                       This space is read-only. You cannot create or edit goals in it anymore.
                     </p>
-                  ) : (
-                    <p className="text-green-600">
-                      You can create and edit goals in this space until{" "}
-                      {spaces.find(s => s.id === selectedSpaceId)?.submissionDeadline && 
-                       format(new Date(spaces.find(s => s.id === selectedSpaceId).submissionDeadline), 'MMMM d, yyyy')}
-                    </p>
-                  )}
+                  ) : (() => {
+                    const sp = spaces.find(s => s.id === selectedSpaceId);
+                    const until = sp?.spaceKind === 'cycle' ? sp.editEndDate : sp?.submissionDeadline;
+                    return (
+                      <p className="text-green-600">
+                        You can create and edit goals in this space until{" "}
+                        {until && format(new Date(until), 'MMMM d, yyyy')}
+                      </p>
+                    );
+                  })()}
                 </div>
               )}
               
