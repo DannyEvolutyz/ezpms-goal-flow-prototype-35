@@ -83,6 +83,17 @@ const GoalFormComponent = () => {
         }))
       : [];
 
+    // The form's spaceId is a Parent Space id; resolve to its Goal Setting sub-space
+    const gs = getGoalSettingSpaceForParent(data.spaceId);
+    if (!gs) {
+      toast({
+        title: "Cannot create goal",
+        description: "This space has no active Goal Setting sub-space.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const result = addGoal({
       title: data.title,
       description: data.description,
@@ -91,7 +102,7 @@ const GoalFormComponent = () => {
       weightage: 0, // Default weightage, will be set later
       targetDate: format(data.targetDate, 'yyyy-MM-dd'),
       milestones,
-      spaceId: data.spaceId,
+      spaceId: gs.id,
     });
 
     if (result) {
