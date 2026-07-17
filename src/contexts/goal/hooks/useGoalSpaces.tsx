@@ -11,6 +11,8 @@ import {
   getSpacesForRating as getSpacesForRatingService,
   getParentSpaces as getParentSpacesService,
   getSubSpaces as getSubSpacesService,
+  getGoalSettingSpaceForParent as getGoalSettingSpaceForParentService,
+  getParentSpacesOpenForCreation as getParentSpacesOpenForCreationService,
   canCreateOrEditGoals as canCreateOrEditGoalsService,
   canReviewGoals as canReviewGoalsService,
   canRateGoals as canRateGoalsService,
