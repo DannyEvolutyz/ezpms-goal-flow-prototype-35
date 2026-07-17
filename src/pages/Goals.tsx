@@ -55,18 +55,28 @@ const Goals = () => {
   const getSpaceDeadlineStatus = (spaceId) => {
     const space = spaces.find(s => s.id === spaceId);
     if (!space) return null;
-    
     const now = new Date();
-    const submissionDeadline = new Date(space.submissionDeadline);
-    const reviewDeadline = new Date(space.reviewDeadline);
-    
-    if (now > reviewDeadline) {
-      return { status: 'completed', label: 'Completed', color: 'bg-gray-100 text-gray-800' };
-    } else if (now > submissionDeadline) {
-      return { status: 'review-only', label: 'Review Only', color: 'bg-amber-100 text-amber-800' };
-    } else {
+
+    if (space.spaceKind === 'goal_setting') {
+      if (!space.submissionDeadline || !space.reviewDeadline) return null;
+      const submissionDeadline = new Date(space.submissionDeadline);
+      const reviewDeadline = new Date(space.reviewDeadline);
+      if (now > reviewDeadline) return { status: 'completed', label: 'Completed', color: 'bg-gray-100 text-gray-800' };
+      if (now > submissionDeadline) return { status: 'review-only', label: 'Review Only', color: 'bg-amber-100 text-amber-800' };
       return { status: 'active', label: 'Active', color: 'bg-green-100 text-green-800' };
     }
+
+    if (space.spaceKind === 'cycle') {
+      if (!space.editStartDate || !space.editEndDate || !space.ratingStartDate || !space.ratingDeadline) return null;
+      const es = new Date(space.editStartDate), ee = new Date(space.editEndDate);
+      const rs = new Date(space.ratingStartDate), rd = new Date(space.ratingDeadline);
+      if (now < es) return { status: 'upcoming', label: 'Upcoming', color: 'bg-blue-100 text-blue-800' };
+      if (now <= ee) return { status: 'editing', label: 'Editing Open', color: 'bg-green-100 text-green-800' };
+      if (now < rs) return { status: 'waiting', label: 'Awaiting Rating', color: 'bg-amber-100 text-amber-800' };
+      if (now <= rd) return { status: 'rating', label: 'Rating Open', color: 'bg-purple-100 text-purple-800' };
+      return { status: 'completed', label: 'Completed', color: 'bg-gray-100 text-gray-800' };
+    }
+    return null;
   };
   
   return (
