@@ -28,15 +28,19 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   onRateGoal,
   getGoalOwnerName
 }) => {
-  const { canRateGoals } = useGoals();
+  const { canRateGoals, spaces } = useGoals();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
 
-  const ratingWindowOpen = canRateGoals(selectedGoal.spaceId);
+  const goalSpace = spaces.find(s => s.id === selectedGoal.spaceId);
+  const isGoalSettingSpace = goalSpace?.spaceKind === 'goal_setting';
+  const isCycleSpace = goalSpace?.spaceKind === 'cycle';
+  const ratingWindowOpen = isCycleSpace && canRateGoals(selectedGoal.spaceId);
   const memberHasSelfRated = !!selectedGoal.selfRatedAt;
-  const isRatingMode = ratingWindowOpen || selectedGoal.status === 'submitted';
-  const canManagerRate = isRatingMode && memberHasSelfRated;
+  // Rate Goals view is shown for any approved-onward goal; but only cycle spaces during rating window allow actions
+  const isRatingMode = selectedGoal.status !== 'pending_approval' && selectedGoal.status !== 'draft';
+  const canManagerRate = ratingWindowOpen && memberHasSelfRated && selectedGoal.status !== 'final_approved';
 
   const handleRateGoal = () => {
     if (onRateGoal && rating > 0) {
@@ -116,6 +120,27 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
 
         {isRatingMode ? (
           <div className="mt-6 space-y-4">
+            {isGoalSettingSpace && (
+              <div className="rounded-md border bg-blue-50 p-3 text-sm text-blue-800">
+                This goal is in the Goal Setting space and is view-only here. Rating happens in the cycle sub-spaces during their rating window.
+              </div>
+            )}
+            {isCycleSpace && !ratingWindowOpen && selectedGoal.status !== 'final_approved' && (
+              <div className="rounded-md border bg-muted p-3 text-sm text-muted-foreground">
+                Rating window for this cycle is not open yet. You'll be able to rate during the configured rating dates.
+              </div>
+            )}
+            {selectedGoal.status === 'final_approved' && selectedGoal.rating && (
+              <div className="rounded-md border bg-emerald-50 p-3 text-sm">
+                <div className="flex items-center gap-2 font-medium">
+                  <Star className="h-4 w-4 fill-emerald-500 text-emerald-500" />
+                  Manager rating: {selectedGoal.rating}/5
+                </div>
+                {selectedGoal.ratingComment && (
+                  <p className="mt-1 text-muted-foreground">"{selectedGoal.ratingComment}"</p>
+                )}
+              </div>
+            )}
             {memberHasSelfRated ? (
               <div className="rounded-md border bg-amber-50 p-3">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -126,38 +151,42 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
                   <p className="mt-1 text-sm text-muted-foreground">"{selectedGoal.selfRatingComment}"</p>
                 )}
               </div>
-            ) : (
+            ) : isCycleSpace ? (
               <div className="rounded-md border bg-muted p-3 text-sm text-muted-foreground">
                 Waiting for the member to submit their self-rating before you can rate this goal.
               </div>
+            ) : null}
+
+            {isCycleSpace && selectedGoal.status !== 'final_approved' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Manager Rating</label>
+                  <div className="flex gap-1">{renderStars()}</div>
+                  {rating > 0 && (
+                    <p className="text-sm text-gray-600 mt-1">{rating} out of 5 stars</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Comments</label>
+                  <Textarea
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    placeholder="Add your comments about this goal's performance"
+                    className="w-full h-24"
+                    disabled={!canManagerRate}
+                  />
+                </div>
+
+                <Button
+                  onClick={handleRateGoal}
+                  disabled={rating === 0 || !canManagerRate}
+                  className="w-full"
+                >
+                  Submit Rating & Comments
+                </Button>
+              </>
             )}
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Manager Rating</label>
-              <div className="flex gap-1">{renderStars()}</div>
-              {rating > 0 && (
-                <p className="text-sm text-gray-600 mt-1">{rating} out of 5 stars</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Comments</label>
-              <Textarea
-                value={ratingComment}
-                onChange={(e) => setRatingComment(e.target.value)}
-                placeholder="Add your comments about this goal's performance"
-                className="w-full h-24"
-                disabled={!canManagerRate}
-              />
-            </div>
-
-            <Button
-              onClick={handleRateGoal}
-              disabled={rating === 0 || !canManagerRate}
-              className="w-full"
-            >
-              Submit Rating & Comments
-            </Button>
           </div>
         ) : (
           // Review interface for pending goals
