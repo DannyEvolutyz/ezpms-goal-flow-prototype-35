@@ -51,9 +51,9 @@ const ManagerDashboard = () => {
     (!selectedSpaceId || goal.spaceId === selectedSpaceId)
   );
   
-  // Get goals that are submitted for review (ready for rating) filtered by space
-  const submittedGoals = teamGoals.filter(goal => 
-    goal.status === 'submitted' && 
+  // Goals eligible for rating view: any goal that has been approved onward, filtered by space
+  const submittedGoals = teamGoals.filter(goal =>
+    ['approved', 'submitted', 'under_review', 'final_approved'].includes(goal.status) &&
     (!selectedSpaceId || goal.spaceId === selectedSpaceId)
   );
   
