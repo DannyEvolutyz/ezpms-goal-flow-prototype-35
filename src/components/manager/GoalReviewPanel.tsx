@@ -28,15 +28,19 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   onRateGoal,
   getGoalOwnerName
 }) => {
-  const { canRateGoals } = useGoals();
+  const { canRateGoals, spaces } = useGoals();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
 
-  const ratingWindowOpen = canRateGoals(selectedGoal.spaceId);
+  const goalSpace = spaces.find(s => s.id === selectedGoal.spaceId);
+  const isGoalSettingSpace = goalSpace?.spaceKind === 'goal_setting';
+  const isCycleSpace = goalSpace?.spaceKind === 'cycle';
+  const ratingWindowOpen = isCycleSpace && canRateGoals(selectedGoal.spaceId);
   const memberHasSelfRated = !!selectedGoal.selfRatedAt;
-  const isRatingMode = ratingWindowOpen || selectedGoal.status === 'submitted';
-  const canManagerRate = isRatingMode && memberHasSelfRated;
+  // Rate Goals view is shown for any approved-onward goal; but only cycle spaces during rating window allow actions
+  const isRatingMode = selectedGoal.status !== 'pending_approval' && selectedGoal.status !== 'draft';
+  const canManagerRate = ratingWindowOpen && memberHasSelfRated && selectedGoal.status !== 'final_approved';
 
   const handleRateGoal = () => {
     if (onRateGoal && rating > 0) {
