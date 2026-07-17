@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useGoals } from '@/contexts/goal';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,45 +14,57 @@ import GoalBankComponent from '@/components/goals/GoalBankComponent';
 import { CalendarDays } from 'lucide-react';
 
 const Goals = () => {
-  const { goals, spaces, getGoalsBySpace, getAllSpaces, getActiveSpace, isSpaceReadOnly } = useGoals();
+  const {
+    goals, spaces, getGoalsBySpace, getParentSpaces, getSubSpaces,
+    getGoalSettingSpaceForParent, getParentSpacesOpenForCreation, isSpaceReadOnly,
+  } = useGoals();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('view');
   const [editingGoal, setEditingGoal] = useState(null);
-  const allSpaces = getAllSpaces().filter(s => s.spaceKind !== 'parent');
-  const activeSpace = getActiveSpace();
-  const [selectedSpaceId, setSelectedSpaceId] = useState(activeSpace?.id || '');
-  
-  // Update selected space if active space changes
+
+  const parentSpaces = getParentSpaces();
+  const openParents = getParentSpacesOpenForCreation();
+  const [selectedParentId, setSelectedParentId] = useState<string>(parentSpaces[0]?.id || '');
+  const subSpaces = useMemo(
+    () => (selectedParentId ? getSubSpaces(selectedParentId) : []),
+    [selectedParentId, spaces] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const [selectedSubSpaceId, setSelectedSubSpaceId] = useState<string>('');
+
+  // Keep default parent
   useEffect(() => {
-    if (activeSpace && !selectedSpaceId) {
-      setSelectedSpaceId(activeSpace.id);
+    if (!selectedParentId && parentSpaces.length > 0) {
+      setSelectedParentId(parentSpaces[0].id);
     }
-  }, [activeSpace, selectedSpaceId]);
-  
+  }, [parentSpaces, selectedParentId]);
+
+  // Default sub-space = Goal Setting when parent changes
+  useEffect(() => {
+    if (subSpaces.length === 0) {
+      setSelectedSubSpaceId('');
+      return;
+    }
+    const stillValid = subSpaces.some(s => s.id === selectedSubSpaceId);
+    if (!stillValid) {
+      const gs = subSpaces.find(s => s.spaceKind === 'goal_setting');
+      setSelectedSubSpaceId((gs || subSpaces[0]).id);
+    }
+  }, [subSpaces, selectedSubSpaceId]);
+
   if (editingGoal) {
     return <GoalEditForm goal={editingGoal} onCancel={() => setEditingGoal(null)} />;
   }
-  
-  const handleCreateNew = () => {
-    console.log('Creating new goal - switching to create tab');
-    setActiveTab('create');
-  };
 
+  const handleCreateNew = () => setActiveTab('create');
   const handleEditGoal = (goalId: string) => {
-    console.log('handleEditGoal called in Goals page for goalId:', goalId);
     const goal = goals.find(g => g.id === goalId);
-    console.log('Found goal:', goal);
-    if (goal) {
-      setEditingGoal(goal);
-    } else {
-      console.error('Goal not found with id:', goalId);
-    }
+    if (goal) setEditingGoal(goal);
   };
 
-  const isReadOnly = selectedSpaceId ? isSpaceReadOnly(selectedSpaceId) : true;
-  const filteredGoals = selectedSpaceId ? getGoalsBySpace(selectedSpaceId) : [];
-  
-  const getSpaceDeadlineStatus = (spaceId) => {
+  const isReadOnly = selectedSubSpaceId ? isSpaceReadOnly(selectedSubSpaceId) : true;
+  const filteredGoals = selectedSubSpaceId ? getGoalsBySpace(selectedSubSpaceId) : [];
+
+  const getSpaceDeadlineStatus = (spaceId: string) => {
     const space = spaces.find(s => s.id === spaceId);
     if (!space) return null;
     const now = new Date();
@@ -78,17 +90,19 @@ const Goals = () => {
     }
     return null;
   };
-  
+
+  const selectedSubSpace = spaces.find(s => s.id === selectedSubSpaceId);
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Performance Goals</h1>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="view">My Goals</TabsTrigger>
-          <TabsTrigger value="create" disabled={!activeSpace}>Create New Goal</TabsTrigger>
+          <TabsTrigger value="create" disabled={openParents.length === 0}>Create New Goal</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="view">
           <Card className="mb-6">
             <CardHeader>
@@ -97,70 +111,82 @@ const Goals = () => {
                 Select Goal Space
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Select
-                value={selectedSpaceId}
-                onValueChange={setSelectedSpaceId}
-              >
+            <CardContent className="space-y-4">
+              <Select value={selectedParentId} onValueChange={setSelectedParentId}>
                 <SelectTrigger className="w-full md:w-[300px]">
                   <SelectValue placeholder="Select a goal space" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allSpaces.length === 0 ? (
+                  {parentSpaces.length === 0 ? (
                     <SelectItem value="none" disabled>No goal spaces available</SelectItem>
                   ) : (
-                    allSpaces.map(space => {
-                      const status = getSpaceDeadlineStatus(space.id);
-                      return (
-                        <SelectItem key={space.id} value={space.id} className="flex justify-between items-center">
-                          <div className="flex items-center justify-between w-full pr-2">
-                            <span>{space.name}</span>
-                            <Badge className={status?.color}>{status?.label}</Badge>
-                          </div>
-                        </SelectItem>
-                      );
-                    })
+                    parentSpaces.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
-              
-              {selectedSpaceId && (
-                <div className="mt-2 text-sm">
-                  {isReadOnly ? (
-                    <p className="text-amber-600">
-                      This space is read-only. You cannot create or edit goals in it anymore.
-                    </p>
-                  ) : (() => {
-                    const sp = spaces.find(s => s.id === selectedSpaceId);
-                    const until = sp?.spaceKind === 'cycle' ? sp.editEndDate : sp?.submissionDeadline;
+
+              {subSpaces.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {subSpaces.map(s => {
+                    const status = getSpaceDeadlineStatus(s.id);
+                    const active = s.id === selectedSubSpaceId;
                     return (
-                      <p className="text-green-600">
-                        You can create and edit goals in this space until{" "}
-                        {until && format(new Date(until), 'MMMM d, yyyy')}
-                      </p>
+                      <button
+                        key={s.id}
+                        onClick={() => setSelectedSubSpaceId(s.id)}
+                        className={`px-3 py-2 rounded-md border text-sm transition-colors flex items-center gap-2 ${
+                          active
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <span>{s.spaceKind === 'goal_setting' ? 'Goal Setting' : s.name}</span>
+                        {status && <Badge className={status.color}>{status.label}</Badge>}
+                      </button>
                     );
-                  })()}
+                  })}
                 </div>
               )}
-              
-              {allSpaces.length === 0 && (
+
+              {selectedSubSpace && (
+                <div className="text-sm">
+                  {isReadOnly ? (
+                    <p className="text-amber-600">
+                      This space is read-only. You cannot create or edit goals in it right now.
+                    </p>
+                  ) : (
+                    (() => {
+                      const until = selectedSubSpace.spaceKind === 'cycle'
+                        ? selectedSubSpace.editEndDate
+                        : selectedSubSpace.submissionDeadline;
+                      return (
+                        <p className="text-green-600">
+                          You can create and edit goals in this space until{' '}
+                          {until && format(new Date(until), 'MMMM d, yyyy')}
+                        </p>
+                      );
+                    })()
+                  )}
+                </div>
+              )}
+
+              {parentSpaces.length === 0 && (
                 <p className="text-sm text-muted-foreground mt-2">
                   No goal spaces have been created yet. Please contact your administrator.
                 </p>
               )}
             </CardContent>
           </Card>
-          
-          {selectedSpaceId ? (
+
+          {selectedSubSpaceId ? (
             <>
-              {/* Space-tagged templates */}
               <Card className="mb-6">
                 <CardContent className="pt-6">
                   <GoalBankComponent
-                    spaceId={selectedSpaceId}
-                    onSelectTemplate={(template) => {
-                      setActiveTab('create');
-                    }}
+                    spaceId={selectedParentId}
+                    onSelectTemplate={() => setActiveTab('create')}
                   />
                 </CardContent>
               </Card>
@@ -169,7 +195,7 @@ const Goals = () => {
                 onCreateNew={handleCreateNew}
                 onEditGoal={handleEditGoal}
                 goals={filteredGoals}
-                spaceId={selectedSpaceId}
+                spaceId={selectedSubSpaceId}
                 isReadOnly={isReadOnly}
               />
             </>
@@ -179,7 +205,7 @@ const Goals = () => {
             </Card>
           )}
         </TabsContent>
-        
+
         <TabsContent value="create">
           <GoalFormComponent />
         </TabsContent>
