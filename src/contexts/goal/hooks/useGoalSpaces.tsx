@@ -69,6 +69,8 @@ export const useGoalSpaces = ({
     getSpacesForRating: () => getSpacesForRatingService({ spaces }),
     getParentSpaces: () => getParentSpacesService({ spaces }),
     getSubSpaces: (parentId: string) => getSubSpacesService({ spaces, parentId }),
+    getGoalSettingSpaceForParent: (parentId: string) => getGoalSettingSpaceForParentService({ spaces, parentId }),
+    getParentSpacesOpenForCreation: () => getParentSpacesOpenForCreationService({ spaces, isAdmin: user?.role === 'admin' }),
     canCreateOrEditGoals: (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId }),
     canReviewGoals: (spaceId?: string) => canReviewGoalsService({ spaces, spaceId }),
     canRateGoals: (spaceId?: string) => canRateGoalsService({ spaces, spaceId }),
