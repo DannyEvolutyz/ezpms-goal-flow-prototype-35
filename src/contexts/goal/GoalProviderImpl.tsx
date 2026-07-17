@@ -81,6 +81,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     getSpacesForRating,
     getParentSpaces,
     getSubSpaces,
+    getGoalSettingSpaceForParent,
+    getParentSpacesOpenForCreation,
     canCreateOrEditGoals,
     canReviewGoals,
     canRateGoals,
