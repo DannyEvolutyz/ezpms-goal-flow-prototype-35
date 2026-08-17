@@ -135,8 +135,20 @@ const AdminDashboard = () => {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
       </div>
       
-      <Tabs defaultValue="goalreview" className="space-y-6">
+      <Tabs defaultValue="goalspaces" className="space-y-6">
         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6">
+          <TabsTrigger value="goalspaces" className="flex items-center gap-2">
+            <FolderPlus className="h-4 w-4" />
+            <span>Goal Spaces</span>
+          </TabsTrigger>
+          <TabsTrigger value="goalbank" className="flex items-center gap-2">
+            <ListCheck className="h-4 w-4" />
+            <span>Goal Bank</span>
+          </TabsTrigger>
+          <TabsTrigger value="spacegoals" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            <span>Goal Templates</span>
+          </TabsTrigger>
           <TabsTrigger value="goalreview" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Goal Review</span>
@@ -145,18 +157,6 @@ const AdminDashboard = () => {
                 {pendingGoals.length}
               </span>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="goalbank" className="flex items-center gap-2">
-            <ListCheck className="h-4 w-4" />
-            <span>Goal Bank</span>
-          </TabsTrigger>
-          <TabsTrigger value="goalspaces" className="flex items-center gap-2">
-            <FolderPlus className="h-4 w-4" />
-            <span>Goal Spaces</span>
-          </TabsTrigger>
-          <TabsTrigger value="spacegoals" className="flex items-center gap-2">
-            <FileCheck className="h-4 w-4" />
-            <span>Goal Templates</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <User className="h-4 w-4" />
@@ -167,6 +167,40 @@ const AdminDashboard = () => {
             <span>System Settings</span>
           </TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="goalspaces">
+          <GoalSpaceManager />
+        </TabsContent>
+        
+        <TabsContent value="goalbank">
+          <GoalBankManager />
+        </TabsContent>
+        
+        <TabsContent value="spacegoals">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <GoalTemplateForm />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Goal Templates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500 py-4 text-center">
+                  Goal templates assigned to specific spaces will appear here.
+                </p>
+                
+                <div className="mt-4">
+                  <ul className="space-y-2">
+                    {/* This section will be expanded in the future to show templates by space */}
+                    <li className="text-center text-sm text-gray-400">
+                      No goal templates found
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
         
         <TabsContent value="goalreview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -255,40 +289,6 @@ const AdminDashboard = () => {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="goalbank">
-          <GoalBankManager />
-        </TabsContent>
-        
-        <TabsContent value="goalspaces">
-          <GoalSpaceManager />
-        </TabsContent>
-        
-        <TabsContent value="spacegoals">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <GoalTemplateForm />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Goal Templates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 py-4 text-center">
-                  Goal templates assigned to specific spaces will appear here.
-                </p>
-                
-                <div className="mt-4">
-                  <ul className="space-y-2">
-                    {/* This section will be expanded in the future to show templates by space */}
-                    <li className="text-center text-sm text-gray-400">
-                      No goal templates found
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
         
         <TabsContent value="users">
