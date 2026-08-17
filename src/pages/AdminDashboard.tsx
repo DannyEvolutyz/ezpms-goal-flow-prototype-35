@@ -135,8 +135,20 @@ const AdminDashboard = () => {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
       </div>
       
-      <Tabs defaultValue="goalreview" className="space-y-6">
+      <Tabs defaultValue="goalspaces" className="space-y-6">
         <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-6">
+          <TabsTrigger value="goalspaces" className="flex items-center gap-2">
+            <FolderPlus className="h-4 w-4" />
+            <span>Goal Spaces</span>
+          </TabsTrigger>
+          <TabsTrigger value="goalbank" className="flex items-center gap-2">
+            <ListCheck className="h-4 w-4" />
+            <span>Goal Bank</span>
+          </TabsTrigger>
+          <TabsTrigger value="spacegoals" className="flex items-center gap-2">
+            <FileCheck className="h-4 w-4" />
+            <span>Goal Templates</span>
+          </TabsTrigger>
           <TabsTrigger value="goalreview" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Goal Review</span>
@@ -145,18 +157,6 @@ const AdminDashboard = () => {
                 {pendingGoals.length}
               </span>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="goalbank" className="flex items-center gap-2">
-            <ListCheck className="h-4 w-4" />
-            <span>Goal Bank</span>
-          </TabsTrigger>
-          <TabsTrigger value="goalspaces" className="flex items-center gap-2">
-            <FolderPlus className="h-4 w-4" />
-            <span>Goal Spaces</span>
-          </TabsTrigger>
-          <TabsTrigger value="spacegoals" className="flex items-center gap-2">
-            <FileCheck className="h-4 w-4" />
-            <span>Goal Templates</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <User className="h-4 w-4" />
