@@ -2,10 +2,9 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoals } from '@/contexts/goal';
 import { format } from 'date-fns';
-import { Clock, Building, ChevronRight, ArrowLeft, Layers } from 'lucide-react';
+import { Clock, Building, ChevronRight, Layers } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface ManagerGoalSpaceSelectorProps {
@@ -20,7 +19,7 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
 
   const [selectedParentId, setSelectedParentId] = useState('');
 
-  // Keep the parent in sync when a sub-space is already selected
+  // Back-fill the parent only when a space is selected but no parent is known
   useEffect(() => {
     if (selectedSpaceId && !selectedParentId) {
       const space = allSpaces.find(s => s.id === selectedSpaceId);
@@ -38,7 +37,14 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
 
   const formatDate = (dateStr?: string | null) => (dateStr ? format(new Date(dateStr), 'PPP') : '—');
 
-  const handleParentChange = (parentId: string) => {
+  const clearAll = () => {
+    setSelectedParentId('');
+    onSpaceChange('');
+  };
+
+  const clearBlock = () => onSpaceChange('');
+
+  const selectParent = (parentId: string) => {
     setSelectedParentId(parentId);
     onSpaceChange('');
   };
@@ -50,7 +56,38 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
         <h3 className="text-lg font-medium">Select Goal Space</h3>
       </div>
 
-      <Select value={selectedParentId} onValueChange={handleParentChange}>
+      {/* Breadcrumb */}
+      <div className="flex flex-wrap items-center gap-1 text-sm">
+        <button
+          type="button"
+          onClick={clearAll}
+          className="text-muted-foreground hover:text-foreground hover:underline"
+        >
+          All Goal Spaces
+        </button>
+        {selectedParent && (
+          <>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <button
+              type="button"
+              onClick={clearBlock}
+              className={selectedSpace
+                ? 'text-muted-foreground hover:text-foreground hover:underline'
+                : 'font-medium text-foreground'}
+            >
+              {selectedParent.name}
+            </button>
+          </>
+        )}
+        {selectedSpace && (
+          <>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">{selectedSpace.name}</span>
+          </>
+        )}
+      </div>
+
+      <Select value={selectedParentId} onValueChange={selectParent}>
         <SelectTrigger className="w-full max-w-md">
           <SelectValue placeholder="Choose a goal space" />
         </SelectTrigger>
@@ -70,22 +107,28 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
         </SelectContent>
       </Select>
 
-      {selectedParent && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{selectedParent.name}</span>
-          {selectedSpace && (
-            <>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground font-medium">{selectedSpace.name}</span>
-              <Button variant="ghost" size="sm" className="ml-2" onClick={() => onSpaceChange('')}>
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back to blocks
-              </Button>
-            </>
-          )}
+      {/* Parent cards when nothing is selected */}
+      {!selectedParentId && parents.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {parents.map(p => (
+            <Card
+              key={p.id}
+              className="cursor-pointer transition-colors hover:border-primary"
+              onClick={() => selectParent(p.id)}
+            >
+              <CardContent className="p-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{p.name}</span>
+                </div>
+                {!p.isActive && <Badge variant="outline" className="text-amber-500">Inactive</Badge>}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
+      {/* Blocks inside the selected parent */}
       {selectedParent && !selectedSpaceId && (
         subSpaces.length === 0 ? (
           <p className="text-sm text-muted-foreground">No blocks have been created inside this goal space yet.</p>
