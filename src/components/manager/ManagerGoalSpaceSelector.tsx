@@ -134,6 +134,16 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
           <p className="text-sm text-muted-foreground">No blocks have been created inside this goal space yet.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Card
+              className="cursor-pointer transition-colors hover:border-primary border-dashed"
+              onClick={() => onSpaceChange(selectedParent.id)}
+            >
+              <CardContent className="p-4 flex items-center gap-2">
+                <Layers className="h-4 w-4 text-primary" />
+                <span className="font-medium">All blocks</span>
+                <Badge variant="secondary">Everything in this space</Badge>
+              </CardContent>
+            </Card>
             {subSpaces.map(space => (
               <Card
                 key={space.id}
