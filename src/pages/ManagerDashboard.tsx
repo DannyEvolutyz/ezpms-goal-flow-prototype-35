@@ -14,7 +14,7 @@ import RateGoalsTab from '@/components/manager/RateGoalsTab';
 import ManagerGoalSpaceSelector from '@/components/manager/ManagerGoalSpaceSelector';
 
 const ManagerDashboard = () => {
-  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
+  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal, getAllSpaces } = useGoals();
   const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
@@ -35,26 +35,36 @@ const ManagerDashboard = () => {
   // Get team members for the current manager
   const teamMembers = allUsers.filter(u => u.managerId === user?.id);
   console.log('Manager Dashboard - Team members:', teamMembers);
+
+  // A selected parent space means "all blocks inside it"
+  const allSpaces = getAllSpaces();
+  const scopedSpaceIds = (() => {
+    if (!selectedSpaceId) return null;
+    const space = allSpaces.find(s => s.id === selectedSpaceId);
+    if (space?.spaceKind === 'parent') {
+      return allSpaces.filter(s => s.parentId === selectedSpaceId).map(s => s.id);
+    }
+    return [selectedSpaceId];
+  })();
+
+  const inScope = (spaceId: string) => !scopedSpaceIds || scopedSpaceIds.includes(spaceId);
   
   // Filter goals based on selected space, user and status
   const filteredGoals = teamGoals.filter(goal => {
-    console.log('Checking goal:', goal.id, 'status:', goal.status, 'userId:', goal.userId, 'spaceId:', goal.spaceId);
-    const matchesSpace = !selectedSpaceId || goal.spaceId === selectedSpaceId;
     const matchesStatus = selectedStatus === 'all' || goal.status === selectedStatus;
     const matchesUser = selectedUserId === 'all' || goal.userId === selectedUserId;
-    return matchesSpace && matchesStatus && matchesUser;
+    return inScope(goal.spaceId) && matchesStatus && matchesUser;
   });
   
   // Get goals that need review (pending approval) filtered by space
   const pendingGoals = teamGoals.filter(goal => 
-    goal.status === 'pending_approval' && 
-    (!selectedSpaceId || goal.spaceId === selectedSpaceId)
+    goal.status === 'pending_approval' && inScope(goal.spaceId)
   );
   
   // Goals eligible for rating view: any goal that has been approved onward, filtered by space
   const submittedGoals = teamGoals.filter(goal =>
     ['approved', 'submitted', 'under_review', 'final_approved'].includes(goal.status) &&
-    (!selectedSpaceId || goal.spaceId === selectedSpaceId)
+    inScope(goal.spaceId)
   );
   
   console.log('Manager Dashboard - Filtered goals:', filteredGoals);
