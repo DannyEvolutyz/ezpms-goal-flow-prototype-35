@@ -82,7 +82,9 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
         {selectedSpace && (
           <>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-foreground">{selectedSpace.name}</span>
+            <span className="font-medium text-foreground">
+              {selectedSpace.id === selectedParentId ? 'All blocks' : selectedSpace.name}
+            </span>
           </>
         )}
       </div>
