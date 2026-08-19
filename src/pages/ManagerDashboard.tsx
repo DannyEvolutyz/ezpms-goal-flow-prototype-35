@@ -14,7 +14,7 @@ import RateGoalsTab from '@/components/manager/RateGoalsTab';
 import ManagerGoalSpaceSelector from '@/components/manager/ManagerGoalSpaceSelector';
 
 const ManagerDashboard = () => {
-  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal } = useGoals();
+  const { getTeamGoals, getGoalsByStatus, approveGoal, rejectGoal, returnGoalForRevision, updateGoal, getAllSpaces } = useGoals();
   const { user, getAllUsers } = useAuth();
   const { toast } = useToast();
   const [feedback, setFeedback] = useState('');
