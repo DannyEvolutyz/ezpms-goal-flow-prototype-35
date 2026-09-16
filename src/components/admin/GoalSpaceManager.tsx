@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, FolderPlus, Trash2, Clock, ChevronDown, ChevronRight, Plus, Folder, Lock } from 'lucide-react';
+import { CalendarIcon, FolderPlus, Trash2, Clock, ChevronDown, ChevronRight, Plus, Folder, Lock, Pencil } from 'lucide-react';
+import EditSpaceDialog from './goal-space/EditSpaceDialog';
 import { useGoals } from '@/contexts/goal';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -215,7 +216,7 @@ const CycleDialog = ({ parentId, parentName, open, onOpenChange }: { parentId: s
 
 const formatDate = (d?: string | null) => (d ? format(new Date(d), 'PPP') : '—');
 
-const SubSpaceRow = ({ space, onDelete }: { space: GoalSpace; onDelete: (s: GoalSpace) => void }) => {
+const SubSpaceRow = ({ space, onDelete, onEdit }: { space: GoalSpace; onDelete: (s: GoalSpace) => void; onEdit: (s: GoalSpace) => void }) => {
   const now = new Date();
   const isGS = space.spaceKind === 'goal_setting';
 
@@ -271,11 +272,16 @@ const SubSpaceRow = ({ space, onDelete }: { space: GoalSpace; onDelete: (s: Goal
           </div>
         )}
       </div>
-      {!isGS && (
-        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(space)}>
-          <Trash2 className="h-4 w-4" />
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" onClick={() => onEdit(space)} aria-label={`Edit ${space.name}`}>
+          <Pencil className="h-4 w-4" />
         </Button>
-      )}
+        {!isGS && (
+          <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(space)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
@@ -285,6 +291,7 @@ const GoalSpaceManager = () => {
   const [subDialogFor, setSubDialogFor] = useState<{ id: string; name: string } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [pendingDelete, setPendingDelete] = useState<GoalSpace | null>(null);
+  const [editingSpace, setEditingSpace] = useState<GoalSpace | null>(null);
 
   const { deleteGoalSpace, getParentSpaces, getSubSpaces } = useGoals();
   const parents = getParentSpaces();
@@ -316,6 +323,13 @@ const GoalSpaceManager = () => {
       </div>
 
       <ParentSpaceDialog open={parentDialogOpen} onOpenChange={setParentDialogOpen} />
+      {editingSpace && (
+        <EditSpaceDialog
+          space={editingSpace}
+          open={!!editingSpace}
+          onOpenChange={(o) => !o && setEditingSpace(null)}
+        />
+      )}
       {subDialogFor && (
         <CycleDialog
           parentId={subDialogFor.id}
@@ -354,6 +368,9 @@ const GoalSpaceManager = () => {
                       <Button size="sm" variant="outline" onClick={() => setSubDialogFor({ id: parent.id, name: parent.name })}>
                         <Plus className="h-3 w-3 mr-1" /> Add Sub-Space
                       </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setEditingSpace(parent)} aria-label={`Edit ${parent.name}`}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setPendingDelete(parent)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -365,7 +382,7 @@ const GoalSpaceManager = () => {
                       {subs.length === 0 ? (
                         <p className="ml-8 text-sm text-muted-foreground">No sub-spaces yet.</p>
                       ) : (
-                        subs.map(s => <SubSpaceRow key={s.id} space={s} onDelete={setPendingDelete} />)
+                        subs.map(s => <SubSpaceRow key={s.id} space={s} onDelete={setPendingDelete} onEdit={setEditingSpace} />)
                       )}
                     </div>
                   )}
