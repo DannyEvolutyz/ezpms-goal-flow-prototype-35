@@ -216,7 +216,7 @@ const CycleDialog = ({ parentId, parentName, open, onOpenChange }: { parentId: s
 
 const formatDate = (d?: string | null) => (d ? format(new Date(d), 'PPP') : '—');
 
-const SubSpaceRow = ({ space, onDelete }: { space: GoalSpace; onDelete: (s: GoalSpace) => void }) => {
+const SubSpaceRow = ({ space, onDelete, onEdit }: { space: GoalSpace; onDelete: (s: GoalSpace) => void; onEdit: (s: GoalSpace) => void }) => {
   const now = new Date();
   const isGS = space.spaceKind === 'goal_setting';
 
@@ -272,11 +272,16 @@ const SubSpaceRow = ({ space, onDelete }: { space: GoalSpace; onDelete: (s: Goal
           </div>
         )}
       </div>
-      {!isGS && (
-        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(space)}>
-          <Trash2 className="h-4 w-4" />
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" onClick={() => onEdit(space)} aria-label={`Edit ${space.name}`}>
+          <Pencil className="h-4 w-4" />
         </Button>
-      )}
+        {!isGS && (
+          <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(space)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
