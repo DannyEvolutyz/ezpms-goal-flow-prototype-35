@@ -291,6 +291,7 @@ const GoalSpaceManager = () => {
   const [subDialogFor, setSubDialogFor] = useState<{ id: string; name: string } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [pendingDelete, setPendingDelete] = useState<GoalSpace | null>(null);
+  const [editingSpace, setEditingSpace] = useState<GoalSpace | null>(null);
 
   const { deleteGoalSpace, getParentSpaces, getSubSpaces } = useGoals();
   const parents = getParentSpaces();
