@@ -323,6 +323,13 @@ const GoalSpaceManager = () => {
       </div>
 
       <ParentSpaceDialog open={parentDialogOpen} onOpenChange={setParentDialogOpen} />
+      {editingSpace && (
+        <EditSpaceDialog
+          space={editingSpace}
+          open={!!editingSpace}
+          onOpenChange={(o) => !o && setEditingSpace(null)}
+        />
+      )}
       {subDialogFor && (
         <CycleDialog
           parentId={subDialogFor.id}
