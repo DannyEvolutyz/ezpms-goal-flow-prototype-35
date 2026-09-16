@@ -361,6 +361,9 @@ const GoalSpaceManager = () => {
                       <Button size="sm" variant="outline" onClick={() => setSubDialogFor({ id: parent.id, name: parent.name })}>
                         <Plus className="h-3 w-3 mr-1" /> Add Sub-Space
                       </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setEditingSpace(parent)} aria-label={`Edit ${parent.name}`}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setPendingDelete(parent)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -372,7 +375,7 @@ const GoalSpaceManager = () => {
                       {subs.length === 0 ? (
                         <p className="ml-8 text-sm text-muted-foreground">No sub-spaces yet.</p>
                       ) : (
-                        subs.map(s => <SubSpaceRow key={s.id} space={s} onDelete={setPendingDelete} />)
+                        subs.map(s => <SubSpaceRow key={s.id} space={s} onDelete={setPendingDelete} onEdit={setEditingSpace} />)
                       )}
                     </div>
                   )}
