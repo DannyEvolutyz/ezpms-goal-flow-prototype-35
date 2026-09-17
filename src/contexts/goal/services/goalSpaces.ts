@@ -62,7 +62,7 @@ export const createGoalSpace = async ({
   editStartDate, editEndDate, ratingStartDate, ratingDeadline,
   user, refetchSpaces
 }: CreateGoalSpaceParams): Promise<GoalSpace | null> => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
 
   if (spaceKind === 'parent') {
     // Parent requires GS timeline dates so the auto Goal Setting can be created
@@ -78,7 +78,7 @@ export const createGoalSpace = async ({
       .from('goal_spaces')
       .insert({ name, description: description || null, space_kind: 'parent', is_active: true } as any)
       .select().single();
-    if (pErr) throw pErr;
+    if (pErr) throw friendlyError(pErr);
 
     const { error: gsErr } = await supabase
       .from('goal_spaces')
@@ -94,7 +94,7 @@ export const createGoalSpace = async ({
       } as any);
     if (gsErr) {
       await supabase.from('goal_spaces').delete().eq('id', parent.id);
-      throw gsErr;
+      throw friendlyError(gsErr);
     }
 
     await refetchSpaces();
@@ -124,7 +124,7 @@ export const createGoalSpace = async ({
         is_active: true
       } as any)
       .select().single();
-    if (error) throw error;
+    if (error) throw friendlyError(error);
     await refetchSpaces();
     return toRow(data);
   }
@@ -143,7 +143,7 @@ interface UpdateGoalSpaceParams {
 export const updateGoalSpace = async ({
   spaceId, updatedSpace, user, refetchSpaces
 }: UpdateGoalSpaceParams) => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
 
   const updateData: any = {};
   if (updatedSpace.name !== undefined) updateData.name = updatedSpace.name;
@@ -158,7 +158,7 @@ export const updateGoalSpace = async ({
   if (updatedSpace.isActive !== undefined) updateData.is_active = updatedSpace.isActive;
 
   const { error } = await supabase.from('goal_spaces').update(updateData).eq('id', spaceId);
-  if (error) throw error;
+  if (error) throw friendlyError(error);
   await refetchSpaces();
 };
 
@@ -171,9 +171,9 @@ interface DeleteGoalSpaceParams {
 export const deleteGoalSpace = async ({
   spaceId, user, refetchSpaces
 }: DeleteGoalSpaceParams) => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
   const { error } = await supabase.from('goal_spaces').delete().eq('id', spaceId);
-  if (error) throw error;
+  if (error) throw friendlyError(error);
   await refetchSpaces();
   return true;
 };
