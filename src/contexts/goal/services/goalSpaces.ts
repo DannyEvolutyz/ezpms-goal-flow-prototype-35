@@ -48,10 +48,14 @@ const assertAdminSession = async (user: any) => {
   if (!user || user.role !== 'admin') throw new Error(ADMIN_ONLY);
 };
 
-const friendlyError = (error: any): Error => {
+const friendlyError = (error: any, operation: 'manage' | 'create-cycle' = 'manage'): Error => {
   const message = String(error?.message || '');
   if (error?.code === '42501' || /row-level security/i.test(message)) {
-    return new Error(`${ADMIN_ONLY} If you are signed in as an administrator, your session may have expired — please sign in again.`);
+    return new Error(
+      operation === 'create-cycle'
+        ? 'The sub-space could not be created because its approved goals or milestones could not be copied. Please try again.'
+        : ADMIN_ONLY
+    );
   }
   return error instanceof Error ? error : new Error(message || 'Something went wrong');
 };
@@ -124,7 +128,7 @@ export const createGoalSpace = async ({
         is_active: true
       } as any)
       .select().single();
-    if (error) throw friendlyError(error);
+    if (error) throw friendlyError(error, 'create-cycle');
     await refetchSpaces();
     return toRow(data);
   }
