@@ -37,13 +37,32 @@ const toRow = (d: any) => ({
   isActive: d.is_active
 }) as GoalSpace;
 
+const SESSION_EXPIRED = 'Your session has expired. Please sign in again to save this sub-space.';
+const ADMIN_ONLY = 'Only administrators can create or edit goal spaces.';
+
+// Ensures there is still a valid signed-in admin before touching goal_spaces,
+// so permission failures surface as plain language instead of a database error.
+const assertAdminSession = async (user: any) => {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new Error(SESSION_EXPIRED);
+  if (!user || user.role !== 'admin') throw new Error(ADMIN_ONLY);
+};
+
+const friendlyError = (error: any): Error => {
+  const message = String(error?.message || '');
+  if (error?.code === '42501' || /row-level security/i.test(message)) {
+    return new Error(`${ADMIN_ONLY} If you are signed in as an administrator, your session may have expired — please sign in again.`);
+  }
+  return error instanceof Error ? error : new Error(message || 'Something went wrong');
+};
+
 export const createGoalSpace = async ({
   name, description, parentId, spaceKind,
   startDate, submissionDeadline, reviewDeadline,
   editStartDate, editEndDate, ratingStartDate, ratingDeadline,
   user, refetchSpaces
 }: CreateGoalSpaceParams): Promise<GoalSpace | null> => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
 
   if (spaceKind === 'parent') {
     // Parent requires GS timeline dates so the auto Goal Setting can be created
@@ -59,7 +78,7 @@ export const createGoalSpace = async ({
       .from('goal_spaces')
       .insert({ name, description: description || null, space_kind: 'parent', is_active: true } as any)
       .select().single();
-    if (pErr) throw pErr;
+    if (pErr) throw friendlyError(pErr);
 
     const { error: gsErr } = await supabase
       .from('goal_spaces')
@@ -75,7 +94,7 @@ export const createGoalSpace = async ({
       } as any);
     if (gsErr) {
       await supabase.from('goal_spaces').delete().eq('id', parent.id);
-      throw gsErr;
+      throw friendlyError(gsErr);
     }
 
     await refetchSpaces();
@@ -105,7 +124,7 @@ export const createGoalSpace = async ({
         is_active: true
       } as any)
       .select().single();
-    if (error) throw error;
+    if (error) throw friendlyError(error);
     await refetchSpaces();
     return toRow(data);
   }
@@ -124,7 +143,7 @@ interface UpdateGoalSpaceParams {
 export const updateGoalSpace = async ({
   spaceId, updatedSpace, user, refetchSpaces
 }: UpdateGoalSpaceParams) => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
 
   const updateData: any = {};
   if (updatedSpace.name !== undefined) updateData.name = updatedSpace.name;
@@ -139,7 +158,7 @@ export const updateGoalSpace = async ({
   if (updatedSpace.isActive !== undefined) updateData.is_active = updatedSpace.isActive;
 
   const { error } = await supabase.from('goal_spaces').update(updateData).eq('id', spaceId);
-  if (error) throw error;
+  if (error) throw friendlyError(error);
   await refetchSpaces();
 };
 
@@ -152,9 +171,9 @@ interface DeleteGoalSpaceParams {
 export const deleteGoalSpace = async ({
   spaceId, user, refetchSpaces
 }: DeleteGoalSpaceParams) => {
-  if (!user || user.role !== 'admin') return null;
+  await assertAdminSession(user);
   const { error } = await supabase.from('goal_spaces').delete().eq('id', spaceId);
-  if (error) throw error;
+  if (error) throw friendlyError(error);
   await refetchSpaces();
   return true;
 };
