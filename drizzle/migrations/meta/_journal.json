@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789636272586,
+      "tag": "0000_secure_goal_cycle_copy_triggers",
+      "breakpoints": true
+    }
+  ]
+}
