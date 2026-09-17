@@ -37,6 +37,25 @@ const toRow = (d: any) => ({
   isActive: d.is_active
 }) as GoalSpace;
 
+const SESSION_EXPIRED = 'Your session has expired. Please sign in again to save this sub-space.';
+const ADMIN_ONLY = 'Only administrators can create or edit goal spaces.';
+
+// Ensures there is still a valid signed-in admin before touching goal_spaces,
+// so permission failures surface as plain language instead of a database error.
+const assertAdminSession = async (user: any) => {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) throw new Error(SESSION_EXPIRED);
+  if (!user || user.role !== 'admin') throw new Error(ADMIN_ONLY);
+};
+
+const friendlyError = (error: any): Error => {
+  const message = String(error?.message || '');
+  if (error?.code === '42501' || /row-level security/i.test(message)) {
+    return new Error(`${ADMIN_ONLY} If you are signed in as an administrator, your session may have expired — please sign in again.`);
+  }
+  return error instanceof Error ? error : new Error(message || 'Something went wrong');
+};
+
 export const createGoalSpace = async ({
   name, description, parentId, spaceKind,
   startDate, submissionDeadline, reviewDeadline,
