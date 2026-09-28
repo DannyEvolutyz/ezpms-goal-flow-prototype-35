@@ -1,5 +1,5 @@
 
-import { GoalSpace, SpaceKind } from '@/types';
+import { GoalSpace, GoalSpaceCountry, SpaceKind } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateGoalSpaceParams {
@@ -7,6 +7,7 @@ interface CreateGoalSpaceParams {
   description?: string;
   parentId?: string | null;
   spaceKind: SpaceKind;
+  country?: GoalSpaceCountry;
   // goal_setting dates (also used when creating parent — parent is created first then its GS)
   startDate?: string | null;
   submissionDeadline?: string | null;
@@ -38,7 +39,8 @@ const toRow = (d: any) => ({
   managerRatingStartDate: d.manager_rating_start_date,
   managerRatingEndDate: d.manager_rating_end_date,
   createdAt: d.created_at,
-  isActive: d.is_active
+  isActive: d.is_active,
+  country: (d.country || 'IN') as GoalSpaceCountry
 }) as GoalSpace;
 
 const SESSION_EXPIRED = 'Your session has expired. Please sign in again to save this sub-space.';
@@ -65,7 +67,7 @@ const friendlyError = (error: any, operation: 'manage' | 'create-cycle' = 'manag
 };
 
 export const createGoalSpace = async ({
-  name, description, parentId, spaceKind,
+  name, description, parentId, spaceKind, country,
   startDate, submissionDeadline, reviewDeadline,
   selfRatingStartDate, selfRatingEndDate, managerRatingStartDate, managerRatingEndDate,
   user, refetchSpaces
@@ -84,7 +86,7 @@ export const createGoalSpace = async ({
 
     const { data: parent, error: pErr } = await supabase
       .from('goal_spaces')
-      .insert({ name, description: description || null, space_kind: 'parent', is_active: true } as any)
+      .insert({ name, description: description || null, space_kind: 'parent', country: country || 'IN', is_active: true } as any)
       .select().single();
     if (pErr) throw friendlyError(pErr);
 
@@ -95,6 +97,7 @@ export const createGoalSpace = async ({
         description: 'Author and approve goals for this space',
         parent_id: parent.id,
         space_kind: 'goal_setting',
+        country: country || 'IN',
         start_date: startDate,
         submission_deadline: submissionDeadline,
         review_deadline: reviewDeadline,
@@ -120,11 +123,18 @@ export const createGoalSpace = async ({
       throw new Error('Manager rating must start and end on or after employee rating');
     }
 
+    const { data: parentRow } = await supabase
+      .from('goal_spaces')
+      .select('country')
+      .eq('id', parentId)
+      .single();
+
     const { data, error } = await supabase
       .from('goal_spaces')
       .insert({
         name, description: description || null, parent_id: parentId,
         space_kind: 'cycle',
+        country: (parentRow as any)?.country || 'IN',
         self_rating_start_date: selfRatingStartDate,
         self_rating_end_date: selfRatingEndDate,
         manager_rating_start_date: managerRatingStartDate,
@@ -168,9 +178,19 @@ export const updateGoalSpace = async ({
   if (updatedSpace.managerRatingStartDate !== undefined) updateData.manager_rating_start_date = updatedSpace.managerRatingStartDate;
   if (updatedSpace.managerRatingEndDate !== undefined) updateData.manager_rating_end_date = updatedSpace.managerRatingEndDate;
   if (updatedSpace.isActive !== undefined) updateData.is_active = updatedSpace.isActive;
+  if (updatedSpace.country !== undefined) updateData.country = updatedSpace.country;
 
   const { error } = await supabase.from('goal_spaces').update(updateData).eq('id', spaceId);
   if (error) throw friendlyError(error);
+
+  // Cascade a parent country change to all its sub-spaces
+  if (updatedSpace.country !== undefined) {
+    const { error: cErr } = await supabase
+      .from('goal_spaces')
+      .update({ country: updatedSpace.country } as any)
+      .eq('parent_id', spaceId);
+    if (cErr) throw friendlyError(cErr);
+  }
   await refetchSpaces();
 };
 
