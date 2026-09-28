@@ -103,6 +103,7 @@ export const useGoalStorage = () => {
       selfRatingComment: g.self_rating_comment || undefined,
       selfRatedAt: g.self_rated_at || undefined,
       managerRatedAt: g.manager_rated_at || undefined,
+      sourceGoalId: g.source_goal_id || undefined,
       createdAt: g.created_at,
       updatedAt: g.updated_at,
       milestones: milestonesMap[g.id] || []
