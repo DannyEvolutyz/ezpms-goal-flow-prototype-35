@@ -1,12 +1,23 @@
 
 export type SpaceKind = 'parent' | 'goal_setting' | 'cycle';
 
+export type GoalSpaceCountry = 'IN' | 'US';
+
+export const COUNTRIES: { code: GoalSpaceCountry; label: string; flag: string }[] = [
+  { code: 'IN', label: 'India', flag: '🇮🇳' },
+  { code: 'US', label: 'United States', flag: '🇺🇸' },
+];
+
+export const countryFlag = (code?: GoalSpaceCountry | null) =>
+  COUNTRIES.find(c => c.code === code)?.flag || '';
+
 export interface GoalSpace {
   id: string;
   name: string;
   description?: string;
   parentId?: string | null;
   spaceKind: SpaceKind;
+  country: GoalSpaceCountry;
   // goal_setting uses these
   startDate?: string | null;
   submissionDeadline?: string | null;
