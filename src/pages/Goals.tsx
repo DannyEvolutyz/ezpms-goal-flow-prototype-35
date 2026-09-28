@@ -79,14 +79,8 @@ const Goals = () => {
     }
 
     if (space.spaceKind === 'cycle') {
-      if (!space.editStartDate || !space.editEndDate || !space.ratingStartDate || !space.ratingDeadline) return null;
-      const es = new Date(space.editStartDate), ee = new Date(space.editEndDate);
-      const rs = new Date(space.ratingStartDate), rd = new Date(space.ratingDeadline);
-      if (now < es) return { status: 'upcoming', label: 'Upcoming', color: 'bg-blue-100 text-blue-800' };
-      if (now <= ee) return { status: 'editing', label: 'Editing Open', color: 'bg-green-100 text-green-800' };
-      if (now < rs) return { status: 'waiting', label: 'Awaiting Rating', color: 'bg-amber-100 text-amber-800' };
-      if (now <= rd) return { status: 'rating', label: 'Rating Open', color: 'bg-purple-100 text-purple-800' };
-      return { status: 'completed', label: 'Completed', color: 'bg-gray-100 text-gray-800' };
+      const ph = getCyclePhase(space);
+      return ph ? { status: ph.status, label: ph.label, color: ph.className } : null;
     }
     return null;
   };
@@ -159,7 +153,7 @@ const Goals = () => {
                   ) : (
                     (() => {
                       const until = selectedSubSpace.spaceKind === 'cycle'
-                        ? selectedSubSpace.editEndDate
+                        ? selectedSubSpace.selfRatingEndDate
                         : selectedSubSpace.submissionDeadline;
                       return (
                         <p className="text-green-600">

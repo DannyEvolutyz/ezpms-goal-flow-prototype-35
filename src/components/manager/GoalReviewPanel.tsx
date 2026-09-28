@@ -28,7 +28,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   onRateGoal,
   getGoalOwnerName
 }) => {
-  const { canRateGoals, spaces } = useGoals();
+  const { canManagerRate: managerWindowOpen, spaces } = useGoals();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
@@ -36,7 +36,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   const goalSpace = spaces.find(s => s.id === selectedGoal.spaceId);
   const isGoalSettingSpace = goalSpace?.spaceKind === 'goal_setting';
   const isCycleSpace = goalSpace?.spaceKind === 'cycle';
-  const ratingWindowOpen = isCycleSpace && canRateGoals(selectedGoal.spaceId);
+  const ratingWindowOpen = isCycleSpace && managerWindowOpen(selectedGoal.spaceId);
   const memberHasSelfRated = !!selectedGoal.selfRatedAt;
   // Rate Goals view is shown for any approved-onward goal; but only cycle spaces during rating window allow actions
   const isRatingMode = selectedGoal.status !== 'pending_approval' && selectedGoal.status !== 'draft';
@@ -127,7 +127,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
             )}
             {isCycleSpace && !ratingWindowOpen && selectedGoal.status !== 'final_approved' && (
               <div className="rounded-md border bg-muted p-3 text-sm text-muted-foreground">
-                Rating window for this cycle is not open yet. You'll be able to rate during the configured rating dates.
+                The manager rating window for this sub-space is not open. You can rate between {goalSpace?.managerRatingStartDate ? new Date(goalSpace.managerRatingStartDate).toLocaleDateString() : '—'} and {goalSpace?.managerRatingEndDate ? new Date(goalSpace.managerRatingEndDate).toLocaleDateString() : '—'}.
               </div>
             )}
             {selectedGoal.status === 'final_approved' && selectedGoal.rating && (
