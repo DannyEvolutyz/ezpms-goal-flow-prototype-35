@@ -123,11 +123,15 @@ export type Database = {
           edit_start_date: string | null
           id: string
           is_active: boolean
+          manager_rating_end_date: string | null
+          manager_rating_start_date: string | null
           name: string
           parent_id: string | null
           rating_deadline: string | null
           rating_start_date: string | null
           review_deadline: string | null
+          self_rating_end_date: string | null
+          self_rating_start_date: string | null
           space_kind: string
           start_date: string | null
           submission_deadline: string | null
@@ -139,11 +143,15 @@ export type Database = {
           edit_start_date?: string | null
           id?: string
           is_active?: boolean
+          manager_rating_end_date?: string | null
+          manager_rating_start_date?: string | null
           name: string
           parent_id?: string | null
           rating_deadline?: string | null
           rating_start_date?: string | null
           review_deadline?: string | null
+          self_rating_end_date?: string | null
+          self_rating_start_date?: string | null
           space_kind?: string
           start_date?: string | null
           submission_deadline?: string | null
@@ -155,11 +163,15 @@ export type Database = {
           edit_start_date?: string | null
           id?: string
           is_active?: boolean
+          manager_rating_end_date?: string | null
+          manager_rating_start_date?: string | null
           name?: string
           parent_id?: string | null
           rating_deadline?: string | null
           rating_start_date?: string | null
           review_deadline?: string | null
+          self_rating_end_date?: string | null
+          self_rating_start_date?: string | null
           space_kind?: string
           start_date?: string | null
           submission_deadline?: string | null
