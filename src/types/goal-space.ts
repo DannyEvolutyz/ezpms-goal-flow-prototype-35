@@ -16,6 +16,10 @@ export interface GoalSpace {
   editEndDate?: string | null;
   ratingStartDate?: string | null;
   ratingDeadline?: string | null;
+  selfRatingStartDate?: string | null;
+  selfRatingEndDate?: string | null;
+  managerRatingStartDate?: string | null;
+  managerRatingEndDate?: string | null;
   createdAt: string;
   isActive: boolean;
 }

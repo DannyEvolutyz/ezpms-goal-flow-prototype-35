@@ -37,6 +37,14 @@ export const useGoalStorage = () => {
       editEndDate: s.edit_end_date,
       ratingStartDate: s.rating_start_date,
       ratingDeadline: s.rating_deadline,
+  selfRatingStartDate: s.self_rating_start_date,
+  selfRatingEndDate: s.self_rating_end_date,
+  managerRatingStartDate: s.manager_rating_start_date,
+  managerRatingEndDate: s.manager_rating_end_date,
+      selfRatingStartDate: s.self_rating_start_date,
+      selfRatingEndDate: s.self_rating_end_date,
+      managerRatingStartDate: s.manager_rating_start_date,
+      managerRatingEndDate: s.manager_rating_end_date,
       createdAt: s.created_at,
       isActive: s.is_active
     }));

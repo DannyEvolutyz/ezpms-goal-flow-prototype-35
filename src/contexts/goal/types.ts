@@ -42,6 +42,8 @@ export interface GoalContextType {
   canCreateOrEditGoals: (spaceId?: string) => boolean;
   canReviewGoals: (spaceId?: string) => boolean;
   canRateGoals: (spaceId?: string) => boolean;
+  canSelfRate: (spaceId?: string) => boolean;
+  canManagerRate: (spaceId?: string) => boolean;
   canEditCycleGoal: (spaceId?: string) => boolean;
   isSpaceReadOnly: (spaceId?: string) => boolean;
   
