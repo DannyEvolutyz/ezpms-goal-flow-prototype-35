@@ -12,10 +12,10 @@ interface CreateGoalSpaceParams {
   submissionDeadline?: string | null;
   reviewDeadline?: string | null;
   // cycle dates
-  editStartDate?: string | null;
-  editEndDate?: string | null;
-  ratingStartDate?: string | null;
-  ratingDeadline?: string | null;
+  selfRatingStartDate?: string | null;
+  selfRatingEndDate?: string | null;
+  managerRatingStartDate?: string | null;
+  managerRatingEndDate?: string | null;
   user: any;
   refetchSpaces: () => Promise<void>;
 }
@@ -33,6 +33,10 @@ const toRow = (d: any) => ({
   editEndDate: d.edit_end_date,
   ratingStartDate: d.rating_start_date,
   ratingDeadline: d.rating_deadline,
+  selfRatingStartDate: d.self_rating_start_date,
+  selfRatingEndDate: d.self_rating_end_date,
+  managerRatingStartDate: d.manager_rating_start_date,
+  managerRatingEndDate: d.manager_rating_end_date,
   createdAt: d.created_at,
   isActive: d.is_active
 }) as GoalSpace;
@@ -63,7 +67,7 @@ const friendlyError = (error: any, operation: 'manage' | 'create-cycle' = 'manag
 export const createGoalSpace = async ({
   name, description, parentId, spaceKind,
   startDate, submissionDeadline, reviewDeadline,
-  editStartDate, editEndDate, ratingStartDate, ratingDeadline,
+  selfRatingStartDate, selfRatingEndDate, managerRatingStartDate, managerRatingEndDate,
   user, refetchSpaces
 }: CreateGoalSpaceParams): Promise<GoalSpace | null> => {
   await assertAdminSession(user);
@@ -107,13 +111,13 @@ export const createGoalSpace = async ({
 
   if (spaceKind === 'cycle') {
     if (!parentId) throw new Error('Cycle spaces need a parent');
-    if (!editStartDate || !editEndDate || !ratingStartDate || !ratingDeadline) {
-      throw new Error('Cycles require edit and rating dates');
+    if (!selfRatingStartDate || !selfRatingEndDate || !managerRatingStartDate || !managerRatingEndDate) {
+      throw new Error('Sub-spaces require employee and manager rating dates');
     }
-    const es = new Date(editStartDate), ee = new Date(editEndDate),
-      rs = new Date(ratingStartDate), rd = new Date(ratingDeadline);
-    if (!(es <= ee && ee <= rs && rs <= rd)) {
-      throw new Error('Cycle dates must be ordered: edit start ≤ edit end ≤ rating start ≤ rating end');
+    const ss = new Date(selfRatingStartDate), se = new Date(selfRatingEndDate),
+      ms = new Date(managerRatingStartDate), me = new Date(managerRatingEndDate);
+    if (!(ss <= se && ms <= me && ss <= ms && se <= me)) {
+      throw new Error('Manager rating must start and end on or after employee rating');
     }
 
     const { data, error } = await supabase
@@ -121,10 +125,10 @@ export const createGoalSpace = async ({
       .insert({
         name, description: description || null, parent_id: parentId,
         space_kind: 'cycle',
-        edit_start_date: editStartDate,
-        edit_end_date: editEndDate,
-        rating_start_date: ratingStartDate,
-        rating_deadline: ratingDeadline,
+        self_rating_start_date: selfRatingStartDate,
+        self_rating_end_date: selfRatingEndDate,
+        manager_rating_start_date: managerRatingStartDate,
+        manager_rating_end_date: managerRatingEndDate,
         is_active: true
       } as any)
       .select().single();
@@ -159,6 +163,10 @@ export const updateGoalSpace = async ({
   if (updatedSpace.editEndDate !== undefined) updateData.edit_end_date = updatedSpace.editEndDate;
   if (updatedSpace.ratingStartDate !== undefined) updateData.rating_start_date = updatedSpace.ratingStartDate;
   if (updatedSpace.ratingDeadline !== undefined) updateData.rating_deadline = updatedSpace.ratingDeadline;
+  if (updatedSpace.selfRatingStartDate !== undefined) updateData.self_rating_start_date = updatedSpace.selfRatingStartDate;
+  if (updatedSpace.selfRatingEndDate !== undefined) updateData.self_rating_end_date = updatedSpace.selfRatingEndDate;
+  if (updatedSpace.managerRatingStartDate !== undefined) updateData.manager_rating_start_date = updatedSpace.managerRatingStartDate;
+  if (updatedSpace.managerRatingEndDate !== undefined) updateData.manager_rating_end_date = updatedSpace.managerRatingEndDate;
   if (updatedSpace.isActive !== undefined) updateData.is_active = updatedSpace.isActive;
 
   const { error } = await supabase.from('goal_spaces').update(updateData).eq('id', spaceId);
@@ -213,21 +221,45 @@ export const canReviewGoals = ({ spaces, spaceId }: { spaces: GoalSpace[]; space
   return s.isActive && new Date(s.startDate) <= now && new Date(s.reviewDeadline) >= now;
 };
 
-// Members edit their cycle-copy goal progress during a cycle's edit window
-export const canEditCycleGoal = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
-  if (!spaceId) return false;
-  const s = spaces.find(x => x.id === spaceId);
-  if (!s || s.spaceKind !== 'cycle' || !s.editStartDate || !s.editEndDate) return false;
-  const now = new Date();
-  return s.isActive && new Date(s.editStartDate) <= now && new Date(s.editEndDate) >= now;
+// Window check with an inclusive end day
+export const isWithinWindow = (start?: string | null, end?: string | null, now = new Date()) => {
+  if (!start || !end) return false;
+  const e = new Date(end); e.setDate(e.getDate() + 1);
+  return new Date(start) <= now && now < e;
 };
 
-export const canRateGoals = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
-  if (!spaceId) return false;
-  const s = spaces.find(x => x.id === spaceId);
-  if (!s || s.spaceKind !== 'cycle' || !s.ratingStartDate || !s.ratingDeadline) return false;
+// Cycle copies no longer have a progress-editing window
+export const canEditCycleGoal = (_: { spaces: GoalSpace[]; spaceId?: string }) => false;
+
+const findCycle = (spaces: GoalSpace[], spaceId?: string) => {
+  const s = spaceId ? spaces.find(x => x.id === spaceId) : undefined;
+  return s && s.spaceKind === 'cycle' && s.isActive ? s : undefined;
+};
+
+export const canSelfRate = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
+  const s = findCycle(spaces, spaceId);
+  return !!s && isWithinWindow(s.selfRatingStartDate, s.selfRatingEndDate);
+};
+
+export const canManagerRate = ({ spaces, spaceId }: { spaces: GoalSpace[]; spaceId?: string }) => {
+  const s = findCycle(spaces, spaceId);
+  return !!s && isWithinWindow(s.managerRatingStartDate, s.managerRatingEndDate);
+};
+
+export const canRateGoals = (p: { spaces: GoalSpace[]; spaceId?: string }) => canSelfRate(p) || canManagerRate(p);
+
+export type CyclePhase = { status: string; label: string; className: string };
+export const getCyclePhase = (s: GoalSpace): CyclePhase | null => {
+  if (!s.selfRatingStartDate || !s.selfRatingEndDate || !s.managerRatingStartDate || !s.managerRatingEndDate) return null;
   const now = new Date();
-  return s.isActive && new Date(s.ratingStartDate) <= now && new Date(s.ratingDeadline) >= now;
+  if (now < new Date(s.selfRatingStartDate)) return { status: 'upcoming', label: 'Upcoming', className: 'bg-blue-100 text-blue-800' };
+  const self = isWithinWindow(s.selfRatingStartDate, s.selfRatingEndDate, now);
+  const mgr = isWithinWindow(s.managerRatingStartDate, s.managerRatingEndDate, now);
+  if (self && mgr) return { status: 'rating', label: 'Self & manager rating open', className: 'bg-purple-100 text-purple-800' };
+  if (self) return { status: 'self', label: 'Self-rating open', className: 'bg-green-100 text-green-800' };
+  if (mgr) return { status: 'manager', label: 'Manager rating open', className: 'bg-purple-100 text-purple-800' };
+  if (now < new Date(s.managerRatingStartDate)) return { status: 'waiting', label: 'Awaiting manager rating', className: 'bg-amber-100 text-amber-800' };
+  return { status: 'completed', label: 'Completed', className: 'bg-gray-100 text-gray-800' };
 };
 
 export const getAvailableSpaces = ({ spaces }: SpacesParams) => {
@@ -256,8 +288,8 @@ export const getSpacesForReview = ({ spaces }: SpacesParams) => {
 export const getSpacesForRating = ({ spaces }: SpacesParams) => {
   const now = new Date();
   return cycleSpaces(spaces).filter(space =>
-    space.isActive && space.ratingStartDate && space.ratingDeadline &&
-    new Date(space.ratingStartDate) <= now && new Date(space.ratingDeadline) >= now
+    space.isActive && (isWithinWindow(space.selfRatingStartDate, space.selfRatingEndDate, now) ||
+      isWithinWindow(space.managerRatingStartDate, space.managerRatingEndDate, now))
   );
 };
 
@@ -297,9 +329,7 @@ export const isSpaceReadOnly = ({ spaces, spaceId, isAdmin }: { spaces: GoalSpac
     return !s.isActive || new Date(s.submissionDeadline) < new Date();
   }
   if (s.spaceKind === 'cycle') {
-    if (!s.editEndDate) return true;
-    const now = new Date();
-    return !s.isActive || !s.editStartDate || new Date(s.editStartDate) > now || new Date(s.editEndDate) < now;
+    return true;
   }
   return true;
 };

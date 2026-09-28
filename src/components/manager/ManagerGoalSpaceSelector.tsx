@@ -166,7 +166,7 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
                     <span>
                       {space.spaceKind === 'goal_setting'
                         ? `Review by: ${formatDate(space.reviewDeadline)}`
-                        : `Rating: ${formatDate(space.ratingStartDate)} – ${formatDate(space.ratingDeadline)}`}
+                        : `Self: ${formatDate(space.selfRatingStartDate)} – ${formatDate(space.selfRatingEndDate)} · Manager: ${formatDate(space.managerRatingStartDate)} – ${formatDate(space.managerRatingEndDate)}`}
                     </span>
                   </div>
                 </CardContent>

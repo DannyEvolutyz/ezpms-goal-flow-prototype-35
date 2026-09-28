@@ -40,7 +40,7 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     getActiveSpace, getAvailableSpaces, getAllSpaces,
     getSpacesForReview, getSpacesForRating, getParentSpaces, getSubSpaces,
     getGoalSettingSpaceForParent, getParentSpacesOpenForCreation,
-    canCreateOrEditGoals, canReviewGoals, canRateGoals, canEditCycleGoal, isSpaceReadOnly 
+    canCreateOrEditGoals, canReviewGoals, canRateGoals, canSelfRate, canManagerRate, canEditCycleGoal, isSpaceReadOnly 
   } = useGoalSpaces({ spaces, user, refetchSpaces });
   
   const { 
@@ -86,6 +86,8 @@ export const GoalProvider = ({ children }: { children: React.ReactNode }) => {
     canCreateOrEditGoals,
     canReviewGoals,
     canRateGoals,
+    canSelfRate,
+    canManagerRate,
     canEditCycleGoal,
     isSpaceReadOnly,
     

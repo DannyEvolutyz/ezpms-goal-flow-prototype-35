@@ -41,7 +41,7 @@ const GoalCard: React.FC<GoalCardProps> = ({
   onToggleSelect,
   totalWeightage = 0
 }) => {
-  const { canRateGoals } = useGoals();
+  const { canSelfRate: selfWindowOpen } = useGoals();
   const [selfRateOpen, setSelfRateOpen] = useState(false);
 
   const isApproved = goal.status === 'approved' || goal.status === 'submitted' || goal.status === 'final_approved';
@@ -52,8 +52,8 @@ const GoalCard: React.FC<GoalCardProps> = ({
   const canSendRejectedForApproval = !effectiveReadOnly && goal.status === 'rejected';
   const canSubmit = false;
 
-  const ratingOpen = canRateGoals(goal.spaceId);
-  const canSelfRate = ratingOpen && (goal.status === 'approved' || goal.status === 'final_approved');
+  const ratingOpen = selfWindowOpen(goal.spaceId);
+  const canSelfRate = ratingOpen && goal.status === 'approved';
   const alreadySelfRated = !!goal.selfRatedAt;
 
   const handleUpdateWeightage = (weightage: number) => {

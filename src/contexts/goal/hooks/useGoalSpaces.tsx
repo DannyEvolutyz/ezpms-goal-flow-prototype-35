@@ -16,6 +16,8 @@ import {
   canCreateOrEditGoals as canCreateOrEditGoalsService,
   canReviewGoals as canReviewGoalsService,
   canRateGoals as canRateGoalsService,
+  canSelfRate as canSelfRateService,
+  canManagerRate as canManagerRateService,
   canEditCycleGoal as canEditCycleGoalService,
   isSpaceReadOnly as isSpaceReadOnlyService
 } from '../services/goalSpaces';
@@ -43,10 +45,10 @@ export const useGoalSpaces = ({
       startDate: spaceData.startDate ?? null,
       submissionDeadline: spaceData.submissionDeadline ?? null,
       reviewDeadline: spaceData.reviewDeadline ?? null,
-      editStartDate: spaceData.editStartDate ?? null,
-      editEndDate: spaceData.editEndDate ?? null,
-      ratingStartDate: spaceData.ratingStartDate ?? null,
-      ratingDeadline: spaceData.ratingDeadline ?? null,
+      selfRatingStartDate: spaceData.selfRatingStartDate ?? null,
+      selfRatingEndDate: spaceData.selfRatingEndDate ?? null,
+      managerRatingStartDate: spaceData.managerRatingStartDate ?? null,
+      managerRatingEndDate: spaceData.managerRatingEndDate ?? null,
       user,
       refetchSpaces
     });
@@ -74,6 +76,8 @@ export const useGoalSpaces = ({
     canCreateOrEditGoals: (spaceId?: string) => canCreateOrEditGoalsService({ spaces, spaceId }),
     canReviewGoals: (spaceId?: string) => canReviewGoalsService({ spaces, spaceId }),
     canRateGoals: (spaceId?: string) => canRateGoalsService({ spaces, spaceId }),
+    canSelfRate: (spaceId?: string) => canSelfRateService({ spaces, spaceId }),
+    canManagerRate: (spaceId?: string) => canManagerRateService({ spaces, spaceId }),
     canEditCycleGoal: (spaceId?: string) => canEditCycleGoalService({ spaces, spaceId }),
     isSpaceReadOnly: (spaceId?: string) => isSpaceReadOnlyService({ spaces, spaceId, isAdmin: user?.role === 'admin' })
   };
