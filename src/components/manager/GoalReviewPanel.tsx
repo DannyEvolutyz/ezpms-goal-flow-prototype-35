@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle, ArrowDown, Star } from 'lucide-react';
 import { Goal } from '@/types';
 import { useGoals } from '@/contexts/goal';
+import { useAuth } from '@/contexts/AuthContext';
+import PreviousRatingsSection from './PreviousRatingsSection';
 
 interface GoalReviewPanelProps {
   selectedGoal: Goal;
@@ -29,6 +31,7 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
   getGoalOwnerName
 }) => {
   const { canManagerRate: managerWindowOpen, spaces } = useGoals();
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
@@ -140,6 +143,9 @@ const GoalReviewPanel: React.FC<GoalReviewPanelProps> = ({
                   <p className="mt-1 text-muted-foreground">"{selectedGoal.ratingComment}"</p>
                 )}
               </div>
+            )}
+            {isCycleSpace && (user?.role === 'manager' || user?.role === 'admin') && (
+              <PreviousRatingsSection goal={selectedGoal} />
             )}
             {memberHasSelfRated ? (
               <div className="rounded-md border bg-amber-50 p-3">
