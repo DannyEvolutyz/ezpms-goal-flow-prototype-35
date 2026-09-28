@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, FolderPlus, Trash2, Clock, ChevronDown, ChevronRight, Plus, Folder, Lock, Pencil } from 'lucide-react';
 import EditSpaceDialog from './goal-space/EditSpaceDialog';
+import { getCyclePhase } from '@/contexts/goal/services/goalSpaces';
 import { useGoals } from '@/contexts/goal';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
@@ -36,13 +37,14 @@ const parentSchema = z.object({
 const cycleSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long'),
   description: z.string().optional(),
-  editStartDate: z.date({ required_error: 'Edit start date is required' }),
-  editEndDate: z.date({ required_error: 'Edit end date is required' }),
-  ratingStartDate: z.date({ required_error: 'Rating start date is required' }),
-  ratingDeadline: z.date({ required_error: 'Rating deadline is required' }),
-}).refine(d => d.editStartDate <= d.editEndDate, { message: 'Edit end must be on/after edit start', path: ['editEndDate'] })
-  .refine(d => d.editEndDate <= d.ratingStartDate, { message: 'Rating start must be on/after edit end', path: ['ratingStartDate'] })
-  .refine(d => d.ratingStartDate <= d.ratingDeadline, { message: 'Rating end must be on/after rating start', path: ['ratingDeadline'] });
+  selfRatingStartDate: z.date({ required_error: 'Employee rating start is required' }),
+  selfRatingEndDate: z.date({ required_error: 'Employee rating end is required' }),
+  managerRatingStartDate: z.date({ required_error: 'Manager rating start is required' }),
+  managerRatingEndDate: z.date({ required_error: 'Manager rating end is required' }),
+}).refine(d => d.selfRatingStartDate <= d.selfRatingEndDate, { message: 'Employee end must be on/after employee start', path: ['selfRatingEndDate'] })
+  .refine(d => d.managerRatingStartDate <= d.managerRatingEndDate, { message: 'Manager end must be on/after manager start', path: ['managerRatingEndDate'] })
+  .refine(d => d.selfRatingStartDate <= d.managerRatingStartDate, { message: 'Manager rating cannot start before employee rating', path: ['managerRatingStartDate'] })
+  .refine(d => d.selfRatingEndDate <= d.managerRatingEndDate, { message: 'Manager rating cannot end before employee rating', path: ['managerRatingEndDate'] });
 
 type ParentValues = z.infer<typeof parentSchema>;
 type CycleValues = z.infer<typeof cycleSchema>;
@@ -153,10 +155,10 @@ const CycleDialog = ({ parentId, parentName, open, onOpenChange }: { parentId: s
         description: values.description,
         parentId,
         spaceKind: 'cycle',
-        editStartDate: values.editStartDate.toISOString(),
-        editEndDate: values.editEndDate.toISOString(),
-        ratingStartDate: values.ratingStartDate.toISOString(),
-        ratingDeadline: values.ratingDeadline.toISOString(),
+        selfRatingStartDate: values.selfRatingStartDate.toISOString(),
+        selfRatingEndDate: values.selfRatingEndDate.toISOString(),
+        managerRatingStartDate: values.managerRatingStartDate.toISOString(),
+        managerRatingEndDate: values.managerRatingEndDate.toISOString(),
       } as any);
       if (result) {
         toast({ title: 'Sub-Space Created', description: `"${values.name}" added under "${parentName}". Approved goals were copied in.` });
@@ -190,17 +192,17 @@ const CycleDialog = ({ parentId, parentName, open, onOpenChange }: { parentId: s
               <Clock className="h-4 w-4 text-blue-600" />
               <AlertTitle className="text-blue-800">Cycle Timeline</AlertTitle>
               <AlertDescription className="text-blue-700 text-sm">
-                Order: Edit Start → Edit End → Rating Start → Rating End. Members self-rate first, then managers rate.
+                Members self-rate first during the employee window. Managers rate only after a member has self-rated, during the manager window.
               </AlertDescription>
             </Alert>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateField form={form} name="editStartDate" label="Edit Start Date" description="When members can update goal progress" />
-              <DateField form={form} name="editEndDate" label="Edit End Date" description="Last day to update progress" />
+              <DateField form={form} name="selfRatingStartDate" label="Employee Rating Start" description="Members can self-rate from this day" />
+              <DateField form={form} name="selfRatingEndDate" label="Employee Rating End" description="Last day for self-rating" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateField form={form} name="ratingStartDate" label="Rating Start Date" description="Self- and manager-rating opens" />
-              <DateField form={form} name="ratingDeadline" label="Rating Deadline" description="Last day to rate goals" />
+              <DateField form={form} name="managerRatingStartDate" label="Manager Rating Start" description="Managers can rate self-rated goals from this day" />
+              <DateField form={form} name="managerRatingEndDate" label="Manager Rating End" description="Last day for manager rating" />
             </div>
 
             <DialogFooter className="pt-4">
@@ -233,17 +235,8 @@ const SubSpaceRow = ({ space, onDelete, onEdit }: { space: GoalSpace; onDelete: 
         else phase = { label: 'Completed', className: 'bg-red-100 text-red-800' };
       }
     } else {
-      const es = space.editStartDate ? new Date(space.editStartDate) : null;
-      const ee = space.editEndDate ? new Date(space.editEndDate) : null;
-      const rs = space.ratingStartDate ? new Date(space.ratingStartDate) : null;
-      const rd = space.ratingDeadline ? new Date(space.ratingDeadline) : null;
-      if (es && ee && rs && rd) {
-        if (now < es) phase = { label: 'Upcoming', className: 'bg-blue-100 text-blue-800' };
-        else if (now <= ee) phase = { label: 'Editing', className: 'bg-green-100 text-green-800' };
-        else if (now < rs) phase = { label: 'Awaiting Rating', className: 'bg-gray-100 text-gray-800' };
-        else if (now <= rd) phase = { label: 'Rating', className: 'bg-purple-100 text-purple-800' };
-        else phase = { label: 'Completed', className: 'bg-red-100 text-red-800' };
-      }
+      const ph = getCyclePhase(space);
+      if (ph) phase = { label: ph.label, className: ph.className };
     }
   }
 
@@ -264,11 +257,9 @@ const SubSpaceRow = ({ space, onDelete, onEdit }: { space: GoalSpace; onDelete: 
             <div><span className="font-semibold">Review:</span> {formatDate(space.reviewDeadline)}</div>
           </div>
         ) : (
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <div><span className="font-semibold">Edit Start:</span> {formatDate(space.editStartDate)}</div>
-            <div><span className="font-semibold">Edit End:</span> {formatDate(space.editEndDate)}</div>
-            <div><span className="font-semibold">Rating Start:</span> {formatDate(space.ratingStartDate)}</div>
-            <div><span className="font-semibold">Rating End:</span> {formatDate(space.ratingDeadline)}</div>
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <div><span className="font-semibold">Employee Rating:</span> {formatDate(space.selfRatingStartDate)} – {formatDate(space.selfRatingEndDate)}</div>
+            <div><span className="font-semibold">Manager Rating:</span> {formatDate(space.managerRatingStartDate)} – {formatDate(space.managerRatingEndDate)}</div>
           </div>
         )}
       </div>

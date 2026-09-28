@@ -36,13 +36,14 @@ const goalSettingSchema = z.object({
 
 const cycleSchema = z.object({
   ...base,
-  editStartDate: z.date({ required_error: 'Edit start date is required' }),
-  editEndDate: z.date({ required_error: 'Edit end date is required' }),
-  ratingStartDate: z.date({ required_error: 'Rating start date is required' }),
-  ratingDeadline: z.date({ required_error: 'Rating deadline is required' }),
-}).refine(d => d.editStartDate <= d.editEndDate, { message: 'Edit end must be on/after edit start', path: ['editEndDate'] })
-  .refine(d => d.editEndDate <= d.ratingStartDate, { message: 'Rating start must be on/after edit end', path: ['ratingStartDate'] })
-  .refine(d => d.ratingStartDate <= d.ratingDeadline, { message: 'Rating end must be on/after rating start', path: ['ratingDeadline'] });
+  selfRatingStartDate: z.date({ required_error: 'Employee rating start is required' }),
+  selfRatingEndDate: z.date({ required_error: 'Employee rating end is required' }),
+  managerRatingStartDate: z.date({ required_error: 'Manager rating start is required' }),
+  managerRatingEndDate: z.date({ required_error: 'Manager rating end is required' }),
+}).refine(d => d.selfRatingStartDate <= d.selfRatingEndDate, { message: 'Employee end must be on/after employee start', path: ['selfRatingEndDate'] })
+  .refine(d => d.managerRatingStartDate <= d.managerRatingEndDate, { message: 'Manager end must be on/after manager start', path: ['managerRatingEndDate'] })
+  .refine(d => d.selfRatingStartDate <= d.managerRatingStartDate, { message: 'Manager rating cannot start before employee rating', path: ['managerRatingStartDate'] })
+  .refine(d => d.selfRatingEndDate <= d.managerRatingEndDate, { message: 'Manager rating cannot end before employee rating', path: ['managerRatingEndDate'] });
 
 const toDate = (v?: string | null) => (v ? new Date(v) : undefined);
 const toIso = (d?: Date) => (d ? d.toISOString() : null);
@@ -65,10 +66,10 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
     startDate: toDate(space.startDate),
     submissionDeadline: toDate(space.submissionDeadline),
     reviewDeadline: toDate(space.reviewDeadline),
-    editStartDate: toDate(space.editStartDate),
-    editEndDate: toDate(space.editEndDate),
-    ratingStartDate: toDate(space.ratingStartDate),
-    ratingDeadline: toDate(space.ratingDeadline),
+    selfRatingStartDate: toDate(space.selfRatingStartDate),
+    selfRatingEndDate: toDate(space.selfRatingEndDate),
+    managerRatingStartDate: toDate(space.managerRatingStartDate),
+    managerRatingEndDate: toDate(space.managerRatingEndDate),
   };
 
   const form = useForm<any>({ resolver: zodResolver(schema as any), defaultValues: defaults });
@@ -91,10 +92,10 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
         payload.reviewDeadline = toIso(values.reviewDeadline);
       }
       if (kind === 'cycle') {
-        payload.editStartDate = toIso(values.editStartDate);
-        payload.editEndDate = toIso(values.editEndDate);
-        payload.ratingStartDate = toIso(values.ratingStartDate);
-        payload.ratingDeadline = toIso(values.ratingDeadline);
+        payload.selfRatingStartDate = toIso(values.selfRatingStartDate);
+        payload.selfRatingEndDate = toIso(values.selfRatingEndDate);
+        payload.managerRatingStartDate = toIso(values.managerRatingStartDate);
+        payload.managerRatingEndDate = toIso(values.managerRatingEndDate);
       }
       await updateGoalSpace(space.id, payload);
       toast({ title: 'Saved', description: `"${values.name}" has been updated.` });
@@ -133,7 +134,7 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
                 <AlertDescription className="text-blue-700 text-sm">
                   {kind === 'goal_setting'
                     ? 'Order: Start → Submission → Review.'
-                    : 'Order: Edit Start → Edit End → Rating Start → Rating End.'}
+                    : 'Members self-rate first during the employee window. Managers rate only after a member has self-rated, during the manager window.'}
                 </AlertDescription>
               </Alert>
             )}
@@ -149,12 +150,12 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
             {kind === 'cycle' && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DateField form={form} name="editStartDate" label="Edit Start Date" description="When members can update goal progress" />
-                  <DateField form={form} name="editEndDate" label="Edit End Date" description="Last day to update progress" />
+                  <DateField form={form} name="selfRatingStartDate" label="Employee Rating Start" description="Members can self-rate from this day" />
+                  <DateField form={form} name="selfRatingEndDate" label="Employee Rating End" description="Last day for self-rating" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DateField form={form} name="ratingStartDate" label="Rating Start Date" description="Self- and manager-rating opens" />
-                  <DateField form={form} name="ratingDeadline" label="Rating Deadline" description="Last day to rate goals" />
+                  <DateField form={form} name="managerRatingStartDate" label="Manager Rating Start" description="Managers can rate self-rated goals from this day" />
+                  <DateField form={form} name="managerRatingEndDate" label="Manager Rating End" description="Last day for manager rating" />
                 </div>
               </>
             )}

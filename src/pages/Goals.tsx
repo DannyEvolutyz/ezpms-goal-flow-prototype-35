@@ -12,6 +12,7 @@ import GoalsListComponent from '@/components/goals/GoalsListComponent';
 import GoalEditForm from '@/components/goals/GoalEditForm';
 import GoalBankComponent from '@/components/goals/GoalBankComponent';
 import { CalendarDays } from 'lucide-react';
+import { getCyclePhase } from '@/contexts/goal/services/goalSpaces';
 
 const Goals = () => {
   const {
