@@ -117,6 +117,7 @@ export type Database = {
       }
       goal_spaces: {
         Row: {
+          country: string
           created_at: string
           description: string | null
           edit_end_date: string | null
@@ -137,6 +138,7 @@ export type Database = {
           submission_deadline: string | null
         }
         Insert: {
+          country?: string
           created_at?: string
           description?: string | null
           edit_end_date?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           submission_deadline?: string | null
         }
         Update: {
+          country?: string
           created_at?: string
           description?: string | null
           edit_end_date?: string | null
