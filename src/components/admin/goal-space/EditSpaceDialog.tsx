@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { Clock } from 'lucide-react';
 import { useGoals } from '@/contexts/goal';
 import { toast } from '@/hooks/use-toast';
-import { GoalSpace } from '@/types';
+import { COUNTRIES, GoalSpace } from '@/types';
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import DateField from './DateField';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const base = {
   name: z.string().min(3, 'Name must be at least 3 characters long'),
@@ -24,7 +25,7 @@ const base = {
   isActive: z.boolean(),
 };
 
-const parentSchema = z.object({ ...base });
+const parentSchema = z.object({ ...base, country: z.enum(['IN', 'US'], { required_error: 'Country is required' }) });
 
 const goalSettingSchema = z.object({
   ...base,
@@ -63,6 +64,7 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
     name: space.name,
     description: space.description || '',
     isActive: space.isActive,
+    country: space.country || 'IN',
     startDate: toDate(space.startDate),
     submissionDeadline: toDate(space.submissionDeadline),
     reviewDeadline: toDate(space.reviewDeadline),
@@ -86,6 +88,9 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
         description: values.description || '',
         isActive: values.isActive,
       };
+      if (kind === 'parent') {
+        payload.country = values.country;
+      }
       if (kind === 'goal_setting') {
         payload.startDate = toIso(values.startDate);
         payload.submissionDeadline = toIso(values.submissionDeadline);
@@ -126,6 +131,26 @@ const EditSpaceDialog = ({ space, open, onOpenChange }: EditSpaceDialogProps) =>
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem><FormLabel>Description (optional)</FormLabel><FormControl><Textarea className="resize-none" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+
+            {kind === 'parent' && (
+              <FormField control={form.control} name="country" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c.code} value={c.code}>{c.flag} {c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-xs">Changing this also updates all sub-spaces under it.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            )}
 
             {kind !== 'parent' && (
               <Alert className="bg-blue-50 border-blue-200">
