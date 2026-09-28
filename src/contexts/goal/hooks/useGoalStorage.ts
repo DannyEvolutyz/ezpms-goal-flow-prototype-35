@@ -42,7 +42,8 @@ export const useGoalStorage = () => {
   managerRatingStartDate: s.manager_rating_start_date,
   managerRatingEndDate: s.manager_rating_end_date,
       createdAt: s.created_at,
-      isActive: s.is_active
+      isActive: s.is_active,
+      country: (s.country || 'IN') as GoalSpace['country']
     }));
     setSpaces(mapped);
   }, []);
