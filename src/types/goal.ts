@@ -28,6 +28,7 @@ export interface Goal {
   selfRatingComment?: string;
   selfRatedAt?: string;
   managerRatedAt?: string;
+  sourceGoalId?: string;
   createdAt: string;
   updatedAt: string;
 }
