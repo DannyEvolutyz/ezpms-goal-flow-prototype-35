@@ -15,6 +15,13 @@
       "when": 1790581127873,
       "tag": "0001_separate_rating_windows",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790582632925,
+      "tag": "0002_add_country_to_goal_spaces",
+      "breakpoints": true
     }
   ]
 }

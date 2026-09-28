@@ -6,6 +6,7 @@ import { Clock, Building, ChevronRight, Layers } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { countryFlag } from '@/types';
 
 interface ManagerGoalSpaceSelectorProps {
   selectedSpaceId: string;
@@ -100,7 +101,7 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
             parents.map(p => (
               <SelectItem key={p.id} value={p.id}>
                 <div>
-                  <div className="font-medium">{p.name}</div>
+                  <div className="font-medium">{countryFlag(p.country)} {p.name}</div>
                   {!p.isActive && <span className="text-xs text-amber-500">(Inactive)</span>}
                 </div>
               </SelectItem>
@@ -121,7 +122,7 @@ const ManagerGoalSpaceSelector = ({ selectedSpaceId, onSpaceChange }: ManagerGoa
               <CardContent className="p-4 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{p.name}</span>
+                  <span className="font-medium">{countryFlag(p.country)} {p.name}</span>
                 </div>
                 {!p.isActive && <Badge variant="outline" className="text-amber-500">Inactive</Badge>}
               </CardContent>

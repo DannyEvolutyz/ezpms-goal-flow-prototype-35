@@ -2,6 +2,7 @@
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoals } from '@/contexts/GoalContext';
+import { countryFlag } from '@/types';
 import { format } from 'date-fns';
 import { Clock, AlertCircle } from 'lucide-react';
 import { useEffect } from 'react';
@@ -44,7 +45,7 @@ const GoalSpaceSelector = ({ form }: GoalSpaceSelectorProps) => {
                   return (
                     <SelectItem key={parent.id} value={parent.id}>
                       <div>
-                        <div>{parent.name}</div>
+                        <div>{countryFlag(parent.country)} {parent.name}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                           <Clock className="h-3 w-3" />
                           <span>Submit by: {formatDate(gs?.submissionDeadline)}</span>

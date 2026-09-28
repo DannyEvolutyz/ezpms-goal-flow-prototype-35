@@ -11,7 +11,7 @@ import { useGoals } from '@/contexts/goal';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from '@/hooks/use-toast';
-import { GoalSpace } from '@/types';
+import { COUNTRIES, GoalSpace, countryFlag } from '@/types';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -24,10 +24,12 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const parentSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long'),
   description: z.string().optional(),
+  country: z.enum(['IN', 'US'], { required_error: 'Country is required' }),
   startDate: z.date({ required_error: 'Start date is required' }),
   submissionDeadline: z.date({ required_error: 'Submission deadline is required' }),
   reviewDeadline: z.date({ required_error: 'Review deadline is required' }),
@@ -78,7 +80,7 @@ const DateField = ({ form, name, label, description }: { form: any; name: string
 
 const ParentSpaceDialog = ({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) => {
   const { createGoalSpace } = useGoals();
-  const form = useForm<ParentValues>({ resolver: zodResolver(parentSchema), defaultValues: { name: '', description: '' } as any });
+  const form = useForm<ParentValues>({ resolver: zodResolver(parentSchema), defaultValues: { name: '', description: '', country: 'IN' } as any });
 
   const onSubmit = async (values: ParentValues) => {
     try {
@@ -87,6 +89,7 @@ const ParentSpaceDialog = ({ open, onOpenChange }: { open: boolean; onOpenChange
         description: values.description,
         parentId: null,
         spaceKind: 'parent',
+        country: values.country,
         startDate: values.startDate.toISOString(),
         submissionDeadline: values.submissionDeadline.toISOString(),
         reviewDeadline: values.reviewDeadline.toISOString(),
@@ -117,6 +120,23 @@ const ParentSpaceDialog = ({ open, onOpenChange }: { open: boolean; onOpenChange
             )} />
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem><FormLabel>Description (optional)</FormLabel><FormControl><Textarea className="resize-none" placeholder="Annual container for 2027 performance cycles" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="country" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {COUNTRIES.map(c => (
+                      <SelectItem key={c.code} value={c.code}>{c.flag} {c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription className="text-xs">Sub-spaces inherit this country automatically.</FormDescription>
+                <FormMessage />
+              </FormItem>
             )} />
 
             <Alert className="bg-blue-50 border-blue-200">
@@ -353,7 +373,8 @@ const GoalSpaceManager = () => {
                         <div className="font-semibold">{parent.name}</div>
                         {parent.description && <div className="text-xs text-muted-foreground">{parent.description}</div>}
                       </div>
-                      <Badge variant="secondary" className="ml-2">{cycles.length} cycle{cycles.length === 1 ? '' : 's'}</Badge>
+                      <Badge variant="outline" className="ml-2">{countryFlag(parent.country)} {parent.country === 'US' ? 'United States' : 'India'}</Badge>
+                      <Badge variant="secondary">{cycles.length} cycle{cycles.length === 1 ? '' : 's'}</Badge>
                     </button>
                     <div className="flex items-center gap-1">
                       <Button size="sm" variant="outline" onClick={() => setSubDialogFor({ id: parent.id, name: parent.name })}>
